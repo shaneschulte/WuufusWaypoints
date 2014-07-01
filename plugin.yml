@@ -1,0 +1,40 @@
+ name: Waypoints
+ author: Marenwynn
+ main: com.github.marenwynn.waypoints.PluginMain
+ version: 1.0.0
+ commands:
+   wp:
+     description: Waypoints top-level command
+     usage: /wp <add | move | remove | rename | select | desc | icon | reload>
+   sethome:
+     description: Save up to three locations as waypoints
+     usage: /sethome <name>
+   setspawn:
+     description: Sets spawn point for current world
+     usage: /setspawn
+ permissions:
+   wp.*:
+     description: Grants all plugin permissions
+     children:
+       wp.admin: true
+       wp.player: true
+       wp.reload: true
+       wp.access.*: true
+     default: op
+   wp.admin:
+     description: Grants all commands except reload; allows player to select server-defined waypoints
+     children:
+       wp.add: true
+       wp.desc: true
+       wp.icon: true
+       wp.move: true
+       wp.remove: true
+       wp.rename: true
+       wp.select: true
+       wp.sethome: true
+       wp.setspawn: true
+   wp.access.*:
+     description: Grants access to all waypoints
+     children:
+       wp.access.bed: true
+       wp.access.spawn: true

@@ -1,0 +1,35 @@
+CHANGELOG
+
+1.0.0 (06/30/2014):
+- Waypoint icons can now have durability values
+- Waypoint access permissions changed to use an underscore in place of spaces
+    Ex. "&6The Nether" would have a permission of "wp.access.the_nether"
+- Stopped waypoint menu from opening for waypoint locations which the player doesn't have access
+    Menu always opens at spawn, but players need "wp.access.spawn" for it to show up in other menus
+
+0.9.5 (06/29/2014):
+- Right-clicking with a renamed clock (through anvil) while sneaking will create a home waypoint
+- Right-clicking on a home waypoint while sneaking will set the waypoint's icon to player's item in hand
+    If this item is a written book, the contents of the book will become the waypoint's description
+
+0.9.2 (06/27/2014):
+- Waypoint names and descriptions now have configurable length limits; menu lore now wraps as needed
+- Rather than remove it from the menu, the active/selected waypoint is now marked
+    Active/selected waypoint is prefixed by a green star; cannot be selected
+    Instead of showing selected waypoint in /wp, player's home waypoints are shown instead
+
+0.9.0 (06/26/2014):
+- Home waypoints can now travel to Spawn, Bed, and other home waypoints
+- Players now "snap" to waypoints when using them
+- Added /setspawn; each world's spawn is now a waypoint (menu only shows current world's spawn)
+- Granted all non location-based commands to CONSOLE
+- "/wp select" now brings up a selection menu, allowing for player-defined waypoint editing
+    Menu includes server-defined waypoints for players with "wp.admin" and access permissions
+    Lists server-defined waypoints in Console when no arguments are passed
+    Server-defined waypoints can be specified in arguments
+- Renaming waypoints now properly checks for duplicate name
+- Removing waypoints now removes its selection from players
+- /sethome default lore is now configurable under SETHOME_DEFAULT_DESC
+- Corrected "/wp icon" usage error message
+- Access permissions are now "wp.access.<name>" instead of "waypoints.access.<name>"
+- Added CHANGELOG.txt
