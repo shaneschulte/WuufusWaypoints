@@ -12,7 +12,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
@@ -31,17 +30,30 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR)
-            return;
-
         Player p = event.getPlayer();
 
-        if (!p.hasPermission("wp.player") || !p.isSneaking())
+        if (p.hasMetadata("Wayporting")
+                || (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR))
             return;
 
         ItemStack i = event.getItem();
 
         if (i == null)
+            return;
+
+        if (pm.getData().ENABLE_BEACON && i.isSimilar(pm.getBeacon()) && p.hasPermission("wp.beacon.use")) {
+            event.setCancelled(true);
+
+            if (!p.hasPermission("wp.beacon.unlimited")) {
+                i.setAmount(i.getAmount() - 1);
+                p.setItemInHand(i);
+            }
+
+            pm.openWaypointMenu(p, null, p.hasPermission("wp.beacon.server"), true, false);
+            return;
+        }
+
+        if (!p.hasPermission("wp.player") || !p.isSneaking())
             return;
 
         Waypoint home = null;
@@ -103,41 +115,46 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent moveEvent) {
+        Player p = moveEvent.getPlayer();
+
+        if (p.hasMetadata("Wayporting"))
+            return;
+
         Location from = moveEvent.getFrom();
         Location to = moveEvent.getTo();
 
         if (Util.isSameLoc(from, to, true))
             return;
 
-        Player p = moveEvent.getPlayer();
-
         if (Util.isSameLoc(p.getWorld().getSpawnLocation(), to, true)) {
             Waypoint spawn = new Waypoint("Spawn", p.getWorld().getSpawnLocation());
             spawn.setIcon(Material.NETHER_STAR);
-            openWaypointMenu(p, spawn, true, true, false);
+            pm.openWaypointMenu(p, spawn, true, true, false);
             return;
         }
 
         for (Waypoint wp : pm.getData().getAllWaypoints().values()) {
-            if (p.hasPermission("wp.access." + Util.getKey(wp.getName())) && Util.isSameLoc(wp.getLocation(), to, true)) {
-                openWaypointMenu(p, wp, true, true, false);
-                return;
+            if (Util.isSameLoc(wp.getLocation(), to, true)) {
+                String perm = "wp.access." + Util.getKey(wp.getName());
+
+                if (pm.perms != null && wp.isDiscoverable() && !p.hasPermission(perm)) {
+                    pm.perms.playerAdd(null, p, perm);
+                    Msg.DISCOVERED_WAYPOINT.sendTo(p, wp.getName());
+                }
+
+                if (p.hasPermission(perm)) {
+                    pm.openWaypointMenu(p, wp, true, true, false);
+                    return;
+                }
             }
         }
 
         for (Waypoint wp : pm.getData().getWaypointsForPlayer(p.getUniqueId())) {
             if (Util.isSameLoc(wp.getLocation(), to, true)) {
-                openWaypointMenu(p, wp, false, true, false);
+                pm.openWaypointMenu(p, wp, false, true, false);
                 return;
             }
         }
-    }
-
-    public void openWaypointMenu(Player p, Waypoint currentWaypoint, boolean addServerWaypoints,
-            boolean addHomeWaypoints, boolean select) {
-        Msg.OPEN_WP_MENU.sendTo(p, currentWaypoint.getName());
-        p.teleport(currentWaypoint.getLocation(), TeleportCause.PLUGIN);
-        pm.openWaypointMenu(p, currentWaypoint, addServerWaypoints, addHomeWaypoints, select);
     }
 
     @EventHandler

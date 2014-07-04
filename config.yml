@@ -1,27 +1,40 @@
 Waypoints:
+  # Enables/disables waypoint beacons; requires server restart if changed
+  ENABLE_BEACON: true
+
+  # Sets length limit for waypoint names
   WP_NAME_MAX_LENGTH: 18
+
+  # Sets length limit for waypoint descriptions
   WP_DESC_MAX_LENGTH: 100
+
   Messages:
     BORDER: "&2------------------------------"
     CMD_NO_CONSOLE: "&cError: &fCommand unavailable to CONSOLE."
     COMMAND_CANCEL: "&cUnable to act while undergoing quantization."
     DAMAGE_CANCEL: "&cTransmission interrupted by kinetic interference."
+    DISCOVERED_WAYPOINT: "Discovered &6%s&f! Directory updated with new entry."
+    DISCOVERY_MODE_DISABLED: "&6%s: &fDiscovery mode disabled."
+    DISCOVERY_MODE_ENABLED: "&6%s: &fDiscovery mode enabled."
     HOME_WP_ALREADY_HERE: "&cError: &fHome waypoint &6%s &falready lies at this location."
     HOME_WP_CREATED: "&aSuccess: &fCoordinates received for &6%s&f."
     HOME_WP_REPLACED: "&aSuccess: &fOverflow; &6%s &freplaced with coordinates to &6%s&f."
     INVALD_DURABILITY: "&cError: &fInvalid durability value."
     INVALID_MATERIAL: "&cError: &fInvalid material type."
     LIST_HOME_WAYPOINTS: "&aHome Waypoints: &6%s"
+    LORE_LINE: " &5&o%s"
     MAX_LENGTH_EXCEEDED: "&cMax length (&f%s&c) exceeded."
-    MENU_NAME: "&fWaypoint Directory"
+    MENU_NAME: "Waypoint Directory"
     NO_PERMS: "&cError: &fAccess denied."
     NO_WAYPOINTS: "&fNone"
+    ONLY_SERVER_DEFINED: "&cError: &fOnly server-defined waypoints can be discoverable."
     OPEN_WP_MENU: "&6%s: &fOpening waypoint directory."
     PORT_TASK_1: "&aPlotting course for &6%s&a. Scanning &6%s&a..."
     PORT_TASK_2: "&a ...scan complete. Course locked in."
     PORT_TASK_3: "&aSynchronizing qubits; standby for quantization."
     PORT_TASK_4: "&9Energizing..."
     RELOADED: "&aWaypoints &freloaded."
+    REMOTELY_ACCESSED: "&aWaypoint Beacon: &fEstablished remote connection to waypoint directory."
     SELECTED_1: " &6%s &f&o(%s)"
     SELECTED_2: " &aX: &f%d  &aPitch: &f%d"
     SELECTED_3: " &aY: &f%d  &aYaw: &f%d"

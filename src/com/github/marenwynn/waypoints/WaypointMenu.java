@@ -2,6 +2,7 @@ package com.github.marenwynn.waypoints;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,63 +23,29 @@ import java.util.List;
 
 public class WaypointMenu implements Listener {
 
-    private PluginMain  pm;
+    private PluginMain     pm;
 
-    private Player      p;
-    private Waypoint    currentWaypoint;
-    private boolean     select;
+    private Player         p;
+    private Waypoint       currentWaypoint;
+    private List<Waypoint> accessList;
+    private boolean        select;
 
-    private int         size;
-    private String[]    optionNames;
-    private ItemStack[] optionIcons;
-    private Waypoint[]  optionWaypoints;
+    private int            page;
+    private int            size;
+    private String[]       optionNames;
+    private ItemStack[]    optionIcons;
+    private Waypoint[]     optionWaypoints;
 
     public WaypointMenu(PluginMain pm, Player p, Waypoint currentWaypoint, List<Waypoint> accessList, boolean select) {
         this.pm = pm;
-
         this.p = p;
-        this.currentWaypoint = currentWaypoint;
         this.select = select;
+        this.currentWaypoint = currentWaypoint;
+        this.accessList = accessList;
 
-        this.size = (int) (Math.ceil((accessList.size()) / 9.0)) * 9;
-        this.optionNames = new String[size];
-        this.optionIcons = new ItemStack[size];
-        this.optionWaypoints = new Waypoint[size];
-
-        int index = 0;
-
-        for (Waypoint wp : accessList) {
-            setOption(index, wp, wp == currentWaypoint);
-            index += 1;
-        }
-
+        page = 1;
+        buildMenu();
         pm.getServer().getPluginManager().registerEvents(this, pm);
-    }
-
-    public WaypointMenu setOption(int index, Waypoint wp, boolean selected) {
-        Location loc = wp.getLocation();
-        ArrayList<String> lore = new ArrayList<String>();
-
-        lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
-        lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
-        lore.add(Util.color(String.format("&aY: &f%s", loc.getBlockY())));
-        lore.add(Util.color(String.format("&aZ: &f%s", loc.getBlockZ())));
-
-        if (!wp.getDescription().equals(""))
-            lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getDescription(), 25)));
-
-        optionNames[index] = "&6" + wp.getName();
-
-        if (selected)
-            optionNames[index] = "&a* " + optionNames[index];
-
-        ItemStack icon = new ItemStack(wp.getIcon(), 1);
-        icon.setDurability(wp.getDurability());
-
-        optionIcons[index] = setItemNameAndLore(icon, Util.color(optionNames[index]), lore);
-        optionWaypoints[index] = wp;
-
-        return this;
     }
 
     public void open() {
@@ -94,6 +61,7 @@ public class WaypointMenu implements Listener {
         optionNames = null;
         optionIcons = null;
         optionWaypoints = null;
+        accessList = null;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -107,15 +75,29 @@ public class WaypointMenu implements Listener {
 
             int slot = clickEvent.getRawSlot();
 
-            if (slot < 0 || slot >= size || optionNames[slot] == null || currentWaypoint == optionWaypoints[slot])
+            if (slot < 0 || slot >= size || optionNames[slot] == null
+                    || (currentWaypoint != null && currentWaypoint == optionWaypoints[slot]))
                 return;
 
-            if (select)
-                pm.setSelectedWaypoint(p, optionWaypoints[slot]);
-            else
-                pm.teleportPlayer(p, optionWaypoints[slot]);
+            if (optionWaypoints[slot] != null) {
+                if (select)
+                    pm.setSelectedWaypoint(p, optionWaypoints[slot]);
+                else
+                    pm.teleportPlayer(p, optionWaypoints[slot]);
 
-            p.closeInventory();
+                p.closeInventory();
+            } else {
+                if (optionNames[slot].equals("Previous")) {
+                    page--;
+                } else if (optionNames[slot].equals("Page") && page != 1) {
+                    page = 1;
+                } else if (optionNames[slot].equals("Next")) {
+                    page++;
+                }
+
+                buildMenu();
+                clickEvent.getInventory().setContents(optionIcons);
+            }
         }
     }
 
@@ -125,10 +107,78 @@ public class WaypointMenu implements Listener {
             destroy();
     }
 
+    public void buildMenu() {
+        size = accessList.size() > 9 ? 18 : 9;
+        optionNames = new String[size];
+        optionIcons = new ItemStack[size];
+        optionWaypoints = new Waypoint[size];
+
+        for (int slot = 0; slot < 9; slot++) {
+            int index = page == 1 ? slot : ((page - 1) * 9) + slot;
+
+            if (index > accessList.size() - 1)
+                break;
+
+            Waypoint wp = accessList.get(index);
+            setOption(slot, wp, wp == currentWaypoint);
+        }
+
+        if (page > 1) {
+            ItemStack is = new ItemStack(Material.PAPER, 1);
+            setItemNameAndLore(is, Util.color("&aPrevious Page"), null);
+            setOption(12, "Previous", is);
+        }
+
+        if (accessList.size() > 9) {
+            ItemStack is = new ItemStack(Material.BOOK, page);
+            setItemNameAndLore(is, Util.color(String.format("&aPage: &6%d", page)), null);
+            setOption(13, "Page", is);
+        }
+
+        if (accessList.size() > page * 9) {
+            ItemStack is = new ItemStack(Material.PAPER, 1);
+            setItemNameAndLore(is, Util.color("&aNext Page"), null);
+            setOption(14, "Next", is);
+        }
+    }
+
+    public void setOption(int slot, String name, ItemStack icon) {
+        optionNames[slot] = name;
+        optionIcons[slot] = icon;
+        optionWaypoints[slot] = null;
+    }
+
+    public void setOption(int slot, Waypoint wp, boolean selected) {
+        Location loc = wp.getLocation();
+        ArrayList<String> lore = new ArrayList<String>();
+
+        lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
+        lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
+        lore.add(Util.color(String.format("&aY: &f%s", loc.getBlockY())));
+        lore.add(Util.color(String.format("&aZ: &f%s", loc.getBlockZ())));
+
+        if (!wp.getDescription().equals(""))
+            lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getDescription(), 25)));
+
+        optionNames[slot] = "&6" + wp.getName();
+
+        if (currentWaypoint != null && selected)
+            optionNames[slot] = "&a* " + optionNames[slot];
+
+        ItemStack icon = new ItemStack(wp.getIcon(), 1);
+        icon.setDurability(wp.getDurability());
+
+        optionIcons[slot] = setItemNameAndLore(icon, Util.color(optionNames[slot]), lore);
+        optionWaypoints[slot] = wp;
+    }
+
     private ItemStack setItemNameAndLore(ItemStack item, String name, ArrayList<String> lore) {
         ItemMeta im = item.getItemMeta();
         im.setDisplayName(name);
-        im.setLore(lore);
+
+        if (lore != null)
+            im.setLore(lore);
+
         item.setItemMeta(im);
         return item;
     }

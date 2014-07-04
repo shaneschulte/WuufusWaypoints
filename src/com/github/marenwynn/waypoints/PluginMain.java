@@ -3,29 +3,37 @@ package com.github.marenwynn.waypoints;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.bukkit.ChatColor;
+import net.milkbowl.vault.permission.Permission;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.github.marenwynn.waypoints.commands.PluginCommand;
+import com.github.marenwynn.waypoints.commands.SetHomeCmd;
 import com.github.marenwynn.waypoints.commands.SetSpawnCmd;
 import com.github.marenwynn.waypoints.commands.WPAddCmd;
+import com.github.marenwynn.waypoints.commands.WPDescCmd;
+import com.github.marenwynn.waypoints.commands.WPDiscoverCmd;
+import com.github.marenwynn.waypoints.commands.WPIconCmd;
 import com.github.marenwynn.waypoints.commands.WPMoveCmd;
 import com.github.marenwynn.waypoints.commands.WPReloadCmd;
 import com.github.marenwynn.waypoints.commands.WPRemoveCmd;
 import com.github.marenwynn.waypoints.commands.WPRenameCmd;
 import com.github.marenwynn.waypoints.commands.WPSelectCmd;
-import com.github.marenwynn.waypoints.commands.WPDescCmd;
-import com.github.marenwynn.waypoints.commands.SetHomeCmd;
-import com.github.marenwynn.waypoints.commands.WPIconCmd;
 import com.github.marenwynn.waypoints.data.Database;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 import com.github.marenwynn.waypoints.listeners.PlayerListener;
+import com.github.marenwynn.waypoints.listeners.WaypointListener;
 import com.github.marenwynn.waypoints.tasks.TeleportTask;
 
 public class PluginMain extends JavaPlugin {
@@ -33,10 +41,23 @@ public class PluginMain extends JavaPlugin {
     private Database                       data;
     private HashMap<String, Waypoint>      selectedWaypoints;
     private HashMap<String, PluginCommand> commands;
+    private ItemStack                      beacon;
+
+    public Permission                      perms;
 
     @Override
     public void onEnable() {
         saveResource("CHANGELOG.txt", true);
+
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager()
+                    .getRegistration(net.milkbowl.vault.permission.Permission.class);
+
+            if (permissionProvider != null)
+                perms = permissionProvider.getProvider();
+        } else {
+            getLogger().info("Vault not found. Discovery mode disabled.");
+        }
 
         data = new Database(this);
         selectedWaypoints = new HashMap<String, Waypoint>();
@@ -45,16 +66,44 @@ public class PluginMain extends JavaPlugin {
         commands.put("sethome", new SetHomeCmd(this));
         commands.put("setspawn", new SetSpawnCmd());
         commands.put("add", new WPAddCmd(this));
+        commands.put("desc", new WPDescCmd(this));
+
+        if (perms != null)
+            commands.put("discover", new WPDiscoverCmd(this));
+
+        commands.put("icon", new WPIconCmd(this));
         commands.put("move", new WPMoveCmd(this));
         commands.put("reload", new WPReloadCmd(this));
         commands.put("remove", new WPRemoveCmd(this));
         commands.put("rename", new WPRenameCmd(this));
         commands.put("select", new WPSelectCmd(this));
-        commands.put("desc", new WPDescCmd(this));
-        commands.put("icon", new WPIconCmd(this));
 
         getCommand("wp").setExecutor(this);
         getCommand("sethome").setExecutor(this);
+
+        if (data.ENABLE_BEACON) {
+            beacon = new ItemStack(Material.COMPASS, 1);
+
+            ItemMeta im = beacon.getItemMeta();
+            im.setDisplayName(Util.color("&aWaypoint Beacon"));
+
+            ArrayList<String> lore = new ArrayList<String>();
+            lore.add(Util.color("&fBroadcasts signal to"));
+            lore.add(Util.color("&fwaypoint directory for"));
+            lore.add(Util.color("&fremote connection."));
+            lore.add(Util.color("&8&oRight-click to use"));
+
+            im.setLore(lore);
+            beacon.setItemMeta(im);
+
+            ShapedRecipe sr = new ShapedRecipe(beacon);
+            sr.shape("RRR", "RCR", "RRR");
+            sr.setIngredient('R', Material.REDSTONE);
+            sr.setIngredient('C', Material.COMPASS);
+            getServer().addRecipe(sr);
+        }
+
+        getServer().getPluginManager().registerEvents(new WaypointListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
     }
 
@@ -88,7 +137,7 @@ public class PluginMain extends JavaPlugin {
                         Msg.LIST_HOME_WAYPOINTS.sendTo(sender, sb.toString());
                 }
 
-                sender.sendMessage(getDescription().getName() + " v" + getDescription().getVersion() + " by Marenwynn.");
+                sender.sendMessage("Maren's Waypoints v" + getDescription().getVersion() + " by Marenwynn.");
                 return false;
             }
         } else if (cmd.equals("sethome")) {
@@ -119,8 +168,15 @@ public class PluginMain extends JavaPlugin {
         ArrayList<Waypoint> accessList = new ArrayList<Waypoint>();
 
         if (!select) {
+            if (currentWaypoint != null) {
+                Msg.OPEN_WP_MENU.sendTo(p, currentWaypoint.getName());
+                p.teleport(currentWaypoint.getLocation(), TeleportCause.PLUGIN);
+            } else {
+                Msg.REMOTELY_ACCESSED.sendTo(p);
+            }
+
             if (p.hasPermission("wp.access.spawn")) {
-                if (currentWaypoint.getName().equals("Spawn")) {
+                if (currentWaypoint != null && currentWaypoint.getName().equals("Spawn")) {
                     accessList.add(currentWaypoint);
                 } else {
                     Waypoint spawn = new Waypoint("Spawn", p.getWorld().getSpawnLocation());
@@ -201,7 +257,7 @@ public class PluginMain extends JavaPlugin {
             Msg.WP_NO_DESC.sendTo(sender);
         } else {
             for (String line : Util.getWrappedLore(wp.getDescription(), 40))
-                sender.sendMessage(ChatColor.DARK_PURPLE + " " + ChatColor.ITALIC + line);
+                Msg.LORE_LINE.sendTo(sender, line);
         }
 
         Msg.BORDER.sendTo(sender);
@@ -210,6 +266,10 @@ public class PluginMain extends JavaPlugin {
     public void clearSelectedWaypoint(String playerName) {
         if (selectedWaypoints.containsKey(playerName))
             selectedWaypoints.remove(playerName);
+    }
+
+    public ItemStack getBeacon() {
+        return beacon;
     }
 
     public Database getData() {

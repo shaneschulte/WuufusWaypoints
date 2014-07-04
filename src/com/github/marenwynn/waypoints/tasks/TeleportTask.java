@@ -8,14 +8,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.github.marenwynn.waypoints.PluginMain;
-import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -41,6 +38,7 @@ public class TeleportTask extends BukkitRunnable implements Listener {
         p.setFlySpeed(0);
         p.setWalkSpeed(0);
         p.setCanPickupItems(false);
+        p.setMetadata("Wayporting", new FixedMetadataValue(pm, true));
 
         pm.getServer().getPluginManager().registerEvents(this, pm);
     }
@@ -50,6 +48,7 @@ public class TeleportTask extends BukkitRunnable implements Listener {
             p.setFlySpeed(flySpeed);
             p.setWalkSpeed(walkingSpeed);
             p.setCanPickupItems(true);
+            p.removeMetadata("Wayporting", pm);
         }
 
         HandlerList.unregisterAll(this);
@@ -100,42 +99,12 @@ public class TeleportTask extends BukkitRunnable implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    void onPlayerMove(PlayerMoveEvent moveEvent) {
-        if (p == null || !p.equals(moveEvent.getPlayer()))
-            return;
-
-        if (!Util.isSameLoc(moveEvent.getFrom(), moveEvent.getTo(), false)) {
-            Location from = moveEvent.getFrom();
-
-            from.setX(from.getBlockX());
-            from.setY(from.getBlockY());
-            from.setZ(from.getBlockZ());
-
-            p.teleport(from, TeleportCause.PLUGIN);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
     void onPlayerDamage(EntityDamageEvent damageEvent) {
         if (p == null || !p.getUniqueId().equals(damageEvent.getEntity().getUniqueId()) || counter < 2)
             return;
 
         Msg.DAMAGE_CANCEL.sendTo(p);
         destroy();
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    void onPlayerCommand(PlayerCommandPreprocessEvent cmdEvent) {
-        if (p != null && p.equals(cmdEvent.getPlayer())) {
-            Msg.COMMAND_CANCEL.sendTo(p);
-            cmdEvent.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    void onItemDrop(PlayerDropItemEvent dropEvent) {
-        if (p != null && p.equals(dropEvent.getPlayer()))
-            dropEvent.setCancelled(true);
     }
 
 }

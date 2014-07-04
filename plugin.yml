@@ -1,7 +1,8 @@
- name: Waypoints
+ name: MarensWaypoints
  author: Marenwynn
+ softdepend: [Vault]
  main: com.github.marenwynn.waypoints.PluginMain
- version: 1.0.0
+ version: 1.1.0
  commands:
    wp:
      description: Waypoints top-level command
@@ -22,7 +23,7 @@
        wp.access.*: true
      default: op
    wp.admin:
-     description: Grants all commands except reload; allows player to select server-defined waypoints
+     description: Grants all commands except reload, allows player to select server-defined waypoints
      children:
        wp.add: true
        wp.desc: true
@@ -38,3 +39,9 @@
      children:
        wp.access.bed: true
        wp.access.spawn: true
+   wp.beacon.*:
+     description: Grants all beacon permissions
+     children:
+       wp.beacon.use: true
+       wp.beacon.server: true
+       wp.beacon.unlimited: true

@@ -10,12 +10,14 @@ public class Waypoint extends GridLocation {
     private String            name, description;
     private Material          icon;
     private short             durability;
+    private boolean           discoverable;
 
     public Waypoint(String name, Location loc) {
         super(loc);
         setName(name);
         setDescription("");
         setIcon(Material.IRON_DOOR);
+        setDiscoverable(false);
     }
 
     public String getName() {
@@ -48,6 +50,14 @@ public class Waypoint extends GridLocation {
 
     public void setDurability(short durability) {
         this.durability = durability;
+    }
+
+    public boolean isDiscoverable() {
+        return discoverable;
+    }
+
+    public void setDiscoverable(boolean discoverable) {
+        this.discoverable = discoverable;
     }
 
 }

@@ -1,5 +1,18 @@
 CHANGELOG
 
+1.1.0 (07/04/2014):
+- Added item "Waypoint Beacon"; recipe is a compass in the center of a workbench surrounded by redstone
+    Players with the permission "wp.beacon.use" can right-click while holding it to open directory
+    "wp.beacon.server" will allow players to see server-defined waypoints with the beacon
+    "wp.beacon.unlimited" will prevent the beacon from being consumed on use
+    This feature can be disabled in the config.yml
+- Added discovery mode (requires Vault)
+    "/wp discover" will toggle discovery mode for selected waypoint
+        Discovery mode is disabled by default
+        Accessing waypoints in discovery mode will grant players the access permission to it
+- Instead of scaling and being capped at displaying 54 waypoints, directory is now a fixed size
+    Added paging and navigation buttons in directory to allow for an unlimited number of waypoints
+
 1.0.0 (06/30/2014):
 - Waypoint icons can now have durability values
 - Waypoint access permissions changed to use an underscore in place of spaces

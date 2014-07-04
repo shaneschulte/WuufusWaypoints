@@ -30,9 +30,12 @@ public class Database {
 
     private static HashMap<Msg, String>        messages;
     public int                                 WP_NAME_MAX_LENGTH, WP_DESC_MAX_LENGTH;
+    public boolean                             ENABLE_BEACON;
 
     public Database(PluginMain pm) {
         this.pm = pm;
+
+        ENABLE_BEACON = pm.getConfig().getBoolean("Waypoints.ENABLE_BEACON");
 
         messages = new HashMap<Msg, String>();
         loadConfig();
@@ -47,7 +50,6 @@ public class Database {
 
         if (waypointDataFile.exists())
             loadData();
-
     }
 
     public void loadConfig() {
