@@ -1,5 +1,7 @@
 package com.github.marenwynn.waypoints.data;
 
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 
@@ -7,17 +9,28 @@ public class Waypoint extends GridLocation {
 
     private static final long serialVersionUID = 3872196300104397877L;
 
+    private UUID              uuid;
     private String            name, description;
     private Material          icon;
     private short             durability;
-    private boolean           discoverable;
+    private Boolean           discoverable;
+    private boolean           enabled;
 
     public Waypoint(String name, Location loc) {
         super(loc);
         setName(name);
         setDescription("");
         setIcon(Material.IRON_DOOR);
-        setDiscoverable(false);
+        setEnabled(true);
+        uuid = UUID.randomUUID();
+    }
+
+    public UUID getUUID() {
+        // (v1.1.0) Note: For transition; remove later
+        if (uuid == null)
+            uuid = UUID.randomUUID();
+
+        return uuid;
     }
 
     public String getName() {
@@ -52,12 +65,20 @@ public class Waypoint extends GridLocation {
         this.durability = durability;
     }
 
-    public boolean isDiscoverable() {
+    public Boolean isDiscoverable() {
         return discoverable;
     }
 
-    public void setDiscoverable(boolean discoverable) {
+    public void setDiscoverable(Boolean discoverable) {
         this.discoverable = discoverable;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
 }

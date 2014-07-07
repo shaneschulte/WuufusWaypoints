@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Util;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -39,20 +40,19 @@ public class WPAddCmd implements PluginCommand {
 
         String waypointName = Util.color(sb.toString());
 
-        if (ChatColor.stripColor(waypointName).length() > pm.getData().WP_NAME_MAX_LENGTH) {
-            Msg.MAX_LENGTH_EXCEEDED.sendTo(p, pm.getData().WP_NAME_MAX_LENGTH);
+        if (ChatColor.stripColor(waypointName).length() > Data.WP_NAME_MAX_LENGTH) {
+            Msg.MAX_LENGTH_EXCEEDED.sendTo(p, Data.WP_NAME_MAX_LENGTH);
             return true;
         }
 
-        if (pm.getData().getWaypoint(waypointName) != null || waypointName.equals("Bed")
-                || waypointName.equals("Spawn")) {
+        if (Data.getWaypoint(waypointName) != null || waypointName.equals("Bed") || waypointName.equals("Spawn")) {
             Msg.WP_DUPLICATE_NAME.sendTo(p, waypointName);
             return true;
         }
 
         Location playerLoc = p.getLocation();
 
-        for (Waypoint wp : pm.getData().getAllWaypoints().values()) {
+        for (Waypoint wp : Data.getAllWaypoints()) {
             Location waypointLoc = wp.getLocation();
 
             if (Util.isSameLoc(playerLoc, waypointLoc, true)) {
@@ -63,7 +63,8 @@ public class WPAddCmd implements PluginCommand {
 
         Waypoint wp = new Waypoint(waypointName, playerLoc);
 
-        pm.getData().addWaypoint(wp);
+        Data.addWaypoint(wp);
+        Data.saveWaypoints();
         pm.setSelectedWaypoint(sender, wp);
         return true;
     }

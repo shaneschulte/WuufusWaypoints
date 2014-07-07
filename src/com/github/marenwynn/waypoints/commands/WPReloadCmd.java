@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 
 public class WPReloadCmd implements PluginCommand {
@@ -18,7 +19,8 @@ public class WPReloadCmd implements PluginCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         pm.reloadConfig();
-        pm.getData().loadConfig();
+        Data.kill();
+        Data.init(pm);
 
         for (Player p : pm.getServer().getOnlinePlayers())
             pm.clearSelectedWaypoint(p.getName());

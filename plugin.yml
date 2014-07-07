@@ -1,12 +1,11 @@
  name: MarensWaypoints
  author: Marenwynn
- softdepend: [Vault]
  main: com.github.marenwynn.waypoints.PluginMain
  version: 1.1.0
  commands:
    wp:
      description: Waypoints top-level command
-     usage: /wp <add | move | remove | rename | select | desc | icon | reload>
+     usage: /wp <add | move | remove | rename | select | desc | icon | discover | toggle | reload>
    sethome:
      description: Save up to three locations as waypoints
      usage: /sethome <name>
@@ -25,6 +24,7 @@
    wp.admin:
      description: Grants all commands except reload, allows player to select server-defined waypoints
      children:
+       wp.bypass: true
        wp.add: true
        wp.desc: true
        wp.icon: true

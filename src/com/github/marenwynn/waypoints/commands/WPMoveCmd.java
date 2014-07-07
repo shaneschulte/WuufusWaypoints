@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -28,7 +29,7 @@ public class WPMoveCmd implements PluginCommand {
         }
 
         wp.setLocation(p.getLocation());
-        pm.getData().saveWaypoint(sender, wp);
+        Data.saveWaypoint(sender, wp);
         Msg.WP_LOCATION_UPDATED.sendTo(p, wp.getName());
         return true;
     }

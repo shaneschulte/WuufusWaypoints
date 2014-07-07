@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -25,20 +26,23 @@ public class WPDiscoverCmd implements PluginCommand {
             return true;
         }
 
-        if (pm.getData().getWaypoint(wp.getName()) == null) {
+        if (Data.getWaypoint(wp.getName()) == null) {
             Msg.ONLY_SERVER_DEFINED.sendTo(sender);
             return true;
         }
 
-        if (wp.isDiscoverable()) {
-            wp.setDiscoverable(false);
-            Msg.DISCOVERY_MODE_DISABLED.sendTo(sender, wp.getName());
-        } else {
+        if (wp.isDiscoverable() == null) {
             wp.setDiscoverable(true);
-            Msg.DISCOVERY_MODE_ENABLED.sendTo(sender, wp.getName());
+            Msg.DISCOVERY_MODE_ENABLED_SERVER.sendTo(sender, wp.getName());
+        } else if (wp.isDiscoverable()) {
+            wp.setDiscoverable(false);
+            Msg.DISCOVERY_MODE_ENABLED_WORLD.sendTo(sender, wp.getName());
+        } else {
+            wp.setDiscoverable(null);
+            Msg.DISCOVERY_MODE_DISABLED.sendTo(sender, wp.getName());
         }
 
-        pm.getData().saveData();
+        Data.saveWaypoints();
         return true;
     }
 

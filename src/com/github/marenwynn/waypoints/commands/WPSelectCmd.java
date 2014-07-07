@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Util;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -34,8 +35,7 @@ public class WPSelectCmd implements PluginCommand {
                 StringBuilder sb = new StringBuilder();
                 sb.append(Msg.WP_LIST.toString());
 
-                Waypoint[] waypoints = pm.getData().getAllWaypoints().values()
-                        .toArray(new Waypoint[pm.getData().getAllWaypoints().size()]);
+                Waypoint[] waypoints = Data.getAllWaypoints().toArray(new Waypoint[Data.getAllWaypoints().size()]);
 
                 Waypoint selectedWaypoint = pm.getSelectedWaypoint(sender.getName());
 
@@ -73,10 +73,15 @@ public class WPSelectCmd implements PluginCommand {
         }
 
         String waypointName = Util.color(sb.toString());
-        Waypoint wp = pm.getData().getWaypoint(waypointName);
+        Waypoint wp = Data.getWaypoint(waypointName);
 
-        if (wp == null || !sender.hasPermission("waypoints.access." + Util.getKey(wp.getName()))) {
+        if (wp == null) {
             Msg.WP_NOT_EXIST.sendTo(sender, waypointName);
+            return true;
+        }
+
+        if (sender instanceof Player && !pm.hasAccess((Player) sender, wp, true)) {
+            Msg.NO_PERMS.sendTo(sender);
             return true;
         }
 

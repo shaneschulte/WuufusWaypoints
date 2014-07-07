@@ -3,18 +3,15 @@ package com.github.marenwynn.waypoints;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import net.milkbowl.vault.permission.Permission;
-
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.github.marenwynn.waypoints.commands.PluginCommand;
@@ -29,8 +26,10 @@ import com.github.marenwynn.waypoints.commands.WPReloadCmd;
 import com.github.marenwynn.waypoints.commands.WPRemoveCmd;
 import com.github.marenwynn.waypoints.commands.WPRenameCmd;
 import com.github.marenwynn.waypoints.commands.WPSelectCmd;
-import com.github.marenwynn.waypoints.data.Database;
+import com.github.marenwynn.waypoints.commands.WPToggleCmd;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
+import com.github.marenwynn.waypoints.data.PlayerData;
 import com.github.marenwynn.waypoints.data.Waypoint;
 import com.github.marenwynn.waypoints.listeners.PlayerListener;
 import com.github.marenwynn.waypoints.listeners.WaypointListener;
@@ -38,28 +37,14 @@ import com.github.marenwynn.waypoints.tasks.TeleportTask;
 
 public class PluginMain extends JavaPlugin {
 
-    private Database                       data;
     private HashMap<String, Waypoint>      selectedWaypoints;
     private HashMap<String, PluginCommand> commands;
-    private ItemStack                      beacon;
-
-    public Permission                      perms;
 
     @Override
     public void onEnable() {
         saveResource("CHANGELOG.txt", true);
+        Data.init(this);
 
-        if (getServer().getPluginManager().getPlugin("Vault") != null) {
-            RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager()
-                    .getRegistration(net.milkbowl.vault.permission.Permission.class);
-
-            if (permissionProvider != null)
-                perms = permissionProvider.getProvider();
-        } else {
-            getLogger().info("Vault not found. Discovery mode disabled.");
-        }
-
-        data = new Database(this);
         selectedWaypoints = new HashMap<String, Waypoint>();
         commands = new HashMap<String, PluginCommand>();
 
@@ -67,44 +52,26 @@ public class PluginMain extends JavaPlugin {
         commands.put("setspawn", new SetSpawnCmd());
         commands.put("add", new WPAddCmd(this));
         commands.put("desc", new WPDescCmd(this));
-
-        if (perms != null)
-            commands.put("discover", new WPDiscoverCmd(this));
-
+        commands.put("discover", new WPDiscoverCmd(this));
         commands.put("icon", new WPIconCmd(this));
         commands.put("move", new WPMoveCmd(this));
         commands.put("reload", new WPReloadCmd(this));
         commands.put("remove", new WPRemoveCmd(this));
         commands.put("rename", new WPRenameCmd(this));
         commands.put("select", new WPSelectCmd(this));
+        commands.put("toggle", new WPToggleCmd(this));
 
         getCommand("wp").setExecutor(this);
         getCommand("sethome").setExecutor(this);
 
-        if (data.ENABLE_BEACON) {
-            beacon = new ItemStack(Material.COMPASS, 1);
-
-            ItemMeta im = beacon.getItemMeta();
-            im.setDisplayName(Util.color("&aWaypoint Beacon"));
-
-            ArrayList<String> lore = new ArrayList<String>();
-            lore.add(Util.color("&fBroadcasts signal to"));
-            lore.add(Util.color("&fwaypoint directory for"));
-            lore.add(Util.color("&fremote connection."));
-            lore.add(Util.color("&8&oRight-click to use"));
-
-            im.setLore(lore);
-            beacon.setItemMeta(im);
-
-            ShapedRecipe sr = new ShapedRecipe(beacon);
-            sr.shape("RRR", "RCR", "RRR");
-            sr.setIngredient('R', Material.REDSTONE);
-            sr.setIngredient('C', Material.COMPASS);
-            getServer().addRecipe(sr);
-        }
-
         getServer().getPluginManager().registerEvents(new WaypointListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+    }
+
+    @Override
+    public void onDisable() {
+        HandlerList.unregisterAll(this);
+        Data.kill();
     }
 
     @Override
@@ -123,7 +90,7 @@ public class PluginMain extends JavaPlugin {
             if (executor == null) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
-                    ArrayList<Waypoint> playerPoints = data.getWaypointsForPlayer(p.getUniqueId());
+                    ArrayList<Waypoint> playerPoints = Data.getPlayerData(p.getUniqueId()).getAllWaypoints();
                     StringBuilder sb = new StringBuilder();
 
                     for (int i = 0; i < playerPoints.size(); i++) {
@@ -165,6 +132,9 @@ public class PluginMain extends JavaPlugin {
 
     public void openWaypointMenu(Player p, Waypoint currentWaypoint, boolean addServerWaypoints,
             boolean addHomeWaypoints, boolean select) {
+        if (p.hasMetadata("InMenu"))
+            return;
+
         ArrayList<Waypoint> accessList = new ArrayList<Waypoint>();
 
         if (!select) {
@@ -192,22 +162,25 @@ public class PluginMain extends JavaPlugin {
             }
         }
 
+        PlayerData pd = Data.getPlayerData(p.getUniqueId());
+
         if (addServerWaypoints && (!select || p.hasPermission("wp.admin")))
-            for (Waypoint wp : data.getAllWaypoints().values())
-                if (p.hasPermission("wp.access." + Util.getKey(wp.getName())))
+            for (Waypoint wp : Data.getAllWaypoints())
+                if (hasAccess(p, wp, select))
                     accessList.add(wp);
 
         if (addHomeWaypoints)
-            for (Waypoint wp : data.getWaypointsForPlayer(p.getUniqueId()))
+            for (Waypoint wp : pd.getAllWaypoints())
                 accessList.add(wp);
 
+        p.setMetadata("InMenu", new FixedMetadataValue(this, true));
         new WaypointMenu(this, p, currentWaypoint, accessList, select).open();
     }
 
     public boolean setHome(Player p, String waypointName) {
         Location playerLoc = p.getLocation();
 
-        for (Waypoint wp : data.getWaypointsForPlayer(p.getUniqueId())) {
+        for (Waypoint wp : Data.getPlayerData(p.getUniqueId()).getAllWaypoints()) {
             Location waypointLoc = wp.getLocation();
 
             if (Util.isSameLoc(playerLoc, waypointLoc, true)) {
@@ -223,7 +196,9 @@ public class PluginMain extends JavaPlugin {
 
         Waypoint wp = new Waypoint(waypointName, playerLoc);
         wp.setDescription(Msg.SETHOME_DEFAULT_DESC.toString());
-        Waypoint replaced = data.addWaypointForPlayer(p.getUniqueId(), wp);
+
+        Waypoint replaced = Data.getPlayerData(p.getUniqueId()).addWaypoint(wp);
+        Data.savePlayerData(p.getUniqueId());
 
         if (replaced != null)
             Msg.HOME_WP_REPLACED.sendTo(p, replaced.getName(), wp.getName());
@@ -231,6 +206,27 @@ public class PluginMain extends JavaPlugin {
             Msg.HOME_WP_CREATED.sendTo(p, waypointName);
 
         return true;
+    }
+
+    public boolean hasAccess(Player p, Waypoint wp, boolean select) {
+        if (p.hasPermission("wp.access." + Util.getKey(wp.getName())))
+            return true;
+
+        PlayerData pd = Data.getPlayerData(p.getUniqueId());
+
+        if (wp.isDiscoverable() != null) {
+            if (wp.isDiscoverable() && pd.hasDiscovered(wp.getUUID()))
+                return true;
+
+            if (!wp.isDiscoverable() && pd.hasDiscovered(wp.getUUID())) {
+                if (!select && !p.getWorld().getName().equals(wp.getLocation().getWorld().getName()))
+                    return false;
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public Waypoint getSelectedWaypoint(String playerName) {
@@ -244,20 +240,31 @@ public class PluginMain extends JavaPlugin {
         selectedWaypoints.put(sender.getName(), wp);
 
         Location loc = wp.getLocation();
+        String enabled = Data.getAllWaypoints().contains(wp) ? Util.color(wp.isEnabled() ? "" : " &f[&cDisabled&f]")
+                : "";
 
         Msg.BORDER.sendTo(sender);
-        Msg.SELECTED_1.sendTo(sender, wp.getName(), loc.getWorld().getName());
+        Msg.SELECTED_1.sendTo(sender, wp.getName() + enabled, loc.getWorld().getName());
         Msg.BORDER.sendTo(sender);
         Msg.SELECTED_2.sendTo(sender, loc.getBlockX(), (int) loc.getPitch());
         Msg.SELECTED_3.sendTo(sender, loc.getBlockY(), (int) loc.getYaw());
         Msg.SELECTED_4.sendTo(sender, loc.getBlockZ());
+
+        String discoveryMode = wp.isDiscoverable() == null ? "Disabled" : (wp.isDiscoverable() ? "Server-wide"
+                : "World-specific");
+
+        if (Data.getAllWaypoints().contains(wp)) {
+            sender.sendMessage("");
+            Msg.SELECTED_DISCOVER.sendTo(sender, discoveryMode);
+        }
+
         Msg.BORDER.sendTo(sender);
 
         if (wp.getDescription().equals("")) {
             Msg.WP_NO_DESC.sendTo(sender);
         } else {
-            for (String line : Util.getWrappedLore(wp.getDescription(), 40))
-                Msg.LORE_LINE.sendTo(sender, line);
+            for (String line : Util.getWrappedLore(wp.getDescription(), 35))
+                Msg.LORE_LINE.sendTo(sender, ChatColor.stripColor(Util.color(line)));
         }
 
         Msg.BORDER.sendTo(sender);
@@ -266,14 +273,6 @@ public class PluginMain extends JavaPlugin {
     public void clearSelectedWaypoint(String playerName) {
         if (selectedWaypoints.containsKey(playerName))
             selectedWaypoints.remove(playerName);
-    }
-
-    public ItemStack getBeacon() {
-        return beacon;
-    }
-
-    public Database getData() {
-        return data;
     }
 
 }

@@ -1,17 +1,24 @@
 CHANGELOG
 
-1.1.0 (07/04/2014):
+1.1.0 (07/07/2014):
+- Waypoints can now be enabled/disabled with "/wp toggle"
+    Disabled waypoints will show up in list as disabled
+    Players with "wp.bypass" permission will still be able to travel to disabled waypoints
 - Added item "Waypoint Beacon"; recipe is a compass in the center of a workbench surrounded by redstone
     Players with the permission "wp.beacon.use" can right-click while holding it to open directory
     "wp.beacon.server" will allow players to see server-defined waypoints with the beacon
     "wp.beacon.unlimited" will prevent the beacon from being consumed on use
+    Players with "wp.select" can left-click with it to select waypoints
     This feature can be disabled in the config.yml
-- Added discovery mode (requires Vault)
+- Added discovery mode
     "/wp discover" will toggle discovery mode for selected waypoint
-        Discovery mode is disabled by default
-        Accessing waypoints in discovery mode will grant players the access permission to it
+        "Server-wide" will allow discovered waypoints to show up globally
+        "World-specific" only allows discovered waypoint to show in its own world
+        "Disabled" disables discovery mode
+        Accessing waypoints in discovery mode will grant players the access permission to it; disabled by default
 - Instead of scaling and being capped at displaying 54 waypoints, directory is now a fixed size
     Added paging and navigation buttons in directory to allow for an unlimited number of waypoints
+- Fixed bug that allowed player to drop items from directory under rare circumstances
 
 1.0.0 (06/30/2014):
 - Waypoint icons can now have durability values

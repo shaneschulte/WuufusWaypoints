@@ -12,8 +12,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -55,6 +55,7 @@ public class WaypointMenu implements Listener {
     }
 
     private void destroy() {
+        p.removeMetadata("InMenu", pm);
         HandlerList.unregisterAll(this);
 
         p = null;
@@ -66,45 +67,61 @@ public class WaypointMenu implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     void onInventoryClick(InventoryClickEvent clickEvent) {
-        if (clickEvent.getInventory().getTitle().equals(Msg.MENU_NAME.toString())
-                && p == (Player) clickEvent.getWhoClicked()) {
-            clickEvent.setCancelled(true);
+        if (!clickEvent.getInventory().getTitle().equals(Msg.MENU_NAME.toString())
+                || p != (Player) clickEvent.getWhoClicked())
+            return;
 
-            if (!clickEvent.isLeftClick())
-                return;
+        clickEvent.setCancelled(true);
 
-            int slot = clickEvent.getRawSlot();
+        if (!clickEvent.isLeftClick())
+            return;
 
-            if (slot < 0 || slot >= size || optionNames[slot] == null
-                    || (currentWaypoint != null && currentWaypoint == optionWaypoints[slot]))
-                return;
+        final int slot = clickEvent.getRawSlot();
 
-            if (optionWaypoints[slot] != null) {
-                if (select)
-                    pm.setSelectedWaypoint(p, optionWaypoints[slot]);
-                else
-                    pm.teleportPlayer(p, optionWaypoints[slot]);
+        if (slot < 0 || slot >= size || optionNames[slot] == null
+                || (currentWaypoint != null && currentWaypoint == optionWaypoints[slot]))
+            return;
 
-                p.closeInventory();
-            } else {
-                if (optionNames[slot].equals("Previous")) {
-                    page--;
-                } else if (optionNames[slot].equals("Page") && page != 1) {
-                    page = 1;
-                } else if (optionNames[slot].equals("Next")) {
-                    page++;
+        if (optionWaypoints[slot] != null) {
+            pm.getServer().getScheduler().runTask(pm, new Runnable() {
+
+                @Override
+                public void run() {
+                    if (select)
+                        pm.setSelectedWaypoint(p, optionWaypoints[slot]);
+                    else
+                        pm.teleportPlayer(p, optionWaypoints[slot]);
+
+                    p.closeInventory();
                 }
 
-                buildMenu();
-                clickEvent.getInventory().setContents(optionIcons);
+            });
+        } else {
+            if (optionNames[slot].equals("Previous")) {
+                page--;
+            } else if (optionNames[slot].equals("Page") && page != 1) {
+                page = 1;
+            } else if (optionNames[slot].equals("Next")) {
+                page++;
             }
+
+            buildMenu();
+            clickEvent.getInventory().setContents(optionIcons);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     void onInventoryClose(InventoryCloseEvent closeEvent) {
-        if (closeEvent.getInventory().getTitle().equals(Msg.MENU_NAME.toString()) && p == closeEvent.getPlayer())
-            destroy();
+        if (closeEvent.getInventory().getTitle().equals(Msg.MENU_NAME.toString()) && p == closeEvent.getPlayer()) {
+            pm.getServer().getScheduler().runTask(pm, new Runnable() {
+
+                @Override
+                public void run() {
+                    destroy();
+                }
+
+            });
+        }
     }
 
     public void buildMenu() {
@@ -114,7 +131,7 @@ public class WaypointMenu implements Listener {
         optionWaypoints = new Waypoint[size];
 
         for (int slot = 0; slot < 9; slot++) {
-            int index = page == 1 ? slot : ((page - 1) * 9) + slot;
+            int index = ((page - 1) * 9) + slot;
 
             if (index > accessList.size() - 1)
                 break;
@@ -125,19 +142,19 @@ public class WaypointMenu implements Listener {
 
         if (page > 1) {
             ItemStack is = new ItemStack(Material.PAPER, 1);
-            setItemNameAndLore(is, Util.color("&aPrevious Page"), null);
+            Util.setItemNameAndLore(is, Util.color("&aPrevious Page"), null);
             setOption(12, "Previous", is);
         }
 
         if (accessList.size() > 9) {
             ItemStack is = new ItemStack(Material.BOOK, page);
-            setItemNameAndLore(is, Util.color(String.format("&aPage: &6%d", page)), null);
+            Util.setItemNameAndLore(is, Util.color(String.format("&aPage: &6%d", page)), null);
             setOption(13, "Page", is);
         }
 
         if (accessList.size() > page * 9) {
             ItemStack is = new ItemStack(Material.PAPER, 1);
-            setItemNameAndLore(is, Util.color("&aNext Page"), null);
+            Util.setItemNameAndLore(is, Util.color("&aNext Page"), null);
             setOption(14, "Next", is);
         }
     }
@@ -151,6 +168,8 @@ public class WaypointMenu implements Listener {
     public void setOption(int slot, Waypoint wp, boolean selected) {
         Location loc = wp.getLocation();
         ArrayList<String> lore = new ArrayList<String>();
+        String enabled = Data.getAllWaypoints().contains(wp) ? (wp.isEnabled() ? "" : Util.color(" &f[&cDisabled&f]"))
+                : "";
 
         lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
         lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
@@ -160,7 +179,7 @@ public class WaypointMenu implements Listener {
         if (!wp.getDescription().equals(""))
             lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getDescription(), 25)));
 
-        optionNames[slot] = "&6" + wp.getName();
+        optionNames[slot] = "&6" + wp.getName() + enabled;
 
         if (currentWaypoint != null && selected)
             optionNames[slot] = "&a* " + optionNames[slot];
@@ -168,19 +187,10 @@ public class WaypointMenu implements Listener {
         ItemStack icon = new ItemStack(wp.getIcon(), 1);
         icon.setDurability(wp.getDurability());
 
-        optionIcons[slot] = setItemNameAndLore(icon, Util.color(optionNames[slot]), lore);
-        optionWaypoints[slot] = wp;
-    }
+        optionIcons[slot] = Util.setItemNameAndLore(icon, Util.color(optionNames[slot]), lore);
 
-    private ItemStack setItemNameAndLore(ItemStack item, String name, ArrayList<String> lore) {
-        ItemMeta im = item.getItemMeta();
-        im.setDisplayName(name);
-
-        if (lore != null)
-            im.setLore(lore);
-
-        item.setItemMeta(im);
-        return item;
+        if ((wp.isEnabled() || p.hasPermission("wp.bypass")) || select)
+            optionWaypoints[slot] = wp;
     }
 
 }

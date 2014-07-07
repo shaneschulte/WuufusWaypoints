@@ -7,7 +7,9 @@ import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Util;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
+import com.github.marenwynn.waypoints.data.PlayerData;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
 public class WPRenameCmd implements PluginCommand {
@@ -44,8 +46,8 @@ public class WPRenameCmd implements PluginCommand {
 
         String waypointName = Util.color(sb.toString());
 
-        if (ChatColor.stripColor(waypointName).length() > pm.getData().WP_NAME_MAX_LENGTH) {
-            Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, pm.getData().WP_NAME_MAX_LENGTH);
+        if (ChatColor.stripColor(waypointName).length() > Data.WP_NAME_MAX_LENGTH) {
+            Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, Data.WP_NAME_MAX_LENGTH);
             return true;
         }
 
@@ -54,34 +56,37 @@ public class WPRenameCmd implements PluginCommand {
             return true;
         }
 
-        boolean serverDefined = pm.getData().getAllWaypoints().containsValue(wp);
+        boolean serverDefined = Data.getAllWaypoints().contains(wp);
 
         if (serverDefined) {
-            if (pm.getData().getWaypoint(waypointName) != null) {
+            if (Data.getWaypoint(waypointName) != null) {
                 Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
                 return true;
             }
 
-            pm.getData().removeWaypoint(wp);
+            Data.removeWaypoint(wp);
         } else {
-            for (Waypoint home : pm.getData().getWaypointsForPlayer(((Player) sender).getUniqueId())) {
+            PlayerData pd = Data.getPlayerData(((Player) sender).getUniqueId());
+
+            for (Waypoint home : pd.getAllWaypoints()) {
                 if (waypointName.equals(home.getName())) {
                     Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
                     return true;
                 }
             }
 
-            pm.getData().removeWaypointForPlayer(((Player) sender).getUniqueId(), wp);
+            pd.removeWaypoint(wp);
         }
 
         String oldName = wp.getName();
         wp.setName(waypointName);
 
         if (serverDefined)
-            pm.getData().addWaypoint(wp);
+            Data.addWaypoint(wp);
         else
-            pm.getData().addWaypointForPlayer(((Player) sender).getUniqueId(), wp);
+            Data.getPlayerData(((Player) sender).getUniqueId()).addWaypoint(wp);
 
+        Data.saveWaypoint(sender, wp);
         Msg.WP_RENAMED.sendTo(sender, oldName, waypointName);
         return true;
     }

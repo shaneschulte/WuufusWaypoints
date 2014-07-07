@@ -1,10 +1,26 @@
 package com.github.marenwynn.waypoints;
 
+import java.util.ArrayList;
+
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class Util {
+
+    public static String color(String string) {
+        return ChatColor.translateAlternateColorCodes('&', string);
+    }
+
+    public static String getKey(String string) {
+        return ChatColor.stripColor(string.toLowerCase()).replaceAll(" ", "_");
+    }
+
+    public static String[] getWrappedLore(String description, int maxLineLength) {
+        return WordUtils.wrap(description, maxLineLength, "\n", true).split("\\n");
+    }
 
     public static boolean isSameLoc(Location a, Location b, boolean useGrid) {
         if (useGrid) {
@@ -18,16 +34,15 @@ public class Util {
         return false;
     }
 
-    public static String getKey(String string) {
-        return ChatColor.stripColor(string.toLowerCase()).replaceAll(" ", "_");
-    }
+    public static ItemStack setItemNameAndLore(ItemStack item, String name, ArrayList<String> lore) {
+        ItemMeta im = item.getItemMeta();
+        im.setDisplayName(name);
 
-    public static String[] getWrappedLore(String description, int maxLineLength) {
-        return WordUtils.wrap(description, maxLineLength, "\n", true).split("\\n");
-    }
+        if (lore != null)
+            im.setLore(lore);
 
-    public static String color(String string) {
-        return ChatColor.translateAlternateColorCodes('&', string);
+        item.setItemMeta(im);
+        return item;
     }
 
 }

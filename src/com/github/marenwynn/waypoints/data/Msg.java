@@ -12,7 +12,8 @@ public enum Msg {
     DAMAGE_CANCEL("&cTransmission interrupted by kinetic interference."),
     DISCOVERED_WAYPOINT("Discovered &6%s&f! Directory updated with new entry."),
     DISCOVERY_MODE_DISABLED("&6%s: &fDiscovery mode disabled."),
-    DISCOVERY_MODE_ENABLED("&6%s: &fDiscovery mode enabled."),
+    DISCOVERY_MODE_ENABLED_SERVER("&6%s: &fDiscovery mode set to &aServer-wide&f."),
+    DISCOVERY_MODE_ENABLED_WORLD("&6%s: &fDiscovery mode set to &aWorld-specific&f."),
     HOME_WP_ALREADY_HERE("&cError: &fHome waypoint &6%s &falready lies at this location."),
     HOME_WP_CREATED("&aSuccess: &fCoordinates received for &6%s&f."),
     HOME_WP_REPLACED("&aSuccess: &fOverflow; &6%s &freplaced with coordinates to &6%s&f."),
@@ -24,7 +25,7 @@ public enum Msg {
     MENU_NAME("Waypoint Directory"),
     NO_PERMS("&cError: &fAccess denied."),
     NO_WAYPOINTS("&fNone"),
-    ONLY_SERVER_DEFINED("&cError: &fOnly server-defined waypoints can be discoverable."),
+    ONLY_SERVER_DEFINED("&cError: &fThis command only applies to server-defined waypoints."),
     OPEN_WP_MENU("&6%s: &fOpening waypoint directory."),
     PORT_TASK_1("&aPlotting course for &6%s&a. Scanning &6%s&a..."),
     PORT_TASK_2("&a ...scan complete. Course locked in."),
@@ -36,12 +37,15 @@ public enum Msg {
     SELECTED_2(" &aX: &f%d  &aPitch: &f%d"),
     SELECTED_3(" &aY: &f%d  &aYaw: &f%d"),
     SELECTED_4(" &aZ: &f%d"),
+    SELECTED_DISCOVER(" &aDiscovery: &f%s"),
     SETHOME_DEFAULT_DESC("User-defined"),
     SET_SPAWN("&fSpawn location updated for world &6%s&f."),
     USAGE_SETICON("&cUsage: &f/wp icon <Material>"),
     USAGE_SETHOME("&cUsage: &f/sethome <name ...>"),
     USAGE_WP_RENAME("&cUsage: &f/wp rename <name ...>"),
     USAGE_WP_ADD("&cUsage: &f/wp add <name ...>"),
+    WAYPOINT_DISABLED("&6%s: &fWaypoint disabled."),
+    WAYPOINT_ENABLED("&6%S: &fWaypoint enabled."),
     WP_ALREADY_HERE("&cError: &fCoordinates overlap with &6%s&f."),
     WP_DESC_CLEARED("&6%s: &fDescription cleared."),
     WP_DESC_UPDATED("&6%s: &fDescription updated."),
@@ -70,7 +74,7 @@ public enum Msg {
 
     @Override
     public String toString() {
-        return Database.getMsg(this);
+        return Data.getMsg(this);
     }
 
     public void sendTo(CommandSender sender) {

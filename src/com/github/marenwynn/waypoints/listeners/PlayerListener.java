@@ -1,5 +1,8 @@
 package com.github.marenwynn.waypoints.listeners;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,7 +20,9 @@ import org.bukkit.inventory.meta.BookMeta;
 
 import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Util;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
+import com.github.marenwynn.waypoints.data.PlayerData;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
 public class PlayerListener implements Listener {
@@ -31,9 +36,9 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player p = event.getPlayer();
+        Action a = event.getAction();
 
-        if (p.hasMetadata("Wayporting")
-                || (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR))
+        if (p.hasMetadata("Wayporting"))
             return;
 
         ItemStack i = event.getItem();
@@ -41,25 +46,32 @@ public class PlayerListener implements Listener {
         if (i == null)
             return;
 
-        if (pm.getData().ENABLE_BEACON && i.isSimilar(pm.getBeacon()) && p.hasPermission("wp.beacon.use")) {
-            event.setCancelled(true);
+        if (Data.ENABLE_BEACON && i.isSimilar(Data.BEACON) && p.hasPermission("wp.beacon.use")) {
+            if (a == Action.RIGHT_CLICK_BLOCK || a == Action.RIGHT_CLICK_AIR) {
+                event.setCancelled(true);
 
-            if (!p.hasPermission("wp.beacon.unlimited")) {
-                i.setAmount(i.getAmount() - 1);
-                p.setItemInHand(i);
+                if (!p.hasPermission("wp.beacon.unlimited")) {
+                    i.setAmount(i.getAmount() - 1);
+                    p.setItemInHand(i);
+                }
+
+                pm.openWaypointMenu(p, null, p.hasPermission("wp.beacon.server"), true, false);
+                return;
+            } else if (p.hasPermission("wp.select") && (a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR)) {
+                event.setCancelled(true);
+                pm.openWaypointMenu(p, pm.getSelectedWaypoint(p.getName()), p.hasPermission("wp.admin"), true, true);
+                return;
             }
-
-            pm.openWaypointMenu(p, null, p.hasPermission("wp.beacon.server"), true, false);
-            return;
         }
 
-        if (!p.hasPermission("wp.player") || !p.isSneaking())
+        if (a != Action.RIGHT_CLICK_BLOCK && a != Action.RIGHT_CLICK_AIR || !p.hasPermission("wp.player")
+                || !p.isSneaking())
             return;
 
         Waypoint home = null;
 
         if (event.getClickedBlock() != null) {
-            for (Waypoint wp : pm.getData().getWaypointsForPlayer(event.getPlayer().getUniqueId())) {
+            for (Waypoint wp : Data.getPlayerData(event.getPlayer().getUniqueId()).getAllWaypoints()) {
                 if (Util.isSameLoc(event.getClickedBlock().getRelative(BlockFace.UP).getLocation(), wp.getLocation(),
                         true)) {
                     home = wp;
@@ -82,8 +94,8 @@ public class PlayerListener implements Listener {
                         content += " ";
                 }
 
-                if (content.length() > pm.getData().WP_DESC_MAX_LENGTH)
-                    content = content.substring(0, pm.getData().WP_DESC_MAX_LENGTH);
+                if (content.length() > Data.WP_DESC_MAX_LENGTH)
+                    content = content.substring(0, Data.WP_DESC_MAX_LENGTH);
 
                 home.setDescription(content);
                 p.closeInventory();
@@ -95,7 +107,7 @@ public class PlayerListener implements Listener {
             }
 
             p.getWorld().playEffect(home.getLocation(), Effect.ENDER_SIGNAL, 16);
-            pm.getData().saveWaypoint(p, home);
+            Data.saveWaypoint(p, home);
         } else {
             if (i.getType() != Material.WATCH || !i.hasItemMeta() || !i.getItemMeta().hasDisplayName())
                 return;
@@ -133,23 +145,26 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        for (Waypoint wp : pm.getData().getAllWaypoints().values()) {
-            if (Util.isSameLoc(wp.getLocation(), to, true)) {
+        PlayerData pd = Data.getPlayerData(p.getUniqueId());
+
+        for (Waypoint wp : Data.getAllWaypoints()) {
+            if (Util.isSameLoc(wp.getLocation(), to, true) && (wp.isEnabled() || p.hasPermission("wp.bypass"))) {
                 String perm = "wp.access." + Util.getKey(wp.getName());
 
-                if (pm.perms != null && wp.isDiscoverable() && !p.hasPermission(perm)) {
-                    pm.perms.playerAdd(null, p, perm);
+                if (wp.isDiscoverable() != null && !pd.hasDiscovered(wp.getUUID())) {
+                    pd.addDiscovery(wp.getUUID());
+                    Data.savePlayerData(p.getUniqueId());
                     Msg.DISCOVERED_WAYPOINT.sendTo(p, wp.getName());
                 }
 
-                if (p.hasPermission(perm)) {
+                if (p.hasPermission(perm) || pd.hasDiscovered(wp.getUUID())) {
                     pm.openWaypointMenu(p, wp, true, true, false);
                     return;
                 }
             }
         }
 
-        for (Waypoint wp : pm.getData().getWaypointsForPlayer(p.getUniqueId())) {
+        for (Waypoint wp : pd.getAllWaypoints()) {
             if (Util.isSameLoc(wp.getLocation(), to, true)) {
                 pm.openWaypointMenu(p, wp, false, true, false);
                 return;
@@ -159,13 +174,27 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent joinEvent) {
-        pm.getData().loadWaypointsForPlayer(joinEvent.getPlayer().getUniqueId());
+        PlayerData pd = Data.loadPlayerData(joinEvent.getPlayer().getUniqueId());
+
+        // (v1.1.0) Note: For transition; remove later
+        for (Waypoint wp : pd.getAllWaypoints())
+            if (!wp.isEnabled())
+                wp.setEnabled(true);
+
+        // Cleans discoveries of deleted waypoints
+        ArrayList<UUID> waypoints = new ArrayList<UUID>();
+
+        for (Waypoint wp : Data.getAllWaypoints())
+            waypoints.add(wp.getUUID());
+
+        if (pd.retainDiscoveries(waypoints))
+            Data.savePlayerData(joinEvent.getPlayer().getUniqueId());
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent quitEvent) {
         pm.clearSelectedWaypoint(quitEvent.getPlayer().getName());
-        pm.getData().unloadWaypointsForPlayer(quitEvent.getPlayer().getUniqueId());
+        Data.unloadPlayerData(quitEvent.getPlayer().getUniqueId());
     }
 
 }

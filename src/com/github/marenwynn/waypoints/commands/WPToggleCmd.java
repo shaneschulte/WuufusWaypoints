@@ -1,6 +1,5 @@
 package com.github.marenwynn.waypoints.commands;
 
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -9,11 +8,11 @@ import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
-public class WPIconCmd implements PluginCommand {
+public class WPToggleCmd implements PluginCommand {
 
     private PluginMain pm;
 
-    public WPIconCmd(PluginMain pm) {
+    public WPToggleCmd(PluginMain pm) {
         this.pm = pm;
     }
 
@@ -27,33 +26,20 @@ public class WPIconCmd implements PluginCommand {
             return true;
         }
 
-        if (args.length < 2) {
-            Msg.USAGE_SETICON.sendTo(sender);
+        if (Data.getWaypoint(wp.getName()) == null) {
+            Msg.ONLY_SERVER_DEFINED.sendTo(sender);
             return true;
         }
 
-        short durability = (short) 0;
-        String[] input = args[1].split(":");
-        Material icon = Material.matchMaterial(input[0]);
-
-        if (icon == null) {
-            Msg.INVALID_MATERIAL.sendTo(sender);
-            return true;
+        if (wp.isEnabled()) {
+            wp.setEnabled(false);
+            Msg.WAYPOINT_DISABLED.sendTo(sender, wp.getName());
+        } else {
+            wp.setEnabled(true);
+            Msg.WAYPOINT_ENABLED.sendTo(sender, wp.getName());
         }
 
-        if (input.length > 1) {
-            try {
-                durability = Short.parseShort(input[1]);
-            } catch (NumberFormatException e) {
-                Msg.INVALD_DURABILITY.sendTo(sender);
-                return true;
-            }
-        }
-
-        wp.setIcon(icon);
-        wp.setDurability(durability);
-        Data.saveWaypoint(sender, wp);
-        Msg.WP_SETICON.sendTo(sender, wp.getName(), icon.toString(), durability);
+        Data.saveWaypoints();
         return true;
     }
 
@@ -64,7 +50,7 @@ public class WPIconCmd implements PluginCommand {
 
     @Override
     public boolean hasRequiredPerm(CommandSender sender) {
-        return sender.hasPermission("wp.icon");
+        return sender.hasPermission("wp.toggle");
     }
 
 }

@@ -1,10 +1,13 @@
 package com.github.marenwynn.waypoints.commands;
 
+import java.util.UUID;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -26,10 +29,14 @@ public class WPRemoveCmd implements PluginCommand {
             return true;
         }
 
-        if (pm.getData().getAllWaypoints().containsValue(wp))
-            pm.getData().removeWaypoint(wp);
-        else
-            pm.getData().removeWaypointForPlayer(((Player) sender).getUniqueId(), wp);
+        if (Data.getWaypoint(wp.getName()) != null) {
+            Data.removeWaypoint(wp);
+            Data.saveWaypoints();
+        } else {
+            UUID playerUUID = ((Player) sender).getUniqueId();
+            Data.getPlayerData(playerUUID).removeWaypoint(wp);
+            Data.savePlayerData(playerUUID);
+        }
 
         for (Player p : pm.getServer().getOnlinePlayers()) {
             Waypoint selectedWaypoint = pm.getSelectedWaypoint(p.getName());
