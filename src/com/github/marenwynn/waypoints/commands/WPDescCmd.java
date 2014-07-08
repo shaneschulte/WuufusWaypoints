@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
@@ -33,16 +34,7 @@ public class WPDescCmd implements PluginCommand {
             return true;
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 1; i < args.length; i++) {
-            sb.append(args[i]);
-
-            if (i < args.length - 1)
-                sb.append(" ");
-        }
-
-        String desc = sb.toString();
+        String desc = Util.buildString(args, 1, ' ');
 
         if (desc.length() > Data.WP_DESC_MAX_LENGTH) {
             Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, Data.WP_DESC_MAX_LENGTH);

@@ -29,16 +29,7 @@ public class WPAddCmd implements PluginCommand {
             return true;
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 1; i < args.length; i++) {
-            sb.append(args[i]);
-
-            if (i < args.length - 1)
-                sb.append(" ");
-        }
-
-        String waypointName = Util.color(sb.toString());
+        String waypointName = Util.color(Util.buildString(args, 1, ' '));
 
         if (ChatColor.stripColor(waypointName).length() > Data.WP_NAME_MAX_LENGTH) {
             Msg.MAX_LENGTH_EXCEEDED.sendTo(p, Data.WP_NAME_MAX_LENGTH);
@@ -53,9 +44,7 @@ public class WPAddCmd implements PluginCommand {
         Location playerLoc = p.getLocation();
 
         for (Waypoint wp : Data.getAllWaypoints()) {
-            Location waypointLoc = wp.getLocation();
-
-            if (Util.isSameLoc(playerLoc, waypointLoc, true)) {
+            if (Util.isSameLoc(playerLoc, wp.getLocation(), true)) {
                 Msg.WP_ALREADY_HERE.sendTo(p, wp.getName());
                 return true;
             }

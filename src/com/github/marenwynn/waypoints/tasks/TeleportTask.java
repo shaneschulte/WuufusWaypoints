@@ -24,7 +24,7 @@ public class TeleportTask extends BukkitRunnable implements Listener {
     private Waypoint   wp;
 
     private int        counter;
-    private float      flySpeed, walkingSpeed;
+    private float      flySpeed, walkSpeed;
 
     public TeleportTask(PluginMain pm, Player p, Waypoint wp) {
         this.pm = pm;
@@ -33,7 +33,7 @@ public class TeleportTask extends BukkitRunnable implements Listener {
 
         counter = 5;
         flySpeed = p.getFlySpeed();
-        walkingSpeed = p.getWalkSpeed();
+        walkSpeed = p.getWalkSpeed();
 
         p.setFlySpeed(0);
         p.setWalkSpeed(0);
@@ -46,7 +46,7 @@ public class TeleportTask extends BukkitRunnable implements Listener {
     public void destroy() {
         if (p != null) {
             p.setFlySpeed(flySpeed);
-            p.setWalkSpeed(walkingSpeed);
+            p.setWalkSpeed(walkSpeed);
             p.setCanPickupItems(true);
             p.removeMetadata("Wayporting", pm);
         }

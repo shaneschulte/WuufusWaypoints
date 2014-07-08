@@ -178,12 +178,11 @@ public class PluginMain extends JavaPlugin {
     }
 
     public boolean setHome(Player p, String waypointName) {
+        PlayerData pd = Data.getPlayerData(p.getUniqueId());
         Location playerLoc = p.getLocation();
 
-        for (Waypoint wp : Data.getPlayerData(p.getUniqueId()).getAllWaypoints()) {
-            Location waypointLoc = wp.getLocation();
-
-            if (Util.isSameLoc(playerLoc, waypointLoc, true)) {
+        for (Waypoint wp : pd.getAllWaypoints()) {
+            if (Util.isSameLoc(playerLoc, wp.getLocation(), true)) {
                 Msg.HOME_WP_ALREADY_HERE.sendTo(p, wp.getName());
                 return false;
             }
@@ -197,7 +196,7 @@ public class PluginMain extends JavaPlugin {
         Waypoint wp = new Waypoint(waypointName, playerLoc);
         wp.setDescription(Msg.SETHOME_DEFAULT_DESC.toString());
 
-        Waypoint replaced = Data.getPlayerData(p.getUniqueId()).addWaypoint(wp);
+        Waypoint replaced = pd.addWaypoint(wp);
         Data.savePlayerData(p.getUniqueId());
 
         if (replaced != null)
@@ -212,19 +211,9 @@ public class PluginMain extends JavaPlugin {
         if (p.hasPermission("wp.access." + Util.getKey(wp.getName())))
             return true;
 
-        PlayerData pd = Data.getPlayerData(p.getUniqueId());
-
-        if (wp.isDiscoverable() != null) {
-            if (wp.isDiscoverable() && pd.hasDiscovered(wp.getUUID()))
-                return true;
-
-            if (!wp.isDiscoverable() && pd.hasDiscovered(wp.getUUID())) {
-                if (!select && !p.getWorld().getName().equals(wp.getLocation().getWorld().getName()))
-                    return false;
-
-                return true;
-            }
-        }
+        if (wp.isDiscoverable() != null && Data.getPlayerData(p.getUniqueId()).hasDiscovered(wp.getUUID()))
+            return wp.isDiscoverable() ? true : (!select
+                    && !p.getWorld().getName().equals(wp.getLocation().getWorld().getName()) ? false : true);
 
         return false;
     }
@@ -260,12 +249,11 @@ public class PluginMain extends JavaPlugin {
 
         Msg.BORDER.sendTo(sender);
 
-        if (wp.getDescription().equals("")) {
+        if (wp.getDescription().equals(""))
             Msg.WP_NO_DESC.sendTo(sender);
-        } else {
+        else
             for (String line : Util.getWrappedLore(wp.getDescription(), 35))
                 Msg.LORE_LINE.sendTo(sender, ChatColor.stripColor(Util.color(line)));
-        }
 
         Msg.BORDER.sendTo(sender);
     }

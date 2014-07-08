@@ -35,16 +35,7 @@ public class WPRenameCmd implements PluginCommand {
             return true;
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 1; i < args.length; i++) {
-            sb.append(args[i]);
-
-            if (i < args.length - 1)
-                sb.append(" ");
-        }
-
-        String waypointName = Util.color(sb.toString());
+        String waypointName = Util.color(Util.buildString(args, 1, ' '));
 
         if (ChatColor.stripColor(waypointName).length() > Data.WP_NAME_MAX_LENGTH) {
             Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, Data.WP_NAME_MAX_LENGTH);
@@ -68,11 +59,9 @@ public class WPRenameCmd implements PluginCommand {
         } else {
             PlayerData pd = Data.getPlayerData(((Player) sender).getUniqueId());
 
-            for (Waypoint home : pd.getAllWaypoints()) {
-                if (waypointName.equals(home.getName())) {
-                    Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
-                    return true;
-                }
+            if (pd.getWaypoint(waypointName) != null) {
+                Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
+                return true;
             }
 
             pd.removeWaypoint(wp);

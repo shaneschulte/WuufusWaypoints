@@ -10,6 +10,19 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class Util {
 
+    public static String buildString(String[] args, int start, char filler) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = start; i < args.length; i++) {
+            sb.append(args[i]);
+
+            if (i < args.length - 1)
+                sb.append(filler);
+        }
+
+        return sb.toString();
+    }
+
     public static String color(String string) {
         return ChatColor.translateAlternateColorCodes('&', string);
     }
