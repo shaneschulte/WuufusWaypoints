@@ -19,12 +19,14 @@ import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 
 import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Util;
+import com.github.marenwynn.waypoints.listeners.RespawnListener;
 
 public class Data {
 
@@ -37,8 +39,14 @@ public class Data {
     private static HashMap<Msg, String>            messages;
 
     public static boolean                          ENABLE_BEACON;
-    public static int                              WP_NAME_MAX_LENGTH, WP_DESC_MAX_LENGTH;
     public static ItemStack                        BEACON;
+
+    public static int                              WP_NAME_MAX_LENGTH, WP_DESC_MAX_LENGTH;
+
+    private static RespawnListener                 respawnListener;
+    public static boolean                          HANDLE_RESPAWNING;
+    public static SpawnMode                        SPAWN_MODE;
+    public static String                           CITY_WORLD_NAME;
 
     public static void init(PluginMain pm) {
         Data.pm = pm;
@@ -62,6 +70,11 @@ public class Data {
 
         if (ENABLE_BEACON)
             setupBeacon(true);
+
+        if (HANDLE_RESPAWNING) {
+            respawnListener = new RespawnListener(pm);
+            pm.getServer().getPluginManager().registerEvents(respawnListener, pm);
+        }
     }
 
     public static void kill() {
@@ -73,6 +86,11 @@ public class Data {
         if (ENABLE_BEACON)
             setupBeacon(false);
 
+        if (respawnListener != null) {
+            HandlerList.unregisterAll(respawnListener);
+            respawnListener = null;
+        }
+
         pm = null;
         playerFolder = null;
         waypointDataFile = null;
@@ -80,6 +98,8 @@ public class Data {
         waypoints = null;
         messages = null;
         BEACON = null;
+        SPAWN_MODE = null;
+        CITY_WORLD_NAME = null;
     }
 
     public static void loadConfig() {
@@ -92,6 +112,9 @@ public class Data {
         WP_NAME_MAX_LENGTH = pm.getConfig().getInt("Waypoints.WP_NAME_MAX_LENGTH", 18);
         WP_DESC_MAX_LENGTH = pm.getConfig().getInt("Waypoints.WP_DESC_MAX_LENGTH", 100);
         ENABLE_BEACON = pm.getConfig().getBoolean("Waypoints.ENABLE_BEACON");
+        HANDLE_RESPAWNING = pm.getConfig().getBoolean("Waypoints.HANDLE_RESPAWNING", true);
+        SPAWN_MODE = SpawnMode.valueOf(pm.getConfig().getString("Waypoints.SPAWN_MODE").toUpperCase());
+        CITY_WORLD_NAME = pm.getConfig().getString("Waypoints.CITY_WORLD_NAME");
     }
 
     private static void setupBeacon(boolean enabled) {

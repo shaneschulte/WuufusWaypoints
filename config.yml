@@ -8,6 +8,17 @@ Waypoints:
   # Sets length limit for waypoint descriptions
   WP_DESC_MAX_LENGTH: 100
 
+  # Enables/disables plugin's handling of where players respawn when they die
+  HANDLE_RESPAWNING: true
+
+  # Sets the location players spawn when they die
+  #   HOME = nearest home waypoint; defaults to bed if one doesn't exist in world
+  #   BED = player's bed location; defaults to spawn if player has no bed location
+  #   SPAWN = current world's spawn
+  #   CITY = world spawn of world specified in 'CITY_WORLD_NAME'
+  SPAWN_MODE: home
+  CITY_WORLD_NAME: world
+
   Messages:
     BORDER: "&2------------------------------"
     CMD_NO_CONSOLE: "&cError: &fCommand unavailable to CONSOLE."
