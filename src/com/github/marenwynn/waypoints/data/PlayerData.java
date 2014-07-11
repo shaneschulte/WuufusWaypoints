@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.bukkit.Location;
+
 import com.github.marenwynn.waypoints.Util;
 
 public class PlayerData implements Serializable {
@@ -13,6 +15,7 @@ public class PlayerData implements Serializable {
     private UUID                playerUUID;
     private ArrayList<Waypoint> homeWaypoints;
     private ArrayList<UUID>     discovered;
+    private GridLocation        spawnPoint;
 
     public PlayerData(UUID playerUUID) {
         this.playerUUID = playerUUID;
@@ -61,6 +64,19 @@ public class PlayerData implements Serializable {
 
     public ArrayList<Waypoint> getAllWaypoints() {
         return homeWaypoints;
+    }
+
+    public Location getSpawnPoint() {
+        return spawnPoint.getLocation();
+    }
+
+    public void setSpawnPoint(Location loc) {
+        if (loc == null) {
+            spawnPoint = null;
+            return;
+        }
+
+        spawnPoint = new GridLocation(loc);
     }
 
 }

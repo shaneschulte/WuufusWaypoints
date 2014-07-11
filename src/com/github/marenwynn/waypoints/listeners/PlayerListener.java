@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -46,21 +47,36 @@ public class PlayerListener implements Listener {
         if (i == null)
             return;
 
-        if (Data.ENABLE_BEACON && i.isSimilar(Data.BEACON) && p.hasPermission("wp.beacon.use")) {
-            if (a == Action.RIGHT_CLICK_BLOCK || a == Action.RIGHT_CLICK_AIR) {
-                event.setCancelled(true);
+        Block b = event.getClickedBlock();
 
-                if (!p.hasPermission("wp.beacon.unlimited")) {
-                    i.setAmount(i.getAmount() - 1);
-                    p.setItemInHand(i);
+        if (Data.ENABLE_BEACON && i.isSimilar(Data.BEACON)) {
+            if (a == Action.RIGHT_CLICK_BLOCK && p.isSneaking() && p.hasPermission("wp.respawn") && b != null
+                    && b.isBlockPowered()) {
+                Waypoint home = findHomeWaypoint(p, b);
+
+                if (home != null) {
+                    event.setCancelled(true);
+                    useBeacon(p, i);
+
+                    PlayerData pd = Data.getPlayerData(p.getUniqueId());
+                    pd.setSpawnPoint(home.getLocation());
+                    Data.savePlayerData(p.getUniqueId());
+                    Msg.SET_PLAYER_SPAWN.sendTo(p, home.getName());
+                    return;
                 }
+            }
 
-                pm.openWaypointMenu(p, null, p.hasPermission("wp.beacon.server"), true, false);
-                return;
-            } else if (p.hasPermission("wp.select") && (a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR)) {
-                event.setCancelled(true);
-                pm.openWaypointMenu(p, pm.getSelectedWaypoint(p.getName()), p.hasPermission("wp.admin"), true, true);
-                return;
+            if (p.hasPermission("wp.beacon.use")) {
+                if (a == Action.RIGHT_CLICK_BLOCK || a == Action.RIGHT_CLICK_AIR) {
+                    event.setCancelled(true);
+                    useBeacon(p, i);
+                    pm.openWaypointMenu(p, null, p.hasPermission("wp.beacon.server"), true, false);
+                    return;
+                } else if (p.hasPermission("wp.select") && (a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR)) {
+                    event.setCancelled(true);
+                    pm.openWaypointMenu(p, pm.getSelectedWaypoint(p.getName()), p.hasPermission("wp.admin"), true, true);
+                    return;
+                }
             }
         }
 
@@ -68,29 +84,19 @@ public class PlayerListener implements Listener {
                 || !p.isSneaking())
             return;
 
-        Waypoint home = null;
-
-        if (event.getClickedBlock() != null) {
-            for (Waypoint wp : Data.getPlayerData(event.getPlayer().getUniqueId()).getAllWaypoints()) {
-                if (Util.isSameLoc(event.getClickedBlock().getRelative(BlockFace.UP).getLocation(), wp.getLocation(),
-                        true)) {
-                    home = wp;
-                    break;
-                }
-            }
-        }
+        Waypoint home = findHomeWaypoint(p, b);
 
         if (home != null) {
             Material m = i.getType();
 
             if (m == Material.WRITTEN_BOOK) {
-                BookMeta b = (BookMeta) i.getItemMeta();
+                BookMeta bm = (BookMeta) i.getItemMeta();
                 String content = "";
 
-                for (int page = 1; page <= b.getPageCount(); page++) {
-                    content += b.getPage(page);
+                for (int page = 1; page <= bm.getPageCount(); page++) {
+                    content += bm.getPage(page);
 
-                    if (page != b.getPageCount())
+                    if (page != bm.getPageCount())
                         content += " ";
                 }
 
@@ -99,7 +105,7 @@ public class PlayerListener implements Listener {
 
                 home.setDescription(content);
                 p.closeInventory();
-                Msg.WP_DESC_UPDATED_BOOK.sendTo(p, home.getName(), b.getTitle());
+                Msg.WP_DESC_UPDATED_BOOK.sendTo(p, home.getName(), bm.getTitle());
             } else {
                 home.setIcon(m);
                 home.setDurability(i.getDurability());
@@ -195,6 +201,22 @@ public class PlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent quitEvent) {
         pm.clearSelectedWaypoint(quitEvent.getPlayer().getName());
         Data.unloadPlayerData(quitEvent.getPlayer().getUniqueId());
+    }
+
+    public Waypoint findHomeWaypoint(Player p, Block clicked) {
+        if (clicked != null)
+            for (Waypoint wp : Data.getPlayerData(p.getUniqueId()).getAllWaypoints())
+                if (Util.isSameLoc(clicked.getRelative(BlockFace.UP).getLocation(), wp.getLocation(), true))
+                    return wp;
+
+        return null;
+    }
+
+    public void useBeacon(Player p, ItemStack i) {
+        if (!p.hasPermission("wp.beacon.unlimited")) {
+            i.setAmount(i.getAmount() - 1);
+            p.setItemInHand(i);
+        }
     }
 
 }

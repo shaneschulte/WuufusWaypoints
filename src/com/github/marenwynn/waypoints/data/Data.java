@@ -111,9 +111,9 @@ public class Data {
 
         WP_NAME_MAX_LENGTH = pm.getConfig().getInt("Waypoints.WP_NAME_MAX_LENGTH", 18);
         WP_DESC_MAX_LENGTH = pm.getConfig().getInt("Waypoints.WP_DESC_MAX_LENGTH", 100);
-        ENABLE_BEACON = pm.getConfig().getBoolean("Waypoints.ENABLE_BEACON");
+        ENABLE_BEACON = pm.getConfig().getBoolean("Waypoints.ENABLE_BEACON", true);
         HANDLE_RESPAWNING = pm.getConfig().getBoolean("Waypoints.HANDLE_RESPAWNING", true);
-        SPAWN_MODE = SpawnMode.valueOf(pm.getConfig().getString("Waypoints.SPAWN_MODE").toUpperCase());
+        SPAWN_MODE = SpawnMode.valueOf(pm.getConfig().getString("Waypoints.SPAWN_MODE", "HOME").toUpperCase());
         CITY_WORLD_NAME = pm.getConfig().getString("Waypoints.CITY_WORLD_NAME");
     }
 
