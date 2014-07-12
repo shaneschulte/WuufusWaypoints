@@ -67,7 +67,10 @@ public class PlayerData implements Serializable {
     }
 
     public Location getSpawnPoint() {
-        return spawnPoint.getLocation();
+        if (spawnPoint != null)
+            return spawnPoint.getLocation();
+
+        return null;
     }
 
     public void setSpawnPoint(Location loc) {

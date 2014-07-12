@@ -37,7 +37,7 @@ public class RespawnListener implements Listener {
             Waypoint home = null;
 
             for (Waypoint wp : pd.getAllWaypoints()) {
-                if (Util.isSameLoc(respawnEvent.getRespawnLocation(), wp.getLocation(), true)) {
+                if (Util.isSameLoc(pd.getSpawnPoint(), wp.getLocation(), true)) {
                     home = wp;
                     break;
                 }

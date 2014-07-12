@@ -50,31 +50,35 @@ public class PlayerListener implements Listener {
         Block b = event.getClickedBlock();
 
         if (Data.ENABLE_BEACON && i.isSimilar(Data.BEACON)) {
-            if (a == Action.RIGHT_CLICK_BLOCK && p.isSneaking() && p.hasPermission("wp.respawn") && b != null
-                    && b.isBlockPowered()) {
+            if (a == Action.RIGHT_CLICK_BLOCK && p.isSneaking() && p.hasPermission("wp.respawn")) {
                 Waypoint home = findHomeWaypoint(p, b);
 
                 if (home != null) {
-                    event.setCancelled(true);
-                    useBeacon(p, i);
+                    if (b.isBlockPowered()) {
+                        PlayerData pd = Data.getPlayerData(p.getUniqueId());
 
-                    PlayerData pd = Data.getPlayerData(p.getUniqueId());
-                    pd.setSpawnPoint(home.getLocation());
-                    Data.savePlayerData(p.getUniqueId());
-                    Msg.SET_PLAYER_SPAWN.sendTo(p, home.getName());
+                        useItem(p, i, true);
+                        pd.setSpawnPoint(home.getLocation());
+                        Data.savePlayerData(p.getUniqueId());
+                        Msg.SET_PLAYER_SPAWN.sendTo(p, home.getName());
+                    } else {
+                        Msg.INSUFFICIENT_POWER.sendTo(p);
+                    }
+
+                    event.setCancelled(true);
                     return;
                 }
             }
 
             if (p.hasPermission("wp.beacon.use")) {
                 if (a == Action.RIGHT_CLICK_BLOCK || a == Action.RIGHT_CLICK_AIR) {
-                    event.setCancelled(true);
-                    useBeacon(p, i);
+                    useItem(p, i, true);
                     pm.openWaypointMenu(p, null, p.hasPermission("wp.beacon.server"), true, false);
-                    return;
-                } else if (p.hasPermission("wp.select") && (a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR)) {
                     event.setCancelled(true);
+                    return;
+                } else if ((a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR) && p.hasPermission("wp.select")) {
                     pm.openWaypointMenu(p, pm.getSelectedWaypoint(p.getName()), p.hasPermission("wp.admin"), true, true);
+                    event.setCancelled(true);
                     return;
                 }
             }
@@ -103,8 +107,8 @@ public class PlayerListener implements Listener {
                 if (content.length() > Data.WP_DESC_MAX_LENGTH)
                     content = content.substring(0, Data.WP_DESC_MAX_LENGTH);
 
-                home.setDescription(content);
                 p.closeInventory();
+                home.setDescription(content);
                 Msg.WP_DESC_UPDATED_BOOK.sendTo(p, home.getName(), bm.getTitle());
             } else {
                 home.setIcon(m);
@@ -126,8 +130,7 @@ public class PlayerListener implements Listener {
             p.getWorld().strikeLightningEffect(strikeLoc);
         }
 
-        i.setAmount(i.getAmount() - 1);
-        p.setItemInHand(i);
+        useItem(p, i, false);
         event.setCancelled(true);
     }
 
@@ -204,16 +207,19 @@ public class PlayerListener implements Listener {
     }
 
     public Waypoint findHomeWaypoint(Player p, Block clicked) {
-        if (clicked != null)
+        if (clicked != null) {
+            Location loc = clicked.getRelative(BlockFace.UP).getLocation();
+
             for (Waypoint wp : Data.getPlayerData(p.getUniqueId()).getAllWaypoints())
-                if (Util.isSameLoc(clicked.getRelative(BlockFace.UP).getLocation(), wp.getLocation(), true))
+                if (Util.isSameLoc(loc, wp.getLocation(), true))
                     return wp;
+        }
 
         return null;
     }
 
-    public void useBeacon(Player p, ItemStack i) {
-        if (!p.hasPermission("wp.beacon.unlimited")) {
+    public void useItem(Player p, ItemStack i, boolean beacon) {
+        if (!beacon || (beacon && !p.hasPermission("wp.beacon.unlimited"))) {
             i.setAmount(i.getAmount() - 1);
             p.setItemInHand(i);
         }
