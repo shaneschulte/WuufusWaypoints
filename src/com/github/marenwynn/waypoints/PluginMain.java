@@ -31,16 +31,18 @@ import com.github.marenwynn.waypoints.listeners.WaypointListener;
 
 public class PluginMain extends JavaPlugin {
 
+    public static PluginMain           instance;
     private Map<String, PluginCommand> commands;
 
     @Override
     public void onEnable() {
+        instance = this;
         saveResource("CHANGELOG.txt", true);
 
-        Data.init(this);
+        Data.init();
         Data.loadWaypoints();
         Selections.init();
-        WaypointManager.init(this);
+        WaypointManager.init();
 
         commands = new HashMap<String, PluginCommand>();
         commands.put("sethome", new SetHomeCmd());
@@ -50,7 +52,7 @@ public class PluginMain extends JavaPlugin {
         commands.put("discover", new WPDiscoverCmd());
         commands.put("icon", new WPIconCmd());
         commands.put("move", new WPMoveCmd());
-        commands.put("reload", new WPReloadCmd(this));
+        commands.put("reload", new WPReloadCmd());
         commands.put("remove", new WPRemoveCmd());
         commands.put("rename", new WPRenameCmd());
         commands.put("select", new WPSelectCmd());
@@ -69,6 +71,9 @@ public class PluginMain extends JavaPlugin {
         WaypointManager.kill();
         Selections.kill();
         Data.kill();
+
+        instance = null;
+        commands = null;
     }
 
     @Override

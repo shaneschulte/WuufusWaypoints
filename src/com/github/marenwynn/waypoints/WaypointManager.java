@@ -23,12 +23,10 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 
 public class WaypointManager {
 
-    private static PluginMain           pm;
     public static Map<UUID, PlayerData> players;
     public static Map<String, Waypoint> waypoints;
 
-    public static void init(PluginMain pm) {
-        WaypointManager.pm = pm;
+    public static void init() {
         players = new HashMap<UUID, PlayerData>();
         waypoints = new LinkedHashMap<String, Waypoint>();
     }
@@ -39,7 +37,6 @@ public class WaypointManager {
         for (Player p : Bukkit.getServer().getOnlinePlayers())
             Data.savePlayerData(p.getUniqueId());
 
-        pm = null;
         players = null;
         waypoints = null;
     }
@@ -128,8 +125,8 @@ public class WaypointManager {
             for (Waypoint wp : pd.getAllWaypoints())
                 accessList.add(wp);
 
-        p.setMetadata("InMenu", new FixedMetadataValue(pm, true));
-        new WaypointMenu(pm, p, currentWaypoint, accessList, select).open();
+        p.setMetadata("InMenu", new FixedMetadataValue(PluginMain.instance, true));
+        new WaypointMenu(p, currentWaypoint, accessList, select).open();
     }
 
     public static boolean setHome(Player p, String waypointName) {

@@ -36,8 +36,9 @@ public class WaypointMenu implements Listener {
     private ItemStack[]    optionIcons;
     private Waypoint[]     optionWaypoints;
 
-    public WaypointMenu(PluginMain pm, Player p, Waypoint currentWaypoint, List<Waypoint> accessList, boolean select) {
-        this.pm = pm;
+    public WaypointMenu(Player p, Waypoint currentWaypoint, List<Waypoint> accessList, boolean select) {
+        pm = PluginMain.instance;
+
         this.p = p;
         this.select = select;
         this.currentWaypoint = currentWaypoint;
@@ -45,7 +46,7 @@ public class WaypointMenu implements Listener {
 
         page = 1;
         buildMenu();
-        pm.getServer().getPluginManager().registerEvents(this, pm);
+        Bukkit.getPluginManager().registerEvents(this, pm);
     }
 
     public void open() {
@@ -58,11 +59,13 @@ public class WaypointMenu implements Listener {
         p.removeMetadata("InMenu", pm);
         HandlerList.unregisterAll(this);
 
+        pm = null;
         p = null;
+        currentWaypoint = null;
+        accessList = null;
         optionNames = null;
         optionIcons = null;
         optionWaypoints = null;
-        accessList = null;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

@@ -42,8 +42,8 @@ public class Data {
     public static SpawnMode         SPAWN_MODE;
     public static String            CITY_WORLD_NAME;
 
-    public static void init(PluginMain pm) {
-        Data.pm = pm;
+    public static void init() {
+        Data.pm = PluginMain.instance;
 
         playerFolder = new File(pm.getDataFolder().getPath() + File.separator + "players");
         waypointDataFile = new File(pm.getDataFolder().getPath() + File.separator + "waypoints.db");
@@ -86,6 +86,9 @@ public class Data {
         HANDLE_RESPAWNING = pm.getConfig().getBoolean("Waypoints.HANDLE_RESPAWNING", true);
         SPAWN_MODE = SpawnMode.valueOf(pm.getConfig().getString("Waypoints.SPAWN_MODE", "HOME").toUpperCase());
         CITY_WORLD_NAME = pm.getConfig().getString("Waypoints.CITY_WORLD_NAME");
+
+        pm.getConfig().options().copyDefaults(true);
+        pm.saveConfig();
     }
 
     public static void kill() {
