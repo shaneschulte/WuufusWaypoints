@@ -39,10 +39,10 @@ public class PluginMain extends JavaPlugin {
         instance = this;
         saveResource("CHANGELOG.txt", true);
 
-        Data.init();
-        Data.loadWaypoints();
         Selections.init();
         WaypointManager.init();
+        Data.init();
+        Data.loadWaypoints();
 
         commands = new HashMap<String, PluginCommand>();
         commands.put("sethome", new SetHomeCmd());
