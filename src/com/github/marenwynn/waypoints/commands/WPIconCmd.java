@@ -4,22 +4,16 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.Selections;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
 public class WPIconCmd implements PluginCommand {
 
-    private PluginMain pm;
-
-    public WPIconCmd(PluginMain pm) {
-        this.pm = pm;
-    }
-
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Waypoint wp = pm.getSelectedWaypoint(sender.getName());
+        Waypoint wp = Selections.getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);

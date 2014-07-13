@@ -88,7 +88,7 @@ public class WaypointMenu implements Listener {
                 @Override
                 public void run() {
                     if (select)
-                        pm.setSelectedWaypoint(p, optionWaypoints[slot]);
+                        Selections.setSelectedWaypoint(p, optionWaypoints[slot]);
                     else
                         pm.teleportPlayer(p, optionWaypoints[slot]);
 

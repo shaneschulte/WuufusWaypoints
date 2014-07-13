@@ -20,6 +20,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
 import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.Selections;
 import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
@@ -77,7 +78,7 @@ public class PlayerListener implements Listener {
                     event.setCancelled(true);
                     return;
                 } else if ((a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR) && p.hasPermission("wp.select")) {
-                    pm.openWaypointMenu(p, pm.getSelectedWaypoint(p.getName()), p.hasPermission("wp.admin"), true, true);
+                    pm.openWaypointMenu(p, Selections.getSelectedWaypoint(p), p.hasPermission("wp.admin"), true, true);
                     event.setCancelled(true);
                     return;
                 }
@@ -202,7 +203,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent quitEvent) {
-        pm.clearSelectedWaypoint(quitEvent.getPlayer().getName());
+        Selections.clearSelectedWaypoint(quitEvent.getPlayer());
         Data.unloadPlayerData(quitEvent.getPlayer().getUniqueId());
     }
 

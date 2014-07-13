@@ -6,19 +6,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.Selections;
 import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
 public class WPAddCmd implements PluginCommand {
-
-    private PluginMain pm;
-
-    public WPAddCmd(PluginMain pm) {
-        this.pm = pm;
-    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -54,7 +48,7 @@ public class WPAddCmd implements PluginCommand {
 
         Data.addWaypoint(wp);
         Data.saveWaypoints();
-        pm.setSelectedWaypoint(sender, wp);
+        Selections.setSelectedWaypoint(sender, wp);
         return true;
     }
 

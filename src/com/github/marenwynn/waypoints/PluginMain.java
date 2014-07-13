@@ -3,7 +3,6 @@ package com.github.marenwynn.waypoints;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -37,29 +36,28 @@ import com.github.marenwynn.waypoints.tasks.TeleportTask;
 
 public class PluginMain extends JavaPlugin {
 
-    private HashMap<String, Waypoint>      selectedWaypoints;
     private HashMap<String, PluginCommand> commands;
 
     @Override
     public void onEnable() {
         saveResource("CHANGELOG.txt", true);
         Data.init(this);
+        Selections.init();
 
-        selectedWaypoints = new HashMap<String, Waypoint>();
         commands = new HashMap<String, PluginCommand>();
 
         commands.put("sethome", new SetHomeCmd(this));
         commands.put("setspawn", new SetSpawnCmd());
-        commands.put("add", new WPAddCmd(this));
-        commands.put("desc", new WPDescCmd(this));
-        commands.put("discover", new WPDiscoverCmd(this));
-        commands.put("icon", new WPIconCmd(this));
-        commands.put("move", new WPMoveCmd(this));
+        commands.put("add", new WPAddCmd());
+        commands.put("desc", new WPDescCmd());
+        commands.put("discover", new WPDiscoverCmd());
+        commands.put("icon", new WPIconCmd());
+        commands.put("move", new WPMoveCmd());
         commands.put("reload", new WPReloadCmd(this));
-        commands.put("remove", new WPRemoveCmd(this));
-        commands.put("rename", new WPRenameCmd(this));
+        commands.put("remove", new WPRemoveCmd());
+        commands.put("rename", new WPRenameCmd());
         commands.put("select", new WPSelectCmd(this));
-        commands.put("toggle", new WPToggleCmd(this));
+        commands.put("toggle", new WPToggleCmd());
 
         getCommand("wp").setExecutor(this);
         getCommand("sethome").setExecutor(this);
@@ -216,51 +214,6 @@ public class PluginMain extends JavaPlugin {
                     && !p.getWorld().getName().equals(wp.getLocation().getWorld().getName()) ? false : true);
 
         return false;
-    }
-
-    public Waypoint getSelectedWaypoint(String playerName) {
-        if (selectedWaypoints.containsKey(playerName))
-            return selectedWaypoints.get(playerName);
-
-        return null;
-    }
-
-    public void setSelectedWaypoint(CommandSender sender, Waypoint wp) {
-        selectedWaypoints.put(sender.getName(), wp);
-
-        Location loc = wp.getLocation();
-        String enabled = Data.getAllWaypoints().contains(wp) ? Util.color(wp.isEnabled() ? "" : " &f[&cDisabled&f]")
-                : "";
-
-        Msg.BORDER.sendTo(sender);
-        Msg.SELECTED_1.sendTo(sender, wp.getName() + enabled, loc.getWorld().getName());
-        Msg.BORDER.sendTo(sender);
-        Msg.SELECTED_2.sendTo(sender, loc.getBlockX(), (int) loc.getPitch());
-        Msg.SELECTED_3.sendTo(sender, loc.getBlockY(), (int) loc.getYaw());
-        Msg.SELECTED_4.sendTo(sender, loc.getBlockZ());
-
-        String discoveryMode = wp.isDiscoverable() == null ? "Disabled" : (wp.isDiscoverable() ? "Server-wide"
-                : "World-specific");
-
-        if (Data.getAllWaypoints().contains(wp)) {
-            sender.sendMessage("");
-            Msg.SELECTED_DISCOVER.sendTo(sender, discoveryMode);
-        }
-
-        Msg.BORDER.sendTo(sender);
-
-        if (wp.getDescription().equals(""))
-            Msg.WP_NO_DESC.sendTo(sender);
-        else
-            for (String line : Util.getWrappedLore(wp.getDescription(), 35))
-                Msg.LORE_LINE.sendTo(sender, ChatColor.stripColor(Util.color(line)));
-
-        Msg.BORDER.sendTo(sender);
-    }
-
-    public void clearSelectedWaypoint(String playerName) {
-        if (selectedWaypoints.containsKey(playerName))
-            selectedWaypoints.remove(playerName);
     }
 
 }

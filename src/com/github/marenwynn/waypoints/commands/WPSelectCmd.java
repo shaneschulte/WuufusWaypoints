@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.Selections;
 import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
@@ -23,7 +24,7 @@ public class WPSelectCmd implements PluginCommand {
         if (args.length < 2) {
             if (sender instanceof Player) {
                 Player p = (Player) sender;
-                Waypoint selectedWaypoint = pm.getSelectedWaypoint(p.getName());
+                Waypoint selectedWaypoint = Selections.getSelectedWaypoint(p);
 
                 if (selectedWaypoint != null)
                     Msg.WP_SELECTED.sendTo(p, selectedWaypoint.getName());
@@ -36,8 +37,7 @@ public class WPSelectCmd implements PluginCommand {
                 sb.append(Msg.WP_LIST.toString());
 
                 Waypoint[] waypoints = Data.getAllWaypoints().toArray(new Waypoint[Data.getAllWaypoints().size()]);
-
-                Waypoint selectedWaypoint = pm.getSelectedWaypoint(sender.getName());
+                Waypoint selectedWaypoint = Selections.getSelectedWaypoint(sender);
 
                 for (int i = 0; i < waypoints.length; i++) {
                     if (waypoints[i] == selectedWaypoint)
@@ -85,7 +85,7 @@ public class WPSelectCmd implements PluginCommand {
             return true;
         }
 
-        pm.setSelectedWaypoint(sender, wp);
+        Selections.setSelectedWaypoint(sender, wp);
         return true;
     }
 
