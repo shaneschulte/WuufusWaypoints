@@ -66,9 +66,9 @@ public class PluginMain extends JavaPlugin {
     public void onDisable() {
         HandlerList.unregisterAll(this);
 
-        Data.kill();
-        Selections.kill();
         WaypointManager.kill();
+        Selections.kill();
+        Data.kill();
     }
 
     @Override
