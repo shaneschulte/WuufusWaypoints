@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -65,12 +66,12 @@ public class Data {
 
             ShapedRecipe sr = new ShapedRecipe(BEACON);
             sr.shape("RRR", "RCR", "RRR").setIngredient('R', Material.REDSTONE).setIngredient('C', Material.COMPASS);
-            pm.getServer().addRecipe(sr);
+            Bukkit.addRecipe(sr);
         }
 
         if (HANDLE_RESPAWNING) {
             respawnListener = new RespawnListener();
-            pm.getServer().getPluginManager().registerEvents(respawnListener, pm);
+            Bukkit.getPluginManager().registerEvents(respawnListener, pm);
         }
     }
 
@@ -93,7 +94,7 @@ public class Data {
 
     public static void kill() {
         if (ENABLE_BEACON) {
-            Iterator<Recipe> recipes = pm.getServer().recipeIterator();
+            Iterator<Recipe> recipes = Bukkit.recipeIterator();
             Recipe recipe;
 
             while (recipes.hasNext()) {

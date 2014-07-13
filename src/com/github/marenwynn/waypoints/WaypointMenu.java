@@ -86,14 +86,14 @@ public class WaypointMenu implements Listener {
             return;
 
         if (optionWaypoints[slot] != null) {
-            pm.getServer().getScheduler().runTask(pm, new Runnable() {
+            Bukkit.getScheduler().runTask(pm, new Runnable() {
 
                 @Override
                 public void run() {
                     if (select)
                         Selections.setSelectedWaypoint(p, optionWaypoints[slot]);
                     else
-                        new TeleportTask(pm, p, optionWaypoints[slot]).runTask(pm);
+                        new TeleportTask(p, optionWaypoints[slot]).runTask(pm);
 
                     p.closeInventory();
                 }
@@ -116,7 +116,7 @@ public class WaypointMenu implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     void onInventoryClose(InventoryCloseEvent closeEvent) {
         if (closeEvent.getInventory().getTitle().equals(Msg.MENU_NAME.toString()) && p == closeEvent.getPlayer()) {
-            pm.getServer().getScheduler().runTask(pm, new Runnable() {
+            Bukkit.getScheduler().runTask(pm, new Runnable() {
 
                 @Override
                 public void run() {

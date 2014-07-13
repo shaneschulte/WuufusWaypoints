@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -112,7 +113,8 @@ public class PlayerListener implements Listener {
                 Msg.WP_SETICON.sendTo(p, home.getName(), m.toString(), i.getDurability());
             }
 
-            p.getWorld().playEffect(home.getLocation(), Effect.ENDER_SIGNAL, 16);
+            Util.playSound(home.getLocation(), Sound.ORB_PICKUP);
+            Util.playEffect(home.getLocation(), Effect.ENDER_SIGNAL);
             Data.saveWaypoint(p, home);
         } else {
             if (i.getType() != Material.WATCH || !i.hasItemMeta() || !i.getItemMeta().hasDisplayName())

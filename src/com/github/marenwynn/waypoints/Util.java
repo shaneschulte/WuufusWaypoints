@@ -4,7 +4,9 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -66,6 +68,14 @@ public class Util {
         }
 
         return false;
+    }
+
+    public static void playEffect(Location loc, Effect effect) {
+        loc.getWorld().playEffect(loc, effect, 0);
+    }
+
+    public static void playSound(Location loc, Sound sound) {
+        loc.getWorld().playSound(loc, sound, 10F, 1F);
     }
 
     public static ItemStack setItemNameAndLore(ItemStack item, String name, ArrayList<String> lore) {

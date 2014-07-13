@@ -34,7 +34,7 @@ public class WaypointManager {
     public static void kill() {
         Data.saveWaypoints();
 
-        for (Player p : Bukkit.getServer().getOnlinePlayers())
+        for (Player p : Bukkit.getOnlinePlayers())
             Data.savePlayerData(p.getUniqueId());
 
         players = null;

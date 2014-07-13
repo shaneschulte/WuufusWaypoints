@@ -1,7 +1,9 @@
 package com.github.marenwynn.waypoints.tasks;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,6 +15,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.github.marenwynn.waypoints.PluginMain;
+import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -20,36 +23,26 @@ public class TeleportTask extends BukkitRunnable implements Listener {
 
     private PluginMain pm;
 
+    private int        counter;
     private Player     p;
     private Waypoint   wp;
 
-    private int        counter;
-    private float      flySpeed, walkSpeed;
+    public TeleportTask(Player p, Waypoint wp) {
+        pm = PluginMain.instance;
 
-    public TeleportTask(PluginMain pm, Player p, Waypoint wp) {
-        this.pm = pm;
+        counter = 5;
         this.p = p;
         this.wp = wp;
 
-        counter = 5;
-        flySpeed = p.getFlySpeed();
-        walkSpeed = p.getWalkSpeed();
-
-        p.setFlySpeed(0);
-        p.setWalkSpeed(0);
         p.setCanPickupItems(false);
         p.setMetadata("Wayporting", new FixedMetadataValue(pm, true));
 
-        pm.getServer().getPluginManager().registerEvents(this, pm);
+        Bukkit.getPluginManager().registerEvents(this, pm);
     }
 
     public void destroy() {
-        if (p != null) {
-            p.setFlySpeed(flySpeed);
-            p.setWalkSpeed(walkSpeed);
-            p.setCanPickupItems(true);
-            p.removeMetadata("Wayporting", pm);
-        }
+        p.setCanPickupItems(true);
+        p.removeMetadata("Wayporting", pm);
 
         HandlerList.unregisterAll(this);
 
@@ -60,8 +53,12 @@ public class TeleportTask extends BukkitRunnable implements Listener {
 
     @Override
     public void run() {
+        if (p == null)
+            return;
+
         switch (counter) {
             case 5:
+                Util.playSound(p.getLocation(), Sound.PORTAL_TRIGGER);
                 Msg.PORT_TASK_1.sendTo(p, wp.getName(), p.getName());
                 break;
             case 4:
@@ -90,12 +87,10 @@ public class TeleportTask extends BukkitRunnable implements Listener {
                 break;
         }
 
-        if (counter > 0) {
-            p.getWorld().playEffect(p.getLocation(), Effect.ENDER_SIGNAL, 16);
-            pm.getServer().getScheduler().runTaskLater(pm, this, 20L);
+        if (counter-- > 0) {
+            Util.playEffect(p.getLocation(), Effect.ENDER_SIGNAL);
+            Bukkit.getScheduler().runTaskLater(pm, this, 20L);
         }
-
-        counter--;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
