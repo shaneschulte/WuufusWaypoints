@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.Selections;
 import com.github.marenwynn.waypoints.Util;
+import com.github.marenwynn.waypoints.WaypointManager;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
@@ -30,14 +31,15 @@ public class WPAddCmd implements PluginCommand {
             return true;
         }
 
-        if (Data.getWaypoint(waypointName) != null || waypointName.equals("Bed") || waypointName.equals("Spawn")) {
+        if (WaypointManager.getWaypoint(waypointName) != null || waypointName.equals("Bed")
+                || waypointName.equals("Spawn")) {
             Msg.WP_DUPLICATE_NAME.sendTo(p, waypointName);
             return true;
         }
 
         Location playerLoc = p.getLocation();
 
-        for (Waypoint wp : Data.getAllWaypoints()) {
+        for (Waypoint wp : WaypointManager.getAllWaypoints()) {
             if (Util.isSameLoc(playerLoc, wp.getLocation(), true)) {
                 Msg.WP_ALREADY_HERE.sendTo(p, wp.getName());
                 return true;
@@ -46,7 +48,7 @@ public class WPAddCmd implements PluginCommand {
 
         Waypoint wp = new Waypoint(waypointName, playerLoc);
 
-        Data.addWaypoint(wp);
+        WaypointManager.addWaypoint(wp);
         Data.saveWaypoints();
         Selections.setSelectedWaypoint(sender, wp);
         return true;

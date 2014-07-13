@@ -2,6 +2,7 @@ package com.github.marenwynn.waypoints.listeners;
 
 import java.util.HashMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
@@ -11,8 +12,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Util;
+import com.github.marenwynn.waypoints.WaypointManager;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.PlayerData;
@@ -21,16 +22,10 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 
 public class RespawnListener implements Listener {
 
-    private PluginMain pm;
-
-    public RespawnListener(PluginMain pm) {
-        this.pm = pm;
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerRespawn(PlayerRespawnEvent respawnEvent) {
         Player p = respawnEvent.getPlayer();
-        PlayerData pd = Data.getPlayerData(p.getUniqueId());
+        PlayerData pd = WaypointManager.getPlayerData(p.getUniqueId());
         Location spawnLoc = null;
 
         if (Data.ENABLE_BEACON && p.hasPermission("wp.respawn") && pd.getSpawnPoint() != null) {
@@ -81,7 +76,7 @@ public class RespawnListener implements Listener {
                 spawnLoc = p.getWorld().getSpawnLocation();
 
             if (Data.SPAWN_MODE == SpawnMode.CITY) {
-                World w = pm.getServer().getWorld(Data.CITY_WORLD_NAME);
+                World w = Bukkit.getWorld(Data.CITY_WORLD_NAME);
 
                 if (w != null)
                     spawnLoc = w.getSpawnLocation();

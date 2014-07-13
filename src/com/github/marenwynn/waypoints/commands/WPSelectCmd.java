@@ -4,20 +4,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Selections;
 import com.github.marenwynn.waypoints.Util;
-import com.github.marenwynn.waypoints.data.Data;
+import com.github.marenwynn.waypoints.WaypointManager;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
 public class WPSelectCmd implements PluginCommand {
-
-    private PluginMain pm;
-
-    public WPSelectCmd(PluginMain pm) {
-        this.pm = pm;
-    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -31,12 +24,13 @@ public class WPSelectCmd implements PluginCommand {
                 else
                     selectedWaypoint = new Waypoint("Bed", p.getLocation());
 
-                pm.openWaypointMenu(p, selectedWaypoint, true, true, true);
+                WaypointManager.openWaypointMenu(p, selectedWaypoint, true, true, true);
             } else {
                 StringBuilder sb = new StringBuilder();
                 sb.append(Msg.WP_LIST.toString());
 
-                Waypoint[] waypoints = Data.getAllWaypoints().toArray(new Waypoint[Data.getAllWaypoints().size()]);
+                Waypoint[] waypoints = WaypointManager.getAllWaypoints().toArray(
+                        new Waypoint[WaypointManager.getAllWaypoints().size()]);
                 Waypoint selectedWaypoint = Selections.getSelectedWaypoint(sender);
 
                 for (int i = 0; i < waypoints.length; i++) {
@@ -73,14 +67,14 @@ public class WPSelectCmd implements PluginCommand {
         }
 
         String waypointName = Util.color(sb.toString());
-        Waypoint wp = Data.getWaypoint(waypointName);
+        Waypoint wp = WaypointManager.getWaypoint(waypointName);
 
         if (wp == null) {
             Msg.WP_NOT_EXIST.sendTo(sender, waypointName);
             return true;
         }
 
-        if (sender instanceof Player && !pm.hasAccess((Player) sender, wp, true)) {
+        if (sender instanceof Player && !Util.hasAccess((Player) sender, wp, true)) {
             Msg.NO_PERMS.sendTo(sender);
             return true;
         }

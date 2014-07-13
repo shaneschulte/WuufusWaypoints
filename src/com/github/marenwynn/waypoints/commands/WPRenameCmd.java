@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.Selections;
 import com.github.marenwynn.waypoints.Util;
+import com.github.marenwynn.waypoints.WaypointManager;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.PlayerData;
@@ -41,17 +42,17 @@ public class WPRenameCmd implements PluginCommand {
             return true;
         }
 
-        boolean serverDefined = Data.getAllWaypoints().contains(wp);
+        boolean serverDefined = WaypointManager.getAllWaypoints().contains(wp);
 
         if (serverDefined) {
-            if (Data.getWaypoint(waypointName) != null) {
+            if (WaypointManager.getWaypoint(waypointName) != null) {
                 Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
                 return true;
             }
 
-            Data.removeWaypoint(wp);
+            WaypointManager.removeWaypoint(wp);
         } else {
-            PlayerData pd = Data.getPlayerData(((Player) sender).getUniqueId());
+            PlayerData pd = WaypointManager.getPlayerData(((Player) sender).getUniqueId());
 
             if (pd.getWaypoint(waypointName) != null) {
                 Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
@@ -65,9 +66,9 @@ public class WPRenameCmd implements PluginCommand {
         wp.setName(waypointName);
 
         if (serverDefined)
-            Data.addWaypoint(wp);
+            WaypointManager.addWaypoint(wp);
         else
-            Data.getPlayerData(((Player) sender).getUniqueId()).addWaypoint(wp);
+            WaypointManager.getPlayerData(((Player) sender).getUniqueId()).addWaypoint(wp);
 
         Data.saveWaypoint(sender, wp);
         Msg.WP_RENAMED.sendTo(sender, oldName, waypointName);

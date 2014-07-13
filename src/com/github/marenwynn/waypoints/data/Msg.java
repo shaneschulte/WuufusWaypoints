@@ -82,7 +82,7 @@ public enum Msg {
     }
 
     public void sendTo(CommandSender sender) {
-        sender.sendMessage(toString());
+        sender.sendMessage(Util.color(toString()));
     }
 
     public void sendTo(CommandSender sender, Object... args) {

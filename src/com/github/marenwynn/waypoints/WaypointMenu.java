@@ -13,9 +13,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
+import com.github.marenwynn.waypoints.tasks.TeleportTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,7 +90,7 @@ public class WaypointMenu implements Listener {
                     if (select)
                         Selections.setSelectedWaypoint(p, optionWaypoints[slot]);
                     else
-                        pm.teleportPlayer(p, optionWaypoints[slot]);
+                        new TeleportTask(pm, p, optionWaypoints[slot]).runTask(pm);
 
                     p.closeInventory();
                 }
@@ -168,8 +168,8 @@ public class WaypointMenu implements Listener {
     public void setOption(int slot, Waypoint wp, boolean selected) {
         Location loc = wp.getLocation();
         ArrayList<String> lore = new ArrayList<String>();
-        String enabled = Data.getAllWaypoints().contains(wp) ? (wp.isEnabled() ? "" : Util.color(" &f[&cDisabled&f]"))
-                : "";
+        String enabled = WaypointManager.getAllWaypoints().contains(wp) ? (wp.isEnabled() ? "" : Util
+                .color(" &f[&cDisabled&f]")) : "";
 
         lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
         lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));

@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import com.github.marenwynn.waypoints.data.Waypoint;
 
 public class Util {
 
@@ -35,6 +38,24 @@ public class Util {
         return WordUtils.wrap(description, maxLineLength, "\n", true).split("\\n");
     }
 
+    public static boolean hasAccess(Player p, Waypoint wp, boolean select) {
+        if (p.hasPermission("wp.access." + getKey(wp.getName())))
+            return true;
+
+        if (wp.isDiscoverable() != null && WaypointManager.getPlayerData(p.getUniqueId()).hasDiscovered(wp.getUUID())) {
+            if (wp.isDiscoverable()) {
+                return true;
+            } else {
+                if (select || p.getWorld().getName().equals(wp.getLocation().getWorld().getName()))
+                    return true;
+                else
+                    return false;
+            }
+        }
+
+        return false;
+    }
+
     public static boolean isSameLoc(Location a, Location b, boolean useGrid) {
         if (useGrid) {
             if (a.getBlockX() == b.getBlockX() && a.getBlockY() == b.getBlockY() && a.getBlockZ() == b.getBlockZ())
@@ -49,7 +70,7 @@ public class Util {
 
     public static ItemStack setItemNameAndLore(ItemStack item, String name, ArrayList<String> lore) {
         ItemMeta im = item.getItemMeta();
-        im.setDisplayName(name);
+        im.setDisplayName(color(name));
 
         if (lore != null)
             im.setLore(lore);

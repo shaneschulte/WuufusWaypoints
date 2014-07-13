@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import com.github.marenwynn.waypoints.Selections;
+import com.github.marenwynn.waypoints.WaypointManager;
 import com.github.marenwynn.waypoints.data.Data;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
@@ -20,7 +21,7 @@ public class WPDiscoverCmd implements PluginCommand {
             return true;
         }
 
-        if (Data.getWaypoint(wp.getName()) == null) {
+        if (WaypointManager.getWaypoint(wp.getName()) == null) {
             Msg.ONLY_SERVER_DEFINED.sendTo(sender);
             return true;
         }
