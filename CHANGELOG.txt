@@ -1,5 +1,14 @@
 CHANGELOG
 
+1.2.0 (07/14/2014):
+- Added respawn handling, which is configurable in config.yml
+    Players with "wp.respawn" permission can set their respawn point to a home waypoint by right-clicking one
+    while sneaking and holding a Waypoint Beacon (both beacons and respawn handling must be enabled)
+- Added sound effects to teleportation and interactive home waypoint configuration
+- The maximum amount of home waypoints is now configurable in config.yml as "MAX_HOME_WAYPOINTS"
+- Config.yml is now properly saved with defaults for new options
+- Added wp.toggle as child permission to wp.admin
+
 1.1.0 (07/07/2014):
 - Waypoints can now be enabled/disabled with "/wp toggle"
     Disabled waypoints will show up in list as disabled
@@ -15,7 +24,7 @@ CHANGELOG
         "Server-wide" will allow discovered waypoints to show up globally
         "World-specific" only allows discovered waypoint to show in its own world
         "Disabled" disables discovery mode
-        Accessing waypoints in discovery mode will grant players the access permission to it; disabled by default
+        Accessing waypoints in discovery mode will grant players access to it; disabled by default
 - Instead of scaling and being capped at displaying 54 waypoints, directory is now a fixed size
     Added paging and navigation buttons in directory to allow for an unlimited number of waypoints
 - Fixed bug that allowed player to drop items from directory under rare circumstances
