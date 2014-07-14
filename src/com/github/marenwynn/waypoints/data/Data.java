@@ -36,6 +36,7 @@ public class Data {
     private static File             playerFolder, waypointDataFile;
     private static Map<Msg, String> messages;
 
+    public static int               MAX_HOME_WAYPOINTS;
     public static int               WP_NAME_MAX_LENGTH, WP_DESC_MAX_LENGTH;
     public static boolean           ENABLE_BEACON;
     public static ItemStack         BEACON;
@@ -56,7 +57,7 @@ public class Data {
             playerFolder.mkdir();
 
         if (ENABLE_BEACON) {
-            ArrayList<String> lore = new ArrayList<String>();
+            List<String> lore = new ArrayList<String>();
             lore.add(Util.color("&fBroadcasts signal to"));
             lore.add(Util.color("&fwaypoint directory for"));
             lore.add(Util.color("&fremote connection."));
@@ -81,6 +82,7 @@ public class Data {
         for (Msg msg : Msg.values())
             messages.put(msg, pm.getConfig().getString("Waypoints.Messages." + msg.name(), msg.getDefaultMsg()));
 
+        MAX_HOME_WAYPOINTS = pm.getConfig().getInt("Waypoints.MAX_HOME_WAYPOINTS", 3);
         WP_NAME_MAX_LENGTH = pm.getConfig().getInt("Waypoints.WP_NAME_MAX_LENGTH", 18);
         WP_DESC_MAX_LENGTH = pm.getConfig().getInt("Waypoints.WP_DESC_MAX_LENGTH", 100);
         ENABLE_BEACON = pm.getConfig().getBoolean("Waypoints.ENABLE_BEACON", true);

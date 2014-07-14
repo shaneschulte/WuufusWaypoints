@@ -1,4 +1,9 @@
 Waypoints:
+
+  # Max number of home waypoints a player can have
+  # If this value is lowered, players will keep any extra waypoints until saving a new one
+  MAX_HOME_WAYPOINTS: 3
+
   # Enables/disables waypoint beacons
   ENABLE_BEACON: true
 
@@ -19,6 +24,8 @@ Waypoints:
   SPAWN_MODE: home
   CITY_WORLD_NAME: world
 
+  # All plugin messages can be changed here
+  # Order and presence of variables (%s, %d) must be preserved
   Messages:
     BORDER: "&2------------------------------"
     CMD_NO_CONSOLE: "&cError: &fCommand unavailable to CONSOLE."

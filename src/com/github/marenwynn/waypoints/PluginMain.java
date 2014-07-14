@@ -1,7 +1,7 @@
 package com.github.marenwynn.waypoints;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.command.Command;
@@ -92,7 +92,7 @@ public class PluginMain extends JavaPlugin {
             if (executor == null) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
-                    ArrayList<Waypoint> playerPoints = WaypointManager.getPlayerData(p.getUniqueId()).getAllWaypoints();
+                    List<Waypoint> playerPoints = WaypointManager.getPlayerData(p.getUniqueId()).getAllWaypoints();
                     StringBuilder sb = new StringBuilder();
 
                     for (int i = 0; i < playerPoints.size(); i++) {

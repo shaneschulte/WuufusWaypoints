@@ -1,6 +1,7 @@
 package com.github.marenwynn.waypoints.listeners;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Effect;
@@ -188,7 +189,7 @@ public class PlayerListener implements Listener {
                 wp.setEnabled(true);
 
         // Cleans discoveries of deleted waypoints
-        ArrayList<UUID> waypoints = new ArrayList<UUID>();
+        List<UUID> waypoints = new ArrayList<UUID>();
 
         for (Waypoint wp : WaypointManager.getAllWaypoints())
             waypoints.add(wp.getUUID());

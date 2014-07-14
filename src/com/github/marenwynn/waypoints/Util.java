@@ -1,6 +1,6 @@
 package com.github.marenwynn.waypoints;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
@@ -78,7 +78,7 @@ public class Util {
         loc.getWorld().playSound(loc, sound, 10F, 1F);
     }
 
-    public static ItemStack setItemNameAndLore(ItemStack item, String name, ArrayList<String> lore) {
+    public static ItemStack setItemNameAndLore(ItemStack item, String name, List<String> lore) {
         ItemMeta im = item.getItemMeta();
         im.setDisplayName(color(name));
 

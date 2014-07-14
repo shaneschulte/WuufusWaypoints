@@ -170,7 +170,7 @@ public class WaypointMenu implements Listener {
 
     public void setOption(int slot, Waypoint wp, boolean selected) {
         Location loc = wp.getLocation();
-        ArrayList<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<String>();
         String enabled = WaypointManager.getAllWaypoints().contains(wp) ? (wp.isEnabled() ? "" : Util
                 .color(" &f[&cDisabled&f]")) : "";
 
