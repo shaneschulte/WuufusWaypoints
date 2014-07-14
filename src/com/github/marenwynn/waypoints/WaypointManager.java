@@ -129,6 +129,15 @@ public class WaypointManager {
         new WaypointMenu(p, currentWaypoint, accessList, select).open();
     }
 
+    public static void openWaypointSelectionMenu(Player p) {
+        Waypoint selectedWaypoint = Selections.getSelectedWaypoint(p);
+
+        if (selectedWaypoint != null)
+            Msg.WP_SELECTED.sendTo(p, selectedWaypoint.getName());
+
+        WaypointManager.openWaypointMenu(p, selectedWaypoint, true, true, true);
+    }
+
     public static boolean setHome(Player p, String waypointName) {
         PlayerData pd = getPlayerData(p.getUniqueId());
         Location playerLoc = p.getLocation();

@@ -73,8 +73,7 @@ public class PlayerListener implements Listener {
                     event.setCancelled(true);
                     return;
                 } else if ((a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR) && p.hasPermission("wp.select")) {
-                    WaypointManager.openWaypointMenu(p, Selections.getSelectedWaypoint(p), p.hasPermission("wp.admin"),
-                            true, true);
+                    WaypointManager.openWaypointSelectionMenu(p);
                     event.setCancelled(true);
                     return;
                 }

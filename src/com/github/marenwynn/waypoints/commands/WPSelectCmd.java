@@ -16,15 +16,7 @@ public class WPSelectCmd implements PluginCommand {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 2) {
             if (sender instanceof Player) {
-                Player p = (Player) sender;
-                Waypoint selectedWaypoint = Selections.getSelectedWaypoint(p);
-
-                if (selectedWaypoint != null)
-                    Msg.WP_SELECTED.sendTo(p, selectedWaypoint.getName());
-                else
-                    selectedWaypoint = new Waypoint("Bed", p.getLocation());
-
-                WaypointManager.openWaypointMenu(p, selectedWaypoint, true, true, true);
+                WaypointManager.openWaypointSelectionMenu((Player) sender);
             } else {
                 StringBuilder sb = new StringBuilder();
                 sb.append(Msg.WP_LIST.toString());
