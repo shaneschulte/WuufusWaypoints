@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.github.marenwynn</groupId>
+	<artifactId>waypoints</artifactId>
+	<version>1.2.0</version>
+	<name>Maren's Waypoints</name>
+	<description>Bukkit plugin: Maren's Waypoints is a portal management system which aims to unify what is normally separate plugins for portals/warps, homes, and spawns under an intuitive linking menu not unlike the waypoint system in Diablo 2.</description>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<repositories>
+		<repository>
+			<id>bukkit-repo</id>
+			<url>http://repo.bukkit.org/content/groups/public/</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>org.bukkit</groupId>
+			<artifactId>bukkit</artifactId>
+			<version>1.7.9-R0.2</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<defaultGoal>clean package</defaultGoal>
+		<finalName>MarensWaypoints-${project.version}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<targetPath>.</targetPath>
+				<filtering>true</filtering>
+				<directory>${basedir}/src/main/resources</directory>
+				<includes>
+					<include>*</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+</project>

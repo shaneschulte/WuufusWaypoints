@@ -1,7 +1,7 @@
  name: MarensWaypoints
  author: Marenwynn
  main: com.github.marenwynn.waypoints.PluginMain
- version: 1.2.0
+ version: ${project.version}
  commands:
    wp:
      description: Waypoints top-level command

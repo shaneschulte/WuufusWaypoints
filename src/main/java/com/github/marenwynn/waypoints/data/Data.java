@@ -17,6 +17,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -51,10 +52,10 @@ public class Data {
         waypointDataFile = new File(pm.getDataFolder().getPath() + File.separator + "waypoints.db");
         messages = new HashMap<Msg, String>();
 
-        loadConfig();
-
         if (!playerFolder.exists())
-            playerFolder.mkdir();
+            playerFolder.mkdirs();
+
+        loadConfig();
 
         if (ENABLE_BEACON) {
             List<String> lore = new ArrayList<String>();
@@ -77,20 +78,31 @@ public class Data {
     }
 
     public static void loadConfig() {
-        pm.saveDefaultConfig();
+        FileConfiguration config = pm.getConfig();
 
-        for (Msg msg : Msg.values())
-            messages.put(msg, pm.getConfig().getString("Waypoints.Messages." + msg.name(), msg.getDefaultMsg()));
+        config.addDefault("Waypoints.MAX_HOME_WAYPOINTS", 3);
+        config.addDefault("Waypoints.WP_NAME_MAX_LENGTH", 18);
+        config.addDefault("Waypoints.WP_DESC_MAX_LENGTH", 100);
+        config.addDefault("Waypoints.ENABLE_BEACON", true);
+        config.addDefault("Waypoints.HANDLE_RESPAWNING", true);
+        config.addDefault("Waypoints.SPAWN_MODE", "home");
+        config.addDefault("Waypoints.CITY_WORLD_NAME", "world");
 
-        MAX_HOME_WAYPOINTS = pm.getConfig().getInt("Waypoints.MAX_HOME_WAYPOINTS", 3);
-        WP_NAME_MAX_LENGTH = pm.getConfig().getInt("Waypoints.WP_NAME_MAX_LENGTH", 18);
-        WP_DESC_MAX_LENGTH = pm.getConfig().getInt("Waypoints.WP_DESC_MAX_LENGTH", 100);
-        ENABLE_BEACON = pm.getConfig().getBoolean("Waypoints.ENABLE_BEACON", true);
-        HANDLE_RESPAWNING = pm.getConfig().getBoolean("Waypoints.HANDLE_RESPAWNING", true);
-        SPAWN_MODE = SpawnMode.valueOf(pm.getConfig().getString("Waypoints.SPAWN_MODE", "HOME").toUpperCase());
-        CITY_WORLD_NAME = pm.getConfig().getString("Waypoints.CITY_WORLD_NAME");
+        for (Msg msg : Msg.values()) {
+            String path = "Waypoints.Messages." + msg.name();
+            config.addDefault(path, msg.getDefaultMsg());
+            messages.put(msg, config.getString(path));
+        }
 
-        pm.getConfig().options().copyDefaults(true);
+        MAX_HOME_WAYPOINTS = config.getInt("Waypoints.MAX_HOME_WAYPOINTS");
+        WP_NAME_MAX_LENGTH = config.getInt("Waypoints.WP_NAME_MAX_LENGTH");
+        WP_DESC_MAX_LENGTH = config.getInt("Waypoints.WP_DESC_MAX_LENGTH");
+        ENABLE_BEACON = config.getBoolean("Waypoints.ENABLE_BEACON");
+        HANDLE_RESPAWNING = config.getBoolean("Waypoints.HANDLE_RESPAWNING");
+        SPAWN_MODE = SpawnMode.valueOf(config.getString("Waypoints.SPAWN_MODE").toUpperCase());
+        CITY_WORLD_NAME = config.getString("Waypoints.CITY_WORLD_NAME");
+
+        config.options().copyDefaults(true);
         pm.saveConfig();
     }
 
