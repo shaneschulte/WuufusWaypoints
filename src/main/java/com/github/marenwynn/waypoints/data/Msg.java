@@ -1,7 +1,11 @@
 package com.github.marenwynn.waypoints.data;
 
+import java.util.IllegalFormatException;
+import java.util.logging.Level;
+
 import org.bukkit.command.CommandSender;
 
+import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Util;
 
 public enum Msg {
@@ -86,7 +90,17 @@ public enum Msg {
     }
 
     public void sendTo(CommandSender sender, Object... args) {
-        sender.sendMessage(Util.color(String.format(toString(), args)));
+        String msg;
+
+        try {
+            msg = String.format(toString(), args);
+        } catch (IllegalFormatException e) {
+            msg = String.format(defaultMsg, args);
+            PluginMain.instance.getLogger().log(Level.WARNING,
+                    String.format("\"Waypoints.Messages.%s\" is misconfigured in plugin.yml.", this.name()));
+        }
+
+        sender.sendMessage(Util.color(msg));
     }
 
 }
