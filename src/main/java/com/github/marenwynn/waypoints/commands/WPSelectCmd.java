@@ -4,7 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.github.marenwynn.waypoints.Selections;
+import com.github.marenwynn.waypoints.SelectionManager;
 import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.WaypointManager;
 import com.github.marenwynn.waypoints.data.Msg;
@@ -14,16 +14,17 @@ public class WPSelectCmd implements PluginCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        WaypointManager wm = WaypointManager.getManager();
+
         if (args.length < 2) {
             if (sender instanceof Player) {
-                WaypointManager.openWaypointSelectionMenu((Player) sender);
+                wm.openWaypointSelectionMenu((Player) sender);
             } else {
                 StringBuilder sb = new StringBuilder();
                 sb.append(Msg.WP_LIST.toString());
 
-                Waypoint[] waypoints = WaypointManager.getAllWaypoints().toArray(
-                        new Waypoint[WaypointManager.getAllWaypoints().size()]);
-                Waypoint selectedWaypoint = Selections.getSelectedWaypoint(sender);
+                Waypoint[] waypoints = wm.getAllWaypoints().toArray(new Waypoint[wm.getAllWaypoints().size()]);
+                Waypoint selectedWaypoint = SelectionManager.getManager().getSelectedWaypoint(sender);
 
                 for (int i = 0; i < waypoints.length; i++) {
                     if (waypoints[i] == selectedWaypoint)
@@ -59,7 +60,7 @@ public class WPSelectCmd implements PluginCommand {
         }
 
         String waypointName = Util.color(sb.toString());
-        Waypoint wp = WaypointManager.getWaypoint(waypointName);
+        Waypoint wp = wm.getWaypoint(waypointName);
 
         if (wp == null) {
             Msg.WP_NOT_EXIST.sendTo(sender, waypointName);
@@ -71,7 +72,7 @@ public class WPSelectCmd implements PluginCommand {
             return true;
         }
 
-        Selections.setSelectedWaypoint(sender, wp);
+        SelectionManager.getManager().setSelectedWaypoint(sender, wp);
         return true;
     }
 

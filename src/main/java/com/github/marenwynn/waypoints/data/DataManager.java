@@ -29,55 +29,45 @@ import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.WaypointManager;
 import com.github.marenwynn.waypoints.listeners.RespawnListener;
 
-public class Data {
+public class DataManager {
 
-    private static PluginMain       pm;
-    private static RespawnListener  respawnListener;
+    private static DataManager dm;
+    private PluginMain         pm;
+    private WaypointManager    wm;
 
-    private static File             playerFolder, waypointDataFile;
-    private static Map<Msg, String> messages;
+    private File               playerFolder, waypointDataFile;
+    private Map<Msg, String>   messages;
 
-    public static int               MAX_HOME_WAYPOINTS;
-    public static int               WP_NAME_MAX_LENGTH, WP_DESC_MAX_LENGTH;
-    public static boolean           ENABLE_BEACON;
-    public static ItemStack         BEACON;
-    public static boolean           HANDLE_RESPAWNING;
-    public static SpawnMode         SPAWN_MODE;
-    public static String            CITY_WORLD_NAME;
+    public int                 MAX_HOME_WAYPOINTS;
+    public int                 WP_NAME_MAX_LENGTH, WP_DESC_MAX_LENGTH;
+    public boolean             ENABLE_BEACON;
+    public ItemStack           BEACON;
+    public boolean             HANDLE_RESPAWNING;
+    public SpawnMode           SPAWN_MODE;
+    public String              CITY_WORLD_NAME;
 
-    public static void init() {
-        Data.pm = PluginMain.instance;
+    public DataManager() {
+        pm = PluginMain.getPluginInstance();
+        wm = WaypointManager.getManager();
 
         playerFolder = new File(pm.getDataFolder().getPath() + File.separator + "players");
         waypointDataFile = new File(pm.getDataFolder().getPath() + File.separator + "waypoints.db");
         messages = new HashMap<Msg, String>();
 
+        loadConfig();
+    }
+
+    public static DataManager getManager() {
+        if (dm == null)
+            dm = new DataManager();
+
+        return dm;
+    }
+
+    public void loadConfig() {
         if (!playerFolder.exists())
             playerFolder.mkdirs();
 
-        loadConfig();
-
-        if (ENABLE_BEACON) {
-            List<String> lore = new ArrayList<String>();
-            lore.add(Util.color("&fBroadcasts signal to"));
-            lore.add(Util.color("&fwaypoint directory for"));
-            lore.add(Util.color("&fremote connection."));
-            lore.add(Util.color("&8&oRight-click to use"));
-
-            BEACON = Util.setItemNameAndLore(new ItemStack(Material.COMPASS, 1), "&aWaypoint Beacon", lore);
-
-            ShapedRecipe sr = new ShapedRecipe(BEACON);
-            sr.shape("RRR", "RCR", "RRR").setIngredient('R', Material.REDSTONE).setIngredient('C', Material.COMPASS);
-            Bukkit.addRecipe(sr);
-        }
-
-        if (HANDLE_RESPAWNING) {
-            respawnListener = new RespawnListener();
-            Bukkit.getPluginManager().registerEvents(respawnListener, pm);
-        }
-    }
-
-    public static void loadConfig() {
         FileConfiguration config = pm.getConfig();
 
         config.addDefault("Waypoints.MAX_HOME_WAYPOINTS", 3);
@@ -104,9 +94,26 @@ public class Data {
 
         config.options().copyDefaults(true);
         pm.saveConfig();
+
+        if (ENABLE_BEACON) {
+            List<String> lore = new ArrayList<String>();
+            lore.add(Util.color("&fBroadcasts signal to"));
+            lore.add(Util.color("&fwaypoint directory for"));
+            lore.add(Util.color("&fremote connection."));
+            lore.add(Util.color("&8&oRight-click to use"));
+
+            BEACON = Util.setItemNameAndLore(new ItemStack(Material.COMPASS, 1), "&aWaypoint Beacon", lore);
+
+            ShapedRecipe sr = new ShapedRecipe(BEACON);
+            sr.shape("RRR", "RCR", "RRR").setIngredient('R', Material.REDSTONE).setIngredient('C', Material.COMPASS);
+            Bukkit.addRecipe(sr);
+        }
+
+        if (HANDLE_RESPAWNING)
+            Bukkit.getPluginManager().registerEvents(RespawnListener.getListener(), pm);
     }
 
-    public static void kill() {
+    public void reload() {
         if (ENABLE_BEACON) {
             Iterator<Recipe> recipes = Bukkit.recipeIterator();
             Recipe recipe;
@@ -119,25 +126,18 @@ public class Data {
             }
         }
 
-        if (respawnListener != null) {
-            HandlerList.unregisterAll(respawnListener);
-            respawnListener = null;
-        }
+        if (HANDLE_RESPAWNING)
+            HandlerList.unregisterAll(RespawnListener.getListener());
 
-        pm = null;
-        playerFolder = null;
-        waypointDataFile = null;
-        messages = null;
-        BEACON = null;
-        SPAWN_MODE = null;
-        CITY_WORLD_NAME = null;
+        pm.reloadConfig();
+        loadConfig();
     }
 
-    public static String getMsg(Msg msg) {
+    public String getMsg(Msg msg) {
         return messages.get(msg);
     }
 
-    public static void loadWaypoints() {
+    public void loadWaypoints() {
         if (!waypointDataFile.exists())
             return;
 
@@ -162,20 +162,20 @@ public class Data {
             for (Object obj : uncasted) {
                 if (obj instanceof Waypoint) {
                     Waypoint wp = (Waypoint) obj;
-                    WaypointManager.waypoints.put(Util.getKey(wp.getName()), wp);
+                    wm.getWaypoints().put(Util.getKey(wp.getName()), wp);
                 }
             }
         }
     }
 
-    public static void saveWaypoints() {
+    public void saveWaypoints() {
         try {
             FileOutputStream fos = new FileOutputStream(waypointDataFile);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
 
             try {
-                oos.writeObject(Arrays.asList(WaypointManager.waypoints.values().toArray(
-                        new Waypoint[WaypointManager.waypoints.size()])));
+                oos.writeObject(Arrays.asList(wm.getWaypoints().values()
+                        .toArray(new Waypoint[wm.getWaypoints().size()])));
             } finally {
                 oos.close();
             }
@@ -184,14 +184,14 @@ public class Data {
         }
     }
 
-    public static void unloadPlayerData(UUID player) {
-        if (WaypointManager.players.containsKey(player))
-            WaypointManager.players.remove(player);
+    public void unloadPlayerData(UUID player) {
+        if (wm.getPlayers().containsKey(player))
+            wm.getPlayers().remove(player);
     }
 
-    public static PlayerData loadPlayerData(UUID playerUUID) {
+    public PlayerData loadPlayerData(UUID playerUUID) {
         File playerFile = new File(playerFolder + File.separator + playerUUID);
-        Map<UUID, PlayerData> players = WaypointManager.players;
+        Map<UUID, PlayerData> players = wm.getPlayers();
 
         if (!playerFile.exists()) {
             players.put(playerUUID, new PlayerData(playerUUID));
@@ -232,7 +232,7 @@ public class Data {
         return players.get(playerUUID);
     }
 
-    public static void savePlayerData(UUID playerUUID) {
+    public void savePlayerData(UUID playerUUID) {
         File playerFile = new File(playerFolder + File.separator + playerUUID);
 
         try {
@@ -240,7 +240,7 @@ public class Data {
             ObjectOutputStream oos = new ObjectOutputStream(fos);
 
             try {
-                oos.writeObject(WaypointManager.players.get(playerUUID));
+                oos.writeObject(wm.getPlayerData(playerUUID));
             } finally {
                 oos.close();
             }
@@ -249,8 +249,8 @@ public class Data {
         }
     }
 
-    public static void saveWaypoint(CommandSender sender, Waypoint wp) {
-        if (WaypointManager.waypoints.containsValue(wp))
+    public void saveWaypoint(CommandSender sender, Waypoint wp) {
+        if (wm.getWaypoints().containsValue(wp))
             saveWaypoints();
         else
             savePlayerData(((Player) sender).getUniqueId());

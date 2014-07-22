@@ -23,7 +23,7 @@ import com.github.marenwynn.waypoints.commands.WPRemoveCmd;
 import com.github.marenwynn.waypoints.commands.WPRenameCmd;
 import com.github.marenwynn.waypoints.commands.WPSelectCmd;
 import com.github.marenwynn.waypoints.commands.WPToggleCmd;
-import com.github.marenwynn.waypoints.data.Data;
+import com.github.marenwynn.waypoints.data.DataManager;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 import com.github.marenwynn.waypoints.listeners.PlayerListener;
@@ -31,17 +31,18 @@ import com.github.marenwynn.waypoints.listeners.WaypointListener;
 
 public class PluginMain extends JavaPlugin {
 
-    public static PluginMain           instance;
+    private static PluginMain          instance;
     private Map<String, PluginCommand> commands;
+
+    public static PluginMain getPluginInstance() {
+        return instance;
+    }
 
     @Override
     public void onEnable() {
         instance = this;
         saveResource("CHANGELOG.txt", true);
-
-        Data.init();
-        Selections.init();
-        WaypointManager.init();
+        DataManager.getManager().loadWaypoints();
 
         commands = new HashMap<String, PluginCommand>();
         commands.put("sethome", new SetHomeCmd());
@@ -67,9 +68,10 @@ public class PluginMain extends JavaPlugin {
     public void onDisable() {
         HandlerList.unregisterAll(this);
 
-        WaypointManager.kill();
-        Selections.kill();
-        Data.kill();
+        DataManager.getManager().saveWaypoints();
+
+        for (Player p : getServer().getOnlinePlayers())
+            DataManager.getManager().savePlayerData(p.getUniqueId());
 
         instance = null;
         commands = null;
@@ -91,7 +93,8 @@ public class PluginMain extends JavaPlugin {
             if (executor == null) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
-                    List<Waypoint> playerPoints = WaypointManager.getPlayerData(p.getUniqueId()).getAllWaypoints();
+                    List<Waypoint> playerPoints = WaypointManager.getManager().getPlayerData(p.getUniqueId())
+                            .getAllWaypoints();
                     StringBuilder sb = new StringBuilder();
 
                     for (int i = 0; i < playerPoints.size(); i++) {

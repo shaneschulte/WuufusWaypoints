@@ -6,9 +6,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.github.marenwynn.waypoints.Selections;
+import com.github.marenwynn.waypoints.SelectionManager;
 import com.github.marenwynn.waypoints.WaypointManager;
-import com.github.marenwynn.waypoints.data.Data;
+import com.github.marenwynn.waypoints.data.DataManager;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -16,7 +16,8 @@ public class WPRemoveCmd implements PluginCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Waypoint wp = Selections.getSelectedWaypoint(sender);
+        WaypointManager wm = WaypointManager.getManager();
+        Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);
@@ -24,16 +25,16 @@ public class WPRemoveCmd implements PluginCommand {
             return true;
         }
 
-        if (WaypointManager.getWaypoint(wp.getName()) != null) {
-            WaypointManager.removeWaypoint(wp);
-            Data.saveWaypoints();
+        if (wm.getWaypoint(wp.getName()) != null) {
+            wm.removeWaypoint(wp);
+            DataManager.getManager().saveWaypoints();
         } else {
             UUID playerUUID = ((Player) sender).getUniqueId();
-            WaypointManager.getPlayerData(playerUUID).removeWaypoint(wp);
-            Data.savePlayerData(playerUUID);
+            wm.getPlayerData(playerUUID).removeWaypoint(wp);
+            DataManager.getManager().savePlayerData(playerUUID);
         }
 
-        Selections.clearSelectionsWith(wp);
+        SelectionManager.getManager().clearSelectionsWith(wp);
         Msg.WP_REMOVED.sendTo(sender, wp.getName());
         return true;
     }

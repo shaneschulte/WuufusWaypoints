@@ -4,8 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import com.github.marenwynn.waypoints.Selections;
-import com.github.marenwynn.waypoints.data.Data;
+import com.github.marenwynn.waypoints.SelectionManager;
+import com.github.marenwynn.waypoints.data.DataManager;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -13,7 +13,7 @@ public class WPIconCmd implements PluginCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Waypoint wp = Selections.getSelectedWaypoint(sender);
+        Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);
@@ -46,7 +46,7 @@ public class WPIconCmd implements PluginCommand {
 
         wp.setIcon(icon);
         wp.setDurability(durability);
-        Data.saveWaypoint(sender, wp);
+        DataManager.getManager().saveWaypoint(sender, wp);
         Msg.WP_SETICON.sendTo(sender, wp.getName(), icon.toString(), durability);
         return true;
     }

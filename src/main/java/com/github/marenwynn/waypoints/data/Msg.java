@@ -82,7 +82,7 @@ public enum Msg {
 
     @Override
     public String toString() {
-        return Data.getMsg(this);
+        return DataManager.getManager().getMsg(this);
     }
 
     public void sendTo(CommandSender sender) {
@@ -96,8 +96,11 @@ public enum Msg {
             msg = String.format(toString(), args);
         } catch (IllegalFormatException e) {
             msg = String.format(defaultMsg, args);
-            PluginMain.instance.getLogger().log(Level.WARNING,
-                    String.format("\"Waypoints.Messages.%s\" is misconfigured in plugin.yml.", this.name()));
+            PluginMain
+                    .getPluginInstance()
+                    .getLogger()
+                    .log(Level.WARNING,
+                            String.format("\"Waypoints.Messages.%s\" is misconfigured in plugin.yml.", this.name()));
         }
 
         sender.sendMessage(Util.color(msg));

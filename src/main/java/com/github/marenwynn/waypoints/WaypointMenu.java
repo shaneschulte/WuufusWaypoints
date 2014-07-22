@@ -37,7 +37,7 @@ public class WaypointMenu implements Listener {
     private Waypoint[]     optionWaypoints;
 
     public WaypointMenu(Player p, Waypoint currentWaypoint, List<Waypoint> accessList, boolean select) {
-        pm = PluginMain.instance;
+        pm = PluginMain.getPluginInstance();
 
         this.p = p;
         this.select = select;
@@ -91,7 +91,7 @@ public class WaypointMenu implements Listener {
                 @Override
                 public void run() {
                     if (select)
-                        Selections.setSelectedWaypoint(p, optionWaypoints[slot]);
+                        SelectionManager.getManager().setSelectedWaypoint(p, optionWaypoints[slot]);
                     else
                         new TeleportTask(p, optionWaypoints[slot]).runTask(pm);
 
@@ -170,27 +170,29 @@ public class WaypointMenu implements Listener {
 
     public void setOption(int slot, Waypoint wp, boolean selected) {
         Location loc = wp.getLocation();
-        List<String> lore = new ArrayList<String>();
-        String enabled = WaypointManager.getAllWaypoints().contains(wp) ? (wp.isEnabled() ? "" : Util
-                .color(" &f[&cDisabled&f]")) : "";
+        String displayName = "&6" + wp.getName();
 
+        if (!wp.isEnabled() && WaypointManager.getManager().getAllWaypoints().contains(wp))
+            displayName += " &f[&cDisabled&f]";
+
+        List<String> lore = new ArrayList<String>();
         lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
         lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
         lore.add(Util.color(String.format("&aY: &f%s", loc.getBlockY())));
         lore.add(Util.color(String.format("&aZ: &f%s", loc.getBlockZ())));
 
-        if (!wp.getDescription().equals(""))
+        if (wp.getDescription().length() > 0)
             lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getDescription(), 25)));
 
-        optionNames[slot] = "&6" + wp.getName() + enabled;
+        optionNames[slot] = Util.color(displayName);
 
         if (currentWaypoint != null && selected)
-            optionNames[slot] = "&a* " + optionNames[slot];
+            optionNames[slot] = Util.color("&a* ") + optionNames[slot];
 
         ItemStack icon = new ItemStack(wp.getIcon(), 1);
         icon.setDurability(wp.getDurability());
 
-        optionIcons[slot] = Util.setItemNameAndLore(icon, Util.color(optionNames[slot]), lore);
+        optionIcons[slot] = Util.setItemNameAndLore(icon, optionNames[slot], lore);
 
         if ((wp.isEnabled() || p.hasPermission("wp.bypass")) || select)
             optionWaypoints[slot] = wp;

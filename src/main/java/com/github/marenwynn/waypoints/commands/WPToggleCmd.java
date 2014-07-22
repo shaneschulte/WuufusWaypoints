@@ -3,9 +3,9 @@ package com.github.marenwynn.waypoints.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import com.github.marenwynn.waypoints.Selections;
+import com.github.marenwynn.waypoints.SelectionManager;
 import com.github.marenwynn.waypoints.WaypointManager;
-import com.github.marenwynn.waypoints.data.Data;
+import com.github.marenwynn.waypoints.data.DataManager;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
@@ -13,7 +13,7 @@ public class WPToggleCmd implements PluginCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Waypoint wp = Selections.getSelectedWaypoint(sender);
+        Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);
@@ -21,7 +21,7 @@ public class WPToggleCmd implements PluginCommand {
             return true;
         }
 
-        if (WaypointManager.getWaypoint(wp.getName()) == null) {
+        if (WaypointManager.getManager().getWaypoint(wp.getName()) == null) {
             Msg.ONLY_SERVER_DEFINED.sendTo(sender);
             return true;
         }
@@ -34,7 +34,7 @@ public class WPToggleCmd implements PluginCommand {
             Msg.WAYPOINT_ENABLED.sendTo(sender, wp.getName());
         }
 
-        Data.saveWaypoints();
+        DataManager.getManager().saveWaypoints();
         return true;
     }
 

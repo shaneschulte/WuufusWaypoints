@@ -55,14 +55,14 @@ public class PlayerData implements Serializable {
     }
 
     public Waypoint addWaypoint(Waypoint wp) {
+        int maxHomes = DataManager.getManager().MAX_HOME_WAYPOINTS;
         homeWaypoints.add(wp);
 
-        if (homeWaypoints.size() > Data.MAX_HOME_WAYPOINTS + 1)
-            // Leave one to show waypoints are being deleted
-            homeWaypoints.retainAll(homeWaypoints.subList(homeWaypoints.size() - Data.MAX_HOME_WAYPOINTS - 1,
-                    homeWaypoints.size()));
+        // Leave one to show waypoints are being deleted
+        if (homeWaypoints.size() > maxHomes + 1)
+            homeWaypoints.retainAll(homeWaypoints.subList(homeWaypoints.size() - maxHomes - 1, homeWaypoints.size()));
 
-        return homeWaypoints.size() > Data.MAX_HOME_WAYPOINTS ? homeWaypoints.remove(0) : null;
+        return homeWaypoints.size() > maxHomes ? homeWaypoints.remove(0) : null;
     }
 
     public void removeWaypoint(Waypoint wp) {

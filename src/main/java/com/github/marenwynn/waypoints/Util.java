@@ -44,30 +44,17 @@ public class Util {
         if (p.hasPermission("wp.access." + getKey(wp.getName())))
             return true;
 
-        if (wp.isDiscoverable() != null && WaypointManager.getPlayerData(p.getUniqueId()).hasDiscovered(wp.getUUID())) {
-            if (wp.isDiscoverable()) {
-                return true;
-            } else {
-                if (select || p.getWorld().getName().equals(wp.getLocation().getWorld().getName()))
-                    return true;
-                else
-                    return false;
-            }
-        }
+        if (wp.isDiscoverable() != null
+                && WaypointManager.getManager().getPlayerData(p.getUniqueId()).hasDiscovered(wp.getUUID()))
+            return wp.isDiscoverable() ? true : (select || p.getWorld().getName()
+                    .equals(wp.getLocation().getWorld().getName()));
 
         return false;
     }
 
     public static boolean isSameLoc(Location a, Location b, boolean useGrid) {
-        if (useGrid) {
-            if (a.getBlockX() == b.getBlockX() && a.getBlockY() == b.getBlockY() && a.getBlockZ() == b.getBlockZ())
-                return true;
-        } else {
-            if (a.getX() == b.getX() && a.getY() == b.getY() && a.getZ() == b.getZ())
-                return true;
-        }
-
-        return false;
+        return useGrid ? (a.getBlockX() == b.getBlockX() && a.getBlockY() == b.getBlockY() && a.getBlockZ() == b
+                .getBlockZ()) : (a.getX() == b.getX() && a.getY() == b.getY() && a.getZ() == b.getZ());
     }
 
     public static void playEffect(Location loc, Effect effect) {

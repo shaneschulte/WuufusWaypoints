@@ -5,23 +5,20 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.github.marenwynn.waypoints.PluginMain;
-import com.github.marenwynn.waypoints.Selections;
-import com.github.marenwynn.waypoints.data.Data;
+import com.github.marenwynn.waypoints.SelectionManager;
+import com.github.marenwynn.waypoints.data.DataManager;
 import com.github.marenwynn.waypoints.data.Msg;
 
 public class WPReloadCmd implements PluginCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        PluginMain.instance.reloadConfig();
-        Data.kill();
-        Data.init();
+        DataManager.getManager().reload();
 
         for (Player p : Bukkit.getOnlinePlayers())
-            Selections.clearSelectedWaypoint(p);
+            SelectionManager.getManager().clearSelectedWaypoint(p);
 
-        Selections.clearSelectedWaypoint(Bukkit.getConsoleSender());
+        SelectionManager.getManager().clearSelectedWaypoint(Bukkit.getConsoleSender());
         Msg.RELOADED.sendTo(sender);
         return true;
     }

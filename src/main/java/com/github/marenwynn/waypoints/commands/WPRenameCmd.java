@@ -5,10 +5,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.github.marenwynn.waypoints.Selections;
+import com.github.marenwynn.waypoints.SelectionManager;
 import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.WaypointManager;
-import com.github.marenwynn.waypoints.data.Data;
+import com.github.marenwynn.waypoints.data.DataManager;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.PlayerData;
 import com.github.marenwynn.waypoints.data.Waypoint;
@@ -17,7 +17,8 @@ public class WPRenameCmd implements PluginCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Waypoint wp = Selections.getSelectedWaypoint(sender);
+        WaypointManager wm = WaypointManager.getManager();
+        Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);
@@ -31,9 +32,10 @@ public class WPRenameCmd implements PluginCommand {
         }
 
         String waypointName = Util.color(Util.buildString(args, 1, ' '));
+        int maxLength = DataManager.getManager().WP_NAME_MAX_LENGTH;
 
-        if (ChatColor.stripColor(waypointName).length() > Data.WP_NAME_MAX_LENGTH) {
-            Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, Data.WP_NAME_MAX_LENGTH);
+        if (ChatColor.stripColor(waypointName).length() > maxLength) {
+            Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, maxLength);
             return true;
         }
 
@@ -42,17 +44,17 @@ public class WPRenameCmd implements PluginCommand {
             return true;
         }
 
-        boolean serverDefined = WaypointManager.getAllWaypoints().contains(wp);
+        boolean serverDefined = wm.getAllWaypoints().contains(wp);
 
         if (serverDefined) {
-            if (WaypointManager.getWaypoint(waypointName) != null) {
+            if (wm.getWaypoint(waypointName) != null) {
                 Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
                 return true;
             }
 
-            WaypointManager.removeWaypoint(wp);
+            wm.removeWaypoint(wp);
         } else {
-            PlayerData pd = WaypointManager.getPlayerData(((Player) sender).getUniqueId());
+            PlayerData pd = wm.getPlayerData(((Player) sender).getUniqueId());
 
             if (pd.getWaypoint(waypointName) != null) {
                 Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
@@ -66,11 +68,11 @@ public class WPRenameCmd implements PluginCommand {
         wp.setName(waypointName);
 
         if (serverDefined)
-            WaypointManager.addWaypoint(wp);
+            wm.addWaypoint(wp);
         else
-            WaypointManager.getPlayerData(((Player) sender).getUniqueId()).addWaypoint(wp);
+            wm.getPlayerData(((Player) sender).getUniqueId()).addWaypoint(wp);
 
-        Data.saveWaypoint(sender, wp);
+        DataManager.getManager().saveWaypoint(sender, wp);
         Msg.WP_RENAMED.sendTo(sender, oldName, waypointName);
         return true;
     }

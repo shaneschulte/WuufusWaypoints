@@ -29,7 +29,7 @@ public class TeleportTask extends BukkitRunnable implements Listener {
     private Waypoint   wp;
 
     public TeleportTask(Player p, Waypoint wp) {
-        pm = PluginMain.instance;
+        pm = PluginMain.getPluginInstance();
 
         counter = 5;
         walkSpeed = p.getWalkSpeed();

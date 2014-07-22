@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.WaypointManager;
-import com.github.marenwynn.waypoints.data.Data;
+import com.github.marenwynn.waypoints.data.DataManager;
 import com.github.marenwynn.waypoints.data.Msg;
 
 public class SetHomeCmd implements PluginCommand {
@@ -22,13 +22,14 @@ public class SetHomeCmd implements PluginCommand {
         }
 
         String waypointName = Util.color(Util.buildString(args, 0, ' '));
+        int maxLength = DataManager.getManager().WP_NAME_MAX_LENGTH;
 
-        if (ChatColor.stripColor(waypointName).length() > Data.WP_NAME_MAX_LENGTH) {
-            Msg.MAX_LENGTH_EXCEEDED.sendTo(p, Data.WP_NAME_MAX_LENGTH);
+        if (ChatColor.stripColor(waypointName).length() > maxLength) {
+            Msg.MAX_LENGTH_EXCEEDED.sendTo(p, maxLength);
             return true;
         }
 
-        WaypointManager.setHome(p, waypointName);
+        WaypointManager.getManager().setHome(p, waypointName);
         return true;
     }
 

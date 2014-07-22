@@ -12,21 +12,25 @@ import org.bukkit.entity.Player;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.Waypoint;
 
-public class Selections {
+public class SelectionManager {
 
-    private static Map<UUID, Waypoint> selectedWaypoints;
-    private static Waypoint            consoleSelection;
+    private static SelectionManager sm;
 
-    public static void init() {
+    private Map<UUID, Waypoint>     selectedWaypoints;
+    private Waypoint                consoleSelection;
+
+    public SelectionManager() {
         selectedWaypoints = new HashMap<UUID, Waypoint>();
     }
 
-    public static void kill() {
-        selectedWaypoints = null;
-        consoleSelection = null;
+    public static SelectionManager getManager() {
+        if (sm == null)
+            sm = new SelectionManager();
+
+        return sm;
     }
 
-    public static Waypoint getSelectedWaypoint(CommandSender sender) {
+    public Waypoint getSelectedWaypoint(CommandSender sender) {
         if (sender instanceof Player) {
             UUID playerUUID = ((Player) sender).getUniqueId();
 
@@ -39,7 +43,7 @@ public class Selections {
         }
     }
 
-    public static void setSelectedWaypoint(CommandSender sender, Waypoint wp) {
+    public void setSelectedWaypoint(CommandSender sender, Waypoint wp) {
         if (sender instanceof Player)
             selectedWaypoints.put(((Player) sender).getUniqueId(), wp);
         else
@@ -48,7 +52,7 @@ public class Selections {
         sendSelectionInfo(sender, wp);
     }
 
-    public static void clearSelectedWaypoint(CommandSender sender) {
+    public void clearSelectedWaypoint(CommandSender sender) {
         if (sender instanceof Player) {
             UUID playerUUID = ((Player) sender).getUniqueId();
 
@@ -59,7 +63,7 @@ public class Selections {
         }
     }
 
-    public static void clearSelectionsWith(Waypoint wp) {
+    public void clearSelectionsWith(Waypoint wp) {
         for (UUID playerUUID : selectedWaypoints.keySet()) {
             Waypoint selected = selectedWaypoints.get(playerUUID);
 
@@ -71,29 +75,31 @@ public class Selections {
             consoleSelection = null;
     }
 
-    private static void sendSelectionInfo(CommandSender sender, Waypoint wp) {
+    private void sendSelectionInfo(CommandSender sender, Waypoint wp) {
+        boolean serverDefined = WaypointManager.getManager().getAllWaypoints().contains(wp);
         Location loc = wp.getLocation();
-        String suffix = WaypointManager.getAllWaypoints().contains(wp) ? Util.color(wp.isEnabled() ? ""
-                : " &f[&cDisabled&f]") : "";
+        String displayName = wp.getName();
+
+        if (serverDefined && !wp.isEnabled())
+            displayName += Util.color(" &f[&cDisabled&f]");
 
         Msg.BORDER.sendTo(sender);
-        Msg.SELECTED_1.sendTo(sender, wp.getName() + suffix, loc.getWorld().getName());
+        Msg.SELECTED_1.sendTo(sender, displayName, loc.getWorld().getName());
         Msg.BORDER.sendTo(sender);
         Msg.SELECTED_2.sendTo(sender, loc.getBlockX(), (int) loc.getPitch());
         Msg.SELECTED_3.sendTo(sender, loc.getBlockY(), (int) loc.getYaw());
         Msg.SELECTED_4.sendTo(sender, loc.getBlockZ());
 
-        String discoveryMode = wp.isDiscoverable() == null ? "Disabled" : (wp.isDiscoverable() ? "Server-wide"
-                : "World-specific");
-
-        if (WaypointManager.getAllWaypoints().contains(wp)) {
+        if (serverDefined) {
+            String discoveryMode = wp.isDiscoverable() == null ? "Disabled" : (wp.isDiscoverable() ? "Server-wide"
+                    : "World-specific");
             sender.sendMessage("");
             Msg.SELECTED_DISCOVER.sendTo(sender, discoveryMode);
         }
 
         Msg.BORDER.sendTo(sender);
 
-        if (wp.getDescription().equals(""))
+        if (wp.getDescription().length() == 0)
             Msg.WP_NO_DESC.sendTo(sender);
         else
             for (String line : Util.getWrappedLore(wp.getDescription(), 35))
