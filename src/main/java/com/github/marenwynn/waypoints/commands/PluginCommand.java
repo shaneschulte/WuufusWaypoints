@@ -1,9 +1,10 @@
 package com.github.marenwynn.waypoints.commands;
 
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-public interface PluginCommand extends CommandExecutor {
+public interface PluginCommand {
+
+    public void execute(CommandSender sender, String[] args);
 
     public boolean isConsoleExecutable();
 

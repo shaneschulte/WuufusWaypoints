@@ -1,6 +1,5 @@
 package com.github.marenwynn.waypoints.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import com.github.marenwynn.waypoints.SelectionManager;
@@ -12,18 +11,18 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 public class WPDiscoverCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);
             Msg.WP_NOT_SELECTED_ERROR_USAGE.sendTo(sender);
-            return true;
+            return;
         }
 
         if (WaypointManager.getManager().getWaypoint(wp.getName()) == null) {
             Msg.ONLY_SERVER_DEFINED.sendTo(sender);
-            return true;
+            return;
         }
 
         if (wp.isDiscoverable() == null) {
@@ -38,7 +37,6 @@ public class WPDiscoverCmd implements PluginCommand {
         }
 
         DataManager.getManager().saveWaypoints();
-        return true;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.github.marenwynn.waypoints.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -12,20 +11,19 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 public class WPMoveCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
         Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(p);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(p);
             Msg.WP_NOT_SELECTED_ERROR_USAGE.sendTo(p);
-            return true;
+            return;
         }
 
         wp.setLocation(p.getLocation());
         DataManager.getManager().saveWaypoint(sender, wp);
         Msg.WP_LOCATION_UPDATED.sendTo(p, wp.getName());
-        return true;
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.github.marenwynn.waypoints.commands;
 
 import java.util.UUID;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -15,14 +14,14 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 public class WPRemoveCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         WaypointManager wm = WaypointManager.getManager();
         Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);
             Msg.WP_NOT_SELECTED_ERROR_USAGE.sendTo(sender);
-            return true;
+            return;
         }
 
         if (wm.getWaypoint(wp.getName()) != null) {
@@ -36,7 +35,6 @@ public class WPRemoveCmd implements PluginCommand {
 
         SelectionManager.getManager().clearSelectionsWith(wp);
         Msg.WP_REMOVED.sendTo(sender, wp.getName());
-        return true;
     }
 
     @Override

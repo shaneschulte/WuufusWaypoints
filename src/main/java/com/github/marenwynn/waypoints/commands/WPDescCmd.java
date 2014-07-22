@@ -1,6 +1,5 @@
 package com.github.marenwynn.waypoints.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import com.github.marenwynn.waypoints.SelectionManager;
@@ -12,34 +11,33 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 public class WPDescCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         DataManager dm = DataManager.getManager();
         Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);
             Msg.WP_NOT_SELECTED_ERROR_USAGE.sendTo(sender);
-            return true;
+            return;
         }
 
-        if (args.length < 2) {
+        if (args.length == 0) {
             wp.setDescription("");
             dm.saveWaypoints();
             Msg.WP_DESC_CLEARED.sendTo(sender, wp.getName());
-            return true;
+            return;
         }
 
-        String desc = Util.buildString(args, 1, ' ');
+        String desc = Util.buildString(args, 0, ' ');
 
         if (desc.length() > dm.WP_DESC_MAX_LENGTH) {
             Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, dm.WP_DESC_MAX_LENGTH);
-            return true;
+            return;
         }
 
         wp.setDescription(desc);
         dm.saveWaypoint(sender, wp);
         Msg.WP_DESC_UPDATED.sendTo(sender, wp.getName());
-        return true;
     }
 
     @Override

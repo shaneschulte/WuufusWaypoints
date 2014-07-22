@@ -1,5 +1,6 @@
 package com.github.marenwynn.waypoints;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ public class PluginMain extends JavaPlugin {
 
         getCommand("wp").setExecutor(this);
         getCommand("sethome").setExecutor(this);
+        getCommand("setspawn").setExecutor(this);
         getServer().getPluginManager().registerEvents(new WaypointListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
     }
@@ -80,17 +82,18 @@ public class PluginMain extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String cmd = command.getName().toLowerCase();
-        PluginCommand executor = null;
+        PluginCommand pluginCmd = null;
+        String[] param = args.length > 0 ? Arrays.copyOfRange(args, 1, args.length) : null;
 
         if (cmd.equals("wp")) {
             if (args.length > 0) {
                 String key = args[0].toLowerCase();
 
                 if (commands.containsKey(key))
-                    executor = commands.get(key);
+                    pluginCmd = commands.get(key);
             }
 
-            if (executor == null) {
+            if (pluginCmd == null) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
                     List<Waypoint> playerPoints = WaypointManager.getManager().getPlayerData(p.getUniqueId())
@@ -112,22 +115,23 @@ public class PluginMain extends JavaPlugin {
                 return false;
             }
         } else if (cmd.equals("sethome")) {
-            executor = commands.get("sethome");
+            pluginCmd = commands.get("sethome");
         } else if (cmd.equals("setspawn")) {
-            executor = commands.get("setspawn");
+            pluginCmd = commands.get("setspawn");
         }
 
-        if (!(sender instanceof Player) && !executor.isConsoleExecutable()) {
+        if (!(sender instanceof Player) && !pluginCmd.isConsoleExecutable()) {
             Msg.CMD_NO_CONSOLE.sendTo(sender);
             return true;
         }
 
-        if (!executor.hasRequiredPerm(sender)) {
+        if (!pluginCmd.hasRequiredPerm(sender)) {
             Msg.NO_PERMS.sendTo(sender);
             return true;
         }
 
-        return executor.onCommand(sender, command, label, args);
+        pluginCmd.execute(sender, param);
+        return true;
     }
 
 }

@@ -1,7 +1,6 @@
 package com.github.marenwynn.waypoints.commands;
 
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -13,12 +12,12 @@ import com.github.marenwynn.waypoints.data.Msg;
 public class SetHomeCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
 
-        if (args.length < 1) {
+        if (args.length == 0) {
             Msg.USAGE_SETHOME.sendTo(p);
-            return true;
+            return;
         }
 
         String waypointName = Util.color(Util.buildString(args, 0, ' '));
@@ -26,11 +25,10 @@ public class SetHomeCmd implements PluginCommand {
 
         if (ChatColor.stripColor(waypointName).length() > maxLength) {
             Msg.MAX_LENGTH_EXCEEDED.sendTo(p, maxLength);
-            return true;
+            return;
         }
 
         WaypointManager.getManager().setHome(p, waypointName);
-        return true;
     }
 
     @Override

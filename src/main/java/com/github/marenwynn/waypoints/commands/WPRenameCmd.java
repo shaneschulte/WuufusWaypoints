@@ -1,7 +1,6 @@
 package com.github.marenwynn.waypoints.commands;
 
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -16,32 +15,32 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 public class WPRenameCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         WaypointManager wm = WaypointManager.getManager();
         Waypoint wp = SelectionManager.getManager().getSelectedWaypoint(sender);
 
         if (wp == null) {
             Msg.WP_NOT_SELECTED_ERROR.sendTo(sender);
             Msg.WP_NOT_SELECTED_ERROR_USAGE.sendTo(sender);
-            return true;
+            return;
         }
 
-        if (args.length < 2) {
+        if (args.length == 0) {
             Msg.USAGE_WP_RENAME.sendTo(sender);
-            return true;
+            return;
         }
 
-        String waypointName = Util.color(Util.buildString(args, 1, ' '));
+        String waypointName = Util.color(Util.buildString(args, 0, ' '));
         int maxLength = DataManager.getManager().WP_NAME_MAX_LENGTH;
 
         if (ChatColor.stripColor(waypointName).length() > maxLength) {
             Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, maxLength);
-            return true;
+            return;
         }
 
         if (waypointName.equals("Bed") || waypointName.equals("Spawn")) {
             Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
-            return true;
+            return;
         }
 
         boolean serverDefined = wm.getAllWaypoints().contains(wp);
@@ -49,7 +48,7 @@ public class WPRenameCmd implements PluginCommand {
         if (serverDefined) {
             if (wm.getWaypoint(waypointName) != null) {
                 Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
-                return true;
+                return;
             }
 
             wm.removeWaypoint(wp);
@@ -58,7 +57,7 @@ public class WPRenameCmd implements PluginCommand {
 
             if (pd.getWaypoint(waypointName) != null) {
                 Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
-                return true;
+                return;
             }
 
             pd.removeWaypoint(wp);
@@ -74,7 +73,6 @@ public class WPRenameCmd implements PluginCommand {
 
         DataManager.getManager().saveWaypoint(sender, wp);
         Msg.WP_RENAMED.sendTo(sender, oldName, waypointName);
-        return true;
     }
 
     @Override

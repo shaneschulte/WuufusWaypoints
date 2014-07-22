@@ -1,7 +1,6 @@
 package com.github.marenwynn.waypoints.commands;
 
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -10,13 +9,12 @@ import com.github.marenwynn.waypoints.data.Msg;
 public class SetSpawnCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         Player p = (Player) sender;
         Location loc = p.getLocation();
 
         p.getWorld().setSpawnLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         Msg.SET_SPAWN.sendTo(p, p.getWorld().getName());
-        return true;
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.github.marenwynn.waypoints.commands;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -16,26 +15,26 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 public class WPAddCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         DataManager dm = DataManager.getManager();
         WaypointManager wm = WaypointManager.getManager();
         Player p = (Player) sender;
 
-        if (args.length < 2) {
+        if (args.length == 0) {
             Msg.USAGE_WP_ADD.sendTo(p);
-            return true;
+            return;
         }
 
-        String waypointName = Util.color(Util.buildString(args, 1, ' '));
+        String waypointName = Util.color(Util.buildString(args, 0, ' '));
 
         if (ChatColor.stripColor(waypointName).length() > dm.WP_NAME_MAX_LENGTH) {
             Msg.MAX_LENGTH_EXCEEDED.sendTo(p, dm.WP_NAME_MAX_LENGTH);
-            return true;
+            return;
         }
 
         if (wm.getWaypoint(waypointName) != null || waypointName.equals("Bed") || waypointName.equals("Spawn")) {
             Msg.WP_DUPLICATE_NAME.sendTo(p, waypointName);
-            return true;
+            return;
         }
 
         Location playerLoc = p.getLocation();
@@ -43,7 +42,7 @@ public class WPAddCmd implements PluginCommand {
         for (Waypoint wp : wm.getAllWaypoints()) {
             if (Util.isSameLoc(playerLoc, wp.getLocation(), true)) {
                 Msg.WP_ALREADY_HERE.sendTo(p, wp.getName());
-                return true;
+                return;
             }
         }
 
@@ -52,7 +51,6 @@ public class WPAddCmd implements PluginCommand {
         wm.addWaypoint(wp);
         dm.saveWaypoints();
         SelectionManager.getManager().setSelectedWaypoint(sender, wp);
-        return true;
     }
 
     @Override

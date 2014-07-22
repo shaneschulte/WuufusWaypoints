@@ -1,6 +1,5 @@
 package com.github.marenwynn.waypoints.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -13,10 +12,10 @@ import com.github.marenwynn.waypoints.data.Waypoint;
 public class WPSelectCmd implements PluginCommand {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         WaypointManager wm = WaypointManager.getManager();
 
-        if (args.length < 2) {
+        if (args.length == 0) {
             if (sender instanceof Player) {
                 wm.openWaypointSelectionMenu((Player) sender);
             } else {
@@ -42,38 +41,28 @@ public class WPSelectCmd implements PluginCommand {
                 sender.sendMessage(Util.color(sb.toString()));
             }
 
-            return true;
+            return;
         }
 
         if (!sender.hasPermission("wp.admin")) {
             Msg.NO_PERMS.sendTo(sender);
-            return true;
+            return;
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 1; i < args.length; i++) {
-            sb.append(args[i]);
-
-            if (i < args.length - 1)
-                sb.append(" ");
-        }
-
-        String waypointName = Util.color(sb.toString());
+        String waypointName = Util.color(Util.buildString(args, 0, ' '));
         Waypoint wp = wm.getWaypoint(waypointName);
 
         if (wp == null) {
             Msg.WP_NOT_EXIST.sendTo(sender, waypointName);
-            return true;
+            return;
         }
 
         if (sender instanceof Player && !Util.hasAccess((Player) sender, wp, true)) {
             Msg.NO_PERMS.sendTo(sender);
-            return true;
+            return;
         }
 
         SelectionManager.getManager().setSelectedWaypoint(sender, wp);
-        return true;
     }
 
     @Override
