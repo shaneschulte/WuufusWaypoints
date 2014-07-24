@@ -30,24 +30,24 @@ public class WPRenameCmd implements PluginCommand {
             return;
         }
 
-        String waypointName = Util.color(Util.buildString(args, 0, ' '));
+        String newWaypointName = Util.color(Util.buildString(args, 0, ' '));
         int maxLength = DataManager.getManager().WP_NAME_MAX_LENGTH;
 
-        if (ChatColor.stripColor(waypointName).length() > maxLength) {
+        if (ChatColor.stripColor(newWaypointName).length() > maxLength) {
             Msg.MAX_LENGTH_EXCEEDED.sendTo(sender, maxLength);
             return;
         }
 
-        if (waypointName.equals("Bed") || waypointName.equals("Spawn")) {
-            Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
+        if (newWaypointName.equals("Bed") || newWaypointName.equals("Spawn")) {
+            Msg.WP_DUPLICATE_NAME.sendTo(sender, newWaypointName);
             return;
         }
 
-        boolean serverDefined = wm.getAllWaypoints().contains(wp);
+        boolean serverDefined = wm.isServerDefined(wp);
 
         if (serverDefined) {
-            if (wm.getWaypoint(waypointName) != null) {
-                Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
+            if (wm.getWaypoint(newWaypointName) != null) {
+                Msg.WP_DUPLICATE_NAME.sendTo(sender, newWaypointName);
                 return;
             }
 
@@ -55,8 +55,8 @@ public class WPRenameCmd implements PluginCommand {
         } else {
             PlayerData pd = wm.getPlayerData(((Player) sender).getUniqueId());
 
-            if (pd.getWaypoint(waypointName) != null) {
-                Msg.WP_DUPLICATE_NAME.sendTo(sender, waypointName);
+            if (pd.getWaypoint(newWaypointName) != null) {
+                Msg.WP_DUPLICATE_NAME.sendTo(sender, newWaypointName);
                 return;
             }
 
@@ -64,7 +64,7 @@ public class WPRenameCmd implements PluginCommand {
         }
 
         String oldName = wp.getName();
-        wp.setName(waypointName);
+        wp.setName(newWaypointName);
 
         if (serverDefined)
             wm.addWaypoint(wp);
@@ -72,7 +72,7 @@ public class WPRenameCmd implements PluginCommand {
             wm.getPlayerData(((Player) sender).getUniqueId()).addWaypoint(wp);
 
         DataManager.getManager().saveWaypoint(sender, wp);
-        Msg.WP_RENAMED.sendTo(sender, oldName, waypointName);
+        Msg.WP_RENAMED.sendTo(sender, oldName, newWaypointName);
     }
 
     @Override

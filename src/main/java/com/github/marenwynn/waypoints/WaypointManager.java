@@ -1,7 +1,6 @@
 package com.github.marenwynn.waypoints;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -48,6 +47,10 @@ public class WaypointManager {
         return null;
     }
 
+    public boolean isServerDefined(Waypoint wp) {
+        return waypoints.values().contains(wp);
+    }
+
     public void addWaypoint(Waypoint wp) {
         waypoints.put(Util.getKey(wp.getName()), wp);
         sortWaypoints();
@@ -56,10 +59,6 @@ public class WaypointManager {
     public void removeWaypoint(Waypoint wp) {
         waypoints.remove(Util.getKey(wp.getName()));
         sortWaypoints();
-    }
-
-    public Collection<Waypoint> getAllWaypoints() {
-        return waypoints.values();
     }
 
     public Map<String, Waypoint> getWaypoints() {
@@ -123,7 +122,7 @@ public class WaypointManager {
         PlayerData pd = getPlayerData(p.getUniqueId());
 
         if (addServerWaypoints && (!select || p.hasPermission("wp.admin")))
-            for (Waypoint wp : getAllWaypoints())
+            for (Waypoint wp : waypoints.values())
                 if (Util.hasAccess(p, wp, select))
                     accessList.add(wp);
 

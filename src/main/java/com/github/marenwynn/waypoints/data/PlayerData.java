@@ -74,19 +74,11 @@ public class PlayerData implements Serializable {
     }
 
     public Location getSpawnPoint() {
-        if (spawnPoint != null)
-            return spawnPoint.getLocation();
-
-        return null;
+        return spawnPoint != null ? spawnPoint.getLocation() : null;
     }
 
     public void setSpawnPoint(Location loc) {
-        if (loc == null) {
-            spawnPoint = null;
-            return;
-        }
-
-        spawnPoint = new GridLocation(loc);
+        spawnPoint = loc != null ? new GridLocation(loc) : null;
     }
 
 }

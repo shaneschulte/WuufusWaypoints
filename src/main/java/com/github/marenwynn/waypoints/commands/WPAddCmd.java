@@ -39,7 +39,7 @@ public class WPAddCmd implements PluginCommand {
 
         Location playerLoc = p.getLocation();
 
-        for (Waypoint wp : wm.getAllWaypoints()) {
+        for (Waypoint wp : wm.getWaypoints().values()) {
             if (Util.isSameLoc(playerLoc, wp.getLocation(), true)) {
                 Msg.WP_ALREADY_HERE.sendTo(p, wp.getName());
                 return;

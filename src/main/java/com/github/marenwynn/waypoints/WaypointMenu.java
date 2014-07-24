@@ -172,7 +172,7 @@ public class WaypointMenu implements Listener {
         Location loc = wp.getLocation();
         String displayName = "&6" + wp.getName();
 
-        if (!wp.isEnabled() && WaypointManager.getManager().getAllWaypoints().contains(wp))
+        if (!wp.isEnabled() && WaypointManager.getManager().isServerDefined(wp))
             displayName += " &f[&cDisabled&f]";
 
         List<String> lore = new ArrayList<String>();

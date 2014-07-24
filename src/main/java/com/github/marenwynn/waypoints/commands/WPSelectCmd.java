@@ -22,7 +22,7 @@ public class WPSelectCmd implements PluginCommand {
                 StringBuilder sb = new StringBuilder();
                 sb.append(Msg.WP_LIST.toString());
 
-                Waypoint[] waypoints = wm.getAllWaypoints().toArray(new Waypoint[wm.getAllWaypoints().size()]);
+                Waypoint[] waypoints = wm.getWaypoints().values().toArray(new Waypoint[wm.getWaypoints().size()]);
                 Waypoint selectedWaypoint = SelectionManager.getManager().getSelectedWaypoint(sender);
 
                 for (int i = 0; i < waypoints.length; i++) {

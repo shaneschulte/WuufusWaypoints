@@ -50,8 +50,8 @@ public class DataManager {
         pm = PluginMain.getPluginInstance();
         wm = WaypointManager.getManager();
 
-        playerFolder = new File(pm.getDataFolder().getPath() + File.separator + "players");
-        waypointDataFile = new File(pm.getDataFolder().getPath() + File.separator + "waypoints.db");
+        playerFolder = new File(pm.getDataFolder(), "players");
+        waypointDataFile = new File(pm.getDataFolder(), "waypoints.db");
         messages = new HashMap<Msg, String>();
 
         loadConfig();
@@ -190,7 +190,7 @@ public class DataManager {
     }
 
     public PlayerData loadPlayerData(UUID playerUUID) {
-        File playerFile = new File(playerFolder + File.separator + playerUUID);
+        File playerFile = new File(playerFolder, playerUUID.toString());
         Map<UUID, PlayerData> players = wm.getPlayers();
 
         if (!playerFile.exists()) {
@@ -233,7 +233,7 @@ public class DataManager {
     }
 
     public void savePlayerData(UUID playerUUID) {
-        File playerFile = new File(playerFolder + File.separator + playerUUID);
+        File playerFile = new File(playerFolder, playerUUID.toString());
 
         try {
             FileOutputStream fos = new FileOutputStream(playerFile);

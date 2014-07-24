@@ -76,7 +76,7 @@ public class SelectionManager {
     }
 
     private void sendSelectionInfo(CommandSender sender, Waypoint wp) {
-        boolean serverDefined = WaypointManager.getManager().getAllWaypoints().contains(wp);
+        boolean serverDefined = WaypointManager.getManager().isServerDefined(wp);
         Location loc = wp.getLocation();
         String displayName = wp.getName();
 

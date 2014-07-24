@@ -56,11 +56,11 @@ public class PlayerListener implements Listener {
 
         if (dm.ENABLE_BEACON && i.isSimilar(dm.BEACON)) {
             if (a == Action.RIGHT_CLICK_BLOCK && p.isSneaking() && p.hasPermission("wp.respawn")) {
-                Waypoint home = findHomeWaypoint(p, b);
+                PlayerData pd = wm.getPlayerData(p.getUniqueId());
+                Waypoint home = findHomeWaypoint(pd, b);
 
                 if (home != null) {
                     if (b.isBlockPowered()) {
-                        PlayerData pd = wm.getPlayerData(p.getUniqueId());
 
                         useItem(p, i, true);
                         pd.setSpawnPoint(home.getLocation());
@@ -93,7 +93,7 @@ public class PlayerListener implements Listener {
                 || !p.isSneaking())
             return;
 
-        Waypoint home = findHomeWaypoint(p, b);
+        Waypoint home = findHomeWaypoint(wm.getPlayerData(p.getUniqueId()), b);
 
         if (home != null) {
             Material m = i.getType();
@@ -162,7 +162,7 @@ public class PlayerListener implements Listener {
 
         PlayerData pd = wm.getPlayerData(p.getUniqueId());
 
-        for (Waypoint wp : wm.getAllWaypoints()) {
+        for (Waypoint wp : wm.getWaypoints().values()) {
             if (Util.isSameLoc(wp.getLocation(), to, true) && (wp.isEnabled() || p.hasPermission("wp.bypass"))) {
                 String perm = "wp.access." + Util.getKey(wp.getName());
 
@@ -199,7 +199,7 @@ public class PlayerListener implements Listener {
         // Cleans discoveries of deleted waypoints
         List<UUID> waypoints = new ArrayList<UUID>();
 
-        for (Waypoint wp : wm.getAllWaypoints())
+        for (Waypoint wp : wm.getWaypoints().values())
             waypoints.add(wp.getUUID());
 
         if (pd.retainDiscoveries(waypoints))
@@ -212,11 +212,11 @@ public class PlayerListener implements Listener {
         dm.unloadPlayerData(quitEvent.getPlayer().getUniqueId());
     }
 
-    public Waypoint findHomeWaypoint(Player p, Block clicked) {
+    public Waypoint findHomeWaypoint(PlayerData pd, Block clicked) {
         if (clicked != null) {
             Location loc = clicked.getRelative(BlockFace.UP).getLocation();
 
-            for (Waypoint wp : wm.getPlayerData(p.getUniqueId()).getAllWaypoints())
+            for (Waypoint wp : pd.getAllWaypoints())
                 if (Util.isSameLoc(loc, wp.getLocation(), true))
                     return wp;
         }

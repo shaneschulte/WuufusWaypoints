@@ -69,7 +69,6 @@ public class PluginMain extends JavaPlugin {
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
-
         DataManager.getManager().saveWaypoints();
 
         for (Player p : getServer().getOnlinePlayers())
