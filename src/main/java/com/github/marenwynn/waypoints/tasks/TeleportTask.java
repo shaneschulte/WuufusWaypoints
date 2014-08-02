@@ -31,7 +31,7 @@ public class TeleportTask extends BukkitRunnable implements Listener {
     public TeleportTask(Player p, Waypoint wp) {
         pm = PluginMain.getPluginInstance();
 
-        counter = 5;
+        counter = p.hasPermission("wp.instant") ? 1 : 5;
         walkSpeed = p.getWalkSpeed();
         flySpeed = p.getFlySpeed();
         this.p = p;
@@ -100,7 +100,7 @@ public class TeleportTask extends BukkitRunnable implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     void onPlayerDamage(EntityDamageEvent damageEvent) {
         if (p == null || !p.getUniqueId().equals(damageEvent.getEntity().getUniqueId()) || counter < 2)
             return;

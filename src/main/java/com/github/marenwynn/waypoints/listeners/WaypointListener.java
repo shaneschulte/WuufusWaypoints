@@ -26,7 +26,7 @@ import com.github.marenwynn.waypoints.events.WaypointInteractEvent;
 
 public class WaypointListener implements Listener {
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onWaypointInteract(WaypointInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getItem() == null)
             return;

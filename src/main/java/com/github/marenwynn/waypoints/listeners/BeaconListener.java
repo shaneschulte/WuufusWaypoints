@@ -21,7 +21,7 @@ public class BeaconListener implements Listener {
         return listener;
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBeaconUse(BeaconUseEvent useEvent) {
         Player p = useEvent.getPlayer();
         Action a = useEvent.getAction();
