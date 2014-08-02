@@ -42,6 +42,7 @@ public class DataManager {
     public int                 MAX_HOME_WAYPOINTS;
     public int                 WP_NAME_MAX_LENGTH, WP_DESC_MAX_LENGTH;
     public boolean             ENABLE_BEACON;
+    public boolean             BEACON_UNLIMITED_PERMANENT;
     public ItemStack           BEACON;
     public boolean             HANDLE_RESPAWNING;
     public SpawnMode           SPAWN_MODE;
@@ -75,6 +76,7 @@ public class DataManager {
         config.addDefault("Waypoints.WP_NAME_MAX_LENGTH", 18);
         config.addDefault("Waypoints.WP_DESC_MAX_LENGTH", 100);
         config.addDefault("Waypoints.ENABLE_BEACON", true);
+        config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT", false);
         config.addDefault("Waypoints.HANDLE_RESPAWNING", true);
         config.addDefault("Waypoints.SPAWN_MODE", "home");
         config.addDefault("Waypoints.CITY_WORLD_NAME", "world");
@@ -89,6 +91,7 @@ public class DataManager {
         WP_NAME_MAX_LENGTH = config.getInt("Waypoints.WP_NAME_MAX_LENGTH");
         WP_DESC_MAX_LENGTH = config.getInt("Waypoints.WP_DESC_MAX_LENGTH");
         ENABLE_BEACON = config.getBoolean("Waypoints.ENABLE_BEACON");
+        BEACON_UNLIMITED_PERMANENT = config.getBoolean("Waypoints.BEACON_UNLIMITED_PERMANENT");
         HANDLE_RESPAWNING = config.getBoolean("Waypoints.HANDLE_RESPAWNING");
         SPAWN_MODE = SpawnMode.valueOf(config.getString("Waypoints.SPAWN_MODE").toUpperCase());
         CITY_WORLD_NAME = config.getString("Waypoints.CITY_WORLD_NAME");

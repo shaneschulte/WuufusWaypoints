@@ -144,7 +144,8 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent joinEvent) {
-        PlayerData pd = dm.loadPlayerData(joinEvent.getPlayer().getUniqueId());
+        Player p = joinEvent.getPlayer();
+        PlayerData pd = dm.loadPlayerData(p.getUniqueId());
 
         // (v1.1.0) Note: For transition; remove later
         for (Waypoint wp : pd.getAllWaypoints())
@@ -158,7 +159,7 @@ public class PlayerListener implements Listener {
             waypoints.add(wp.getUUID());
 
         if (pd.retainDiscoveries(waypoints))
-            dm.savePlayerData(joinEvent.getPlayer().getUniqueId());
+            dm.savePlayerData(p.getUniqueId());
     }
 
     @EventHandler
