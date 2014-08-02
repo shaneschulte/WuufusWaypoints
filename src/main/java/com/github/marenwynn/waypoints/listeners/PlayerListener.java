@@ -46,7 +46,7 @@ public class PlayerListener implements Listener {
         Action a = event.getAction();
         ItemStack is = event.getItem();
 
-        if (p.hasMetadata("InMenu") || p.hasMetadata("Wayporting"))
+        if (a == Action.PHYSICAL || p.hasMetadata("InMenu") || p.hasMetadata("Wayporting"))
             return;
 
         // Calls WaypointInteractEvent if sneaking and clicked block is a
@@ -91,9 +91,7 @@ public class PlayerListener implements Listener {
 
         // Calls BeaconUseEvent on click if item in hand is a Waypoint Beacon
         if (dm.ENABLE_BEACON && is.isSimilar(dm.BEACON)) {
-            if (a != Action.PHYSICAL)
-                Bukkit.getPluginManager().callEvent(new BeaconUseEvent(p, a));
-
+            Bukkit.getPluginManager().callEvent(new BeaconUseEvent(p, a));
             event.setCancelled(true);
         }
     }
@@ -122,15 +120,13 @@ public class PlayerListener implements Listener {
 
         for (Waypoint wp : wm.getWaypoints().values()) {
             if (Util.isSameLoc(wp.getLocation(), to, true) && (wp.isEnabled() || p.hasPermission("wp.bypass"))) {
-                String perm = "wp.access." + Util.getKey(wp.getName());
-
                 if (wp.isDiscoverable() != null && !pd.hasDiscovered(wp.getUUID())) {
                     pd.addDiscovery(wp.getUUID());
                     dm.savePlayerData(p.getUniqueId());
                     Msg.DISCOVERED_WAYPOINT.sendTo(p, wp.getName());
                 }
 
-                if (p.hasPermission(perm) || pd.hasDiscovered(wp.getUUID())) {
+                if (Util.hasAccess(p, wp, false)) {
                     wm.openWaypointMenu(p, wp, true, true, false);
                     return;
                 }
