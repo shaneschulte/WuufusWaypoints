@@ -3,9 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.marenwynn</groupId>
 	<artifactId>waypoints</artifactId>
-	<version>1.2.0</version>
+	<version>1.3.0</version>
 	<name>Maren's Waypoints</name>
-	<description>Bukkit plugin: Maren's Waypoints is a portal management system which aims to unify what is normally separate plugins for portals/warps, homes, and spawns under an intuitive linking menu not unlike the waypoint system in Diablo 2.</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -47,4 +46,5 @@
 			</resource>
 		</resources>
 	</build>
+	<description>Bukkit plugin: Maren's Waypoints is a portal management system which aims to unify what is normally separate plugins for portals, homes/warps, and spawns under an intuitive linking menu not unlike the waypoint system in Diablo 2.</description>
 </project>
