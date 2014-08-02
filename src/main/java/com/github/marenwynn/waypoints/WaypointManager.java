@@ -89,9 +89,6 @@ public class WaypointManager {
 
     public void openWaypointMenu(Player p, Waypoint currentWaypoint, boolean addServerWaypoints,
             boolean addHomeWaypoints, boolean select) {
-        if (p.hasMetadata("InMenu"))
-            return;
-
         List<Waypoint> accessList = new ArrayList<Waypoint>();
 
         if (!select) {

@@ -25,8 +25,9 @@ public class RespawnListener implements Listener {
     private static RespawnListener listener;
 
     public static RespawnListener getListener() {
-        if (listener == null)
+        if (listener == null) {
             listener = new RespawnListener();
+        }
 
         return listener;
     }

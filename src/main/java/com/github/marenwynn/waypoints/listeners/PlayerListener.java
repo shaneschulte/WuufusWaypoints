@@ -1,13 +1,14 @@
 package com.github.marenwynn.waypoints.listeners;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
-import org.bukkit.Effect;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -19,7 +20,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 
 import com.github.marenwynn.waypoints.SelectionManager;
 import com.github.marenwynn.waypoints.Util;
@@ -28,6 +28,8 @@ import com.github.marenwynn.waypoints.data.DataManager;
 import com.github.marenwynn.waypoints.data.Msg;
 import com.github.marenwynn.waypoints.data.PlayerData;
 import com.github.marenwynn.waypoints.data.Waypoint;
+import com.github.marenwynn.waypoints.events.BeaconUseEvent;
+import com.github.marenwynn.waypoints.events.WaypointInteractEvent;
 
 public class PlayerListener implements Listener {
 
@@ -43,108 +45,65 @@ public class PlayerListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player p = event.getPlayer();
         Action a = event.getAction();
+        ItemStack is = event.getItem();
 
-        if (p.hasMetadata("Wayporting"))
+        if (p.hasMetadata("InMenu") || p.hasMetadata("Wayporting"))
             return;
 
-        ItemStack i = event.getItem();
+        // Calls WaypointInteractEvent if sneaking and clicked block is a
+        // waypoint
+        if (p.isSneaking() && (a == Action.RIGHT_CLICK_BLOCK || a == Action.LEFT_CLICK_BLOCK)) {
+            Block clicked = event.getClickedBlock();
+            Location toCheck = clicked.getLocation().add(0, 1D, 0);
+            Set<Waypoint> waypoints = new HashSet<Waypoint>(wm.getWaypoints().values());
+            waypoints.addAll(wm.getPlayerData(p.getUniqueId()).getAllWaypoints());
 
-        if (i == null)
-            return;
-
-        Block b = event.getClickedBlock();
-
-        if (dm.ENABLE_BEACON && i.isSimilar(dm.BEACON)) {
-            if (a == Action.RIGHT_CLICK_BLOCK && p.isSneaking() && p.hasPermission("wp.respawn")) {
-                PlayerData pd = wm.getPlayerData(p.getUniqueId());
-                Waypoint home = findHomeWaypoint(pd, b);
-
-                if (home != null) {
-                    if (b.isBlockPowered()) {
-
-                        useItem(p, i, true);
-                        pd.setSpawnPoint(home.getLocation());
-                        dm.savePlayerData(p.getUniqueId());
-                        Msg.SET_PLAYER_SPAWN.sendTo(p, home.getName());
-                    } else {
-                        Msg.INSUFFICIENT_POWER.sendTo(p);
-                    }
-
-                    event.setCancelled(true);
-                    return;
-                }
-            }
-
-            if (p.hasPermission("wp.beacon.use")) {
-                if (a == Action.RIGHT_CLICK_BLOCK || a == Action.RIGHT_CLICK_AIR) {
-                    useItem(p, i, true);
-                    wm.openWaypointMenu(p, null, p.hasPermission("wp.beacon.server"), true, false);
-                    event.setCancelled(true);
-                    return;
-                } else if ((a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR) && p.hasPermission("wp.select")) {
-                    wm.openWaypointSelectionMenu(p);
+            for (Waypoint wp : waypoints) {
+                if (Util.isSameLoc(toCheck, wp.getLocation(), true)) {
+                    Bukkit.getPluginManager().callEvent(
+                            new WaypointInteractEvent(p, wp, a, is, clicked.isBlockPowered()));
                     event.setCancelled(true);
                     return;
                 }
             }
         }
 
-        if (a != Action.RIGHT_CLICK_BLOCK && a != Action.RIGHT_CLICK_AIR || !p.hasPermission("wp.player")
-                || !p.isSneaking())
+        if (is == null)
             return;
 
-        Waypoint home = findHomeWaypoint(wm.getPlayerData(p.getUniqueId()), b);
+        // Creates a new home waypoint if player is sneaking and right-clicking
+        // with a renamed clock
+        if (p.isSneaking() && p.hasPermission("wp.player")
+                && (a == Action.RIGHT_CLICK_BLOCK || a == Action.RIGHT_CLICK_AIR)) {
+            if (is.hasItemMeta() && is.getItemMeta().hasDisplayName()) {
+                if (!wm.setHome(p, Util.color(is.getItemMeta().getDisplayName())))
+                    return;
 
-        if (home != null) {
-            Material m = i.getType();
+                is.setAmount(is.getAmount() - 1);
+                p.setItemInHand(is);
 
-            if (m == Material.WRITTEN_BOOK) {
-                BookMeta bm = (BookMeta) i.getItemMeta();
-                String content = "";
-
-                for (int page = 1; page <= bm.getPageCount(); page++) {
-                    content += bm.getPage(page);
-
-                    if (page != bm.getPageCount())
-                        content += " ";
-                }
-
-                if (content.length() > dm.WP_DESC_MAX_LENGTH)
-                    content = content.substring(0, dm.WP_DESC_MAX_LENGTH);
-
-                p.closeInventory();
-                home.setDescription(content);
-                Msg.WP_DESC_UPDATED_BOOK.sendTo(p, home.getName(), bm.getTitle());
-            } else {
-                home.setIcon(m);
-                home.setDurability(i.getDurability());
-                Msg.WP_SETICON.sendTo(p, home.getName(), m.toString(), i.getDurability());
+                Location strikeLoc = p.getLocation();
+                strikeLoc.setY(strikeLoc.getBlockY() + 2);
+                p.getWorld().strikeLightningEffect(strikeLoc);
+                event.setCancelled(true);
+                return;
             }
-
-            Util.playSound(home.getLocation(), Sound.ORB_PICKUP);
-            Util.playEffect(home.getLocation(), Effect.ENDER_SIGNAL);
-            dm.saveWaypoint(p, home);
-        } else {
-            if (i.getType() != Material.WATCH || !i.hasItemMeta() || !i.getItemMeta().hasDisplayName())
-                return;
-
-            if (!wm.setHome(p, Util.color(i.getItemMeta().getDisplayName())))
-                return;
-
-            Location strikeLoc = p.getLocation();
-            strikeLoc.setY(strikeLoc.getBlockY() + 2);
-            p.getWorld().strikeLightningEffect(strikeLoc);
         }
 
-        useItem(p, i, false);
-        event.setCancelled(true);
+        // Calls BeaconUseEvent on click if item in hand is a Waypoint Beacon
+        if (dm.ENABLE_BEACON && is.isSimilar(dm.BEACON)) {
+            if (a != Action.PHYSICAL)
+                Bukkit.getPluginManager().callEvent(new BeaconUseEvent(p, a));
+
+            event.setCancelled(true);
+        }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent moveEvent) {
         Player p = moveEvent.getPlayer();
 
-        if (p.hasMetadata("Wayporting"))
+        if (p.hasMetadata("InMenu") || p.hasMetadata("Wayporting"))
             return;
 
         Location from = moveEvent.getFrom();
@@ -222,13 +181,6 @@ public class PlayerListener implements Listener {
         }
 
         return null;
-    }
-
-    public void useItem(Player p, ItemStack i, boolean beacon) {
-        if (!beacon || (beacon && !p.hasPermission("wp.beacon.unlimited"))) {
-            i.setAmount(i.getAmount() - 1);
-            p.setItemInHand(i);
-        }
     }
 
 }

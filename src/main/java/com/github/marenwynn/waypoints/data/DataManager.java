@@ -27,6 +27,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import com.github.marenwynn.waypoints.PluginMain;
 import com.github.marenwynn.waypoints.Util;
 import com.github.marenwynn.waypoints.WaypointManager;
+import com.github.marenwynn.waypoints.listeners.BeaconListener;
 import com.github.marenwynn.waypoints.listeners.RespawnListener;
 
 public class DataManager {
@@ -107,6 +108,8 @@ public class DataManager {
             ShapedRecipe sr = new ShapedRecipe(BEACON);
             sr.shape("RRR", "RCR", "RRR").setIngredient('R', Material.REDSTONE).setIngredient('C', Material.COMPASS);
             Bukkit.addRecipe(sr);
+
+            Bukkit.getPluginManager().registerEvents(BeaconListener.getListener(), pm);
         }
 
         if (HANDLE_RESPAWNING)
@@ -124,6 +127,8 @@ public class DataManager {
                 if (recipe != null && recipe.getResult().isSimilar(BEACON))
                     recipes.remove();
             }
+
+            HandlerList.unregisterAll(BeaconListener.getListener());
         }
 
         if (HANDLE_RESPAWNING)
