@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -169,18 +168,6 @@ public class PlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent quitEvent) {
         SelectionManager.getManager().clearSelectedWaypoint(quitEvent.getPlayer());
         dm.unloadPlayerData(quitEvent.getPlayer().getUniqueId());
-    }
-
-    public Waypoint findHomeWaypoint(PlayerData pd, Block clicked) {
-        if (clicked != null) {
-            Location loc = clicked.getRelative(BlockFace.UP).getLocation();
-
-            for (Waypoint wp : pd.getAllWaypoints())
-                if (Util.isSameLoc(loc, wp.getLocation(), true))
-                    return wp;
-        }
-
-        return null;
     }
 
 }
