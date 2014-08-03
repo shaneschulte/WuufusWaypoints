@@ -8,6 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
@@ -54,11 +55,21 @@ public class BeaconListener implements Listener {
     public void onInventoryInteract(InventoryClickEvent clickEvent) {
         DataManager dm = DataManager.getManager();
         InventoryType type = clickEvent.getInventory().getType();
+        InventoryAction a = clickEvent.getAction();
 
-        if (dm.BEACON_UNLIMITED_PERMANENT && clickEvent.getWhoClicked().hasPermission("wp.beacon.unlimited"))
-            if (!(type == InventoryType.PLAYER || type == InventoryType.CREATIVE || type == InventoryType.CRAFTING))
+        if (dm.BEACON_UNLIMITED_PERMANENT && clickEvent.getWhoClicked().hasPermission("wp.beacon.unlimited")) {
+            if (!(type == InventoryType.PLAYER || type == InventoryType.CREATIVE || type == InventoryType.CRAFTING)) {
                 if (clickEvent.getCurrentItem() != null && clickEvent.getCurrentItem().isSimilar(dm.BEACON))
                     clickEvent.setCancelled(true);
+
+                if (a == InventoryAction.HOTBAR_MOVE_AND_READD || a == InventoryAction.HOTBAR_SWAP) {
+                    ItemStack is = clickEvent.getView().getBottomInventory().getItem(clickEvent.getHotbarButton());
+
+                    if (is != null && is.isSimilar(dm.BEACON))
+                        clickEvent.setCancelled(true);
+                }
+            }
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
