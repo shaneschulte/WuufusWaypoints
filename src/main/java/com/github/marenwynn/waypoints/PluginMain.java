@@ -82,9 +82,11 @@ public class PluginMain extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String cmd = command.getName().toLowerCase();
         PluginCommand pluginCmd = null;
-        String[] param = args.length > 0 ? Arrays.copyOfRange(args, 1, args.length) : null;
+        String[] param = null;
 
         if (cmd.equals("wp")) {
+            param = args.length > 0 ? Arrays.copyOfRange(args, 1, args.length) : null;
+
             if (args.length > 0) {
                 String key = args[0].toLowerCase();
 
@@ -115,6 +117,7 @@ public class PluginMain extends JavaPlugin {
             }
         } else if (cmd.equals("sethome")) {
             pluginCmd = commands.get("sethome");
+            param = args;
         } else if (cmd.equals("setspawn")) {
             pluginCmd = commands.get("setspawn");
         }
