@@ -85,10 +85,9 @@ public class PluginMain extends JavaPlugin {
         String[] param = null;
 
         if (cmd.equals("wp")) {
-            param = args.length > 0 ? Arrays.copyOfRange(args, 1, args.length) : null;
-
             if (args.length > 0) {
                 String key = args[0].toLowerCase();
+                param = Arrays.copyOfRange(args, 1, args.length);
 
                 if (commands.containsKey(key))
                     pluginCmd = commands.get(key);
