@@ -75,7 +75,7 @@ public class PlayerListener implements Listener {
         // with a renamed clock
         if (p.isSneaking() && p.hasPermission("wp.player")
                 && (a == Action.RIGHT_CLICK_BLOCK || a == Action.RIGHT_CLICK_AIR)) {
-            if (is.hasItemMeta() && is.getItemMeta().hasDisplayName()) {
+            if (is.getType() == Material.WATCH && is.hasItemMeta() && is.getItemMeta().hasDisplayName()) {
                 if (!wm.setHome(p, Util.color(is.getItemMeta().getDisplayName())))
                     return;
 
