@@ -64,6 +64,9 @@ public class PluginMain extends JavaPlugin {
         getCommand("setspawn").setExecutor(this);
         getServer().getPluginManager().registerEvents(new WaypointListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+
+        for (Player p : getServer().getOnlinePlayers())
+            DataManager.getManager().loadPlayerData(p.getUniqueId());
     }
 
     @Override
