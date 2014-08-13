@@ -41,7 +41,7 @@ public class PlayerData implements Serializable {
     }
 
     public boolean retainDiscoveries(List<UUID> discovered) {
-        return discovered.retainAll(discovered);
+        return this.discovered.retainAll(discovered);
     }
 
     public Waypoint getWaypoint(String name) {
