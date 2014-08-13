@@ -22,11 +22,9 @@ public class Waypoint extends GridLocation {
         setDescription("");
         setIcon(Material.IRON_DOOR);
         setEnabled(true);
-        uuid = UUID.randomUUID();
     }
 
     public UUID getUUID() {
-        // (v1.1.0) Note: For transition; remove later
         if (uuid == null)
             uuid = UUID.randomUUID();
 
