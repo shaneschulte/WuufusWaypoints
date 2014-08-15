@@ -90,8 +90,9 @@ public class PlayerListener implements Listener {
             }
         }
 
-        // Calls BeaconUseEvent on click if item in hand is a Waypoint Beacon
-        if (dm.ENABLE_BEACON && is.isSimilar(dm.BEACON)) {
+        // Calls BeaconUseEvent on click if player is not sneaking and item in
+        // hand is a Waypoint Beacon
+        if (!p.isSneaking() && dm.ENABLE_BEACON && is.isSimilar(dm.BEACON)) {
             Bukkit.getPluginManager().callEvent(new BeaconUseEvent(p, a));
             event.setCancelled(true);
         }
