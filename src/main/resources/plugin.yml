@@ -33,7 +33,7 @@
        wp.move: true
        wp.remove: true
        wp.rename: true
-       wp.select: true
+       wp.select.*: true
        wp.sethome: true
        wp.setspawn: true
        wp.toggle: true
@@ -48,3 +48,8 @@
        wp.beacon.use: true
        wp.beacon.server: true
        wp.beacon.unlimited: true
+   wp.select.*:
+     description: Grants access to select using both methods
+     children:
+       wp.select.beacon: true
+       wp.select.command: true

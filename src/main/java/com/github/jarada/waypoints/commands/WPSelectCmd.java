@@ -72,7 +72,7 @@ public class WPSelectCmd implements PluginCommand {
 
     @Override
     public boolean hasRequiredPerm(CommandSender sender) {
-        return sender.hasPermission("wp.select");
+        return sender.hasPermission("wp.select.command");
     }
 
 }

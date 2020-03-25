@@ -3,6 +3,8 @@ CHANGELOG
 2.0.0
 - New Owner!
 - Updated to Spigot 1.15
+- Split permissions between selecting via command and selecting via beacon so you can tailor how players
+  can select waypoints
 
 1.3.0 (08/02/2014):
 - Added config option BEACON_UNLIMITED_PERMANENT

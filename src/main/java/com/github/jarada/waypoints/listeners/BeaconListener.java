@@ -46,7 +46,7 @@ public class BeaconListener implements Listener {
             }
 
             WaypointManager.getManager().openWaypointMenu(p, null, p.hasPermission("wp.beacon.server"), true, false);
-        } else if (p.hasPermission("wp.select") && (a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR)) {
+        } else if (p.hasPermission("wp.select.beacon") && (a == Action.LEFT_CLICK_BLOCK || a == Action.LEFT_CLICK_AIR)) {
             WaypointManager.getManager().openWaypointSelectionMenu(p);
         }
     }
