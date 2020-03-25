@@ -1,29 +1,32 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.github.marenwynn</groupId>
+	<groupId>com.github.jarada</groupId>
 	<artifactId>waypoints</artifactId>
-	<version>1.3.0</version>
-	<name>Maren's Waypoints</name>
+	<version>2.0.0</version>
+	<name>Wuufu's Waypoints</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<repositories>
+		<!-- This adds the Spigot Maven repository to the build -->
 		<repository>
-			<id>bukkit-repo</id>
-			<url>http://repo.bukkit.org/content/groups/public/</url>
+			<id>spigot-repo</id>
+			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 	</repositories>
 	<dependencies>
+		<!--This adds the Spigot API artifact to the build -->
 		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>1.7.9-R0.2</version>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot-api</artifactId>
+			<version>1.15.2-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
 		<defaultGoal>clean package</defaultGoal>
-		<finalName>MarensWaypoints-${project.version}</finalName>
+		<finalName>WuufusWaypoints-${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -46,5 +49,5 @@
 			</resource>
 		</resources>
 	</build>
-	<description>Bukkit plugin: Maren's Waypoints is a portal management system which aims to unify what is normally separate plugins for portals, homes/warps, and spawns under an intuitive linking menu not unlike the waypoint system in Diablo 2.</description>
+	<description>Spigot plugin: Wuufu's Waypoints is a fork of Maven's Waypoints for the modern Spigot. A portal management system which aims to unify what is normally separate plugins for portals, homes/warps, and spawns under an intuitive linking menu not unlike the waypoint system in Diablo 2.</description>
 </project>
