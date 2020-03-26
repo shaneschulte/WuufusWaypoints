@@ -1,7 +1,9 @@
- name: MarensWaypoints
- author: Marenwynn
- main: com.github.marenwynn.waypoints.PluginMain
+ name: WuufusWaypoints
+ author: Wuufu
+ main: com.github.jarada.waypoints.PluginMain
  version: ${project.version}
+ prefix: WuufusWaypoints
+ api-version: 1.15
  commands:
    wp:
      description: Waypoints top-level command
