@@ -1,6 +1,10 @@
 CHANGELOG
 
-2.0.0
+2.0.1 (29/03/2020):
+- Corrected wp command output
+- Updated to support 1.13 and 1.14 additionally
+
+2.0.0 (28/03/2020):
 - New Owner!
 - Updated to Spigot 1.15
 - Split permissions between selecting via command and selecting via beacon so you can tailor how players
