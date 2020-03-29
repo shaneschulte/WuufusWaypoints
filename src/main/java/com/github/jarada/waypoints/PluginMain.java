@@ -114,7 +114,7 @@ public class PluginMain extends JavaPlugin {
                         Msg.LIST_HOME_WAYPOINTS.sendTo(sender, sb.toString());
                 }
 
-                sender.sendMessage("Maren's Waypoints v" + getDescription().getVersion() + " by Marenwynn.");
+                sender.sendMessage("Wuufu's Waypoints v" + getDescription().getVersion() + " by Wuufu and Marenwynn.");
                 return false;
             }
         } else if (cmd.equals("sethome")) {
