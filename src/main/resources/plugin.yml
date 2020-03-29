@@ -3,7 +3,7 @@
  main: com.github.jarada.waypoints.PluginMain
  version: ${project.version}
  prefix: WuufusWaypoints
- api-version: 1.15
+ api-version: 1.13
  commands:
    wp:
      description: Waypoints top-level command
