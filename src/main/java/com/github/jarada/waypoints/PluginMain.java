@@ -5,9 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.jarada.waypoints.data.DataManager;
-import com.github.jarada.waypoints.data.Msg;
-import com.github.jarada.waypoints.data.Waypoint;
+import com.github.jarada.waypoints.data.*;
 import com.github.jarada.waypoints.listeners.PlayerListener;
 import com.github.jarada.waypoints.listeners.WaypointListener;
 import org.bukkit.command.Command;

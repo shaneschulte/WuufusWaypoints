@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class GridLocation implements Serializable {
 
@@ -15,6 +16,24 @@ public class GridLocation implements Serializable {
 
     public GridLocation(Location loc) {
         setLocation(loc);
+    }
+
+    public GridLocation(YamlConfiguration config, String prefix) {
+        worldName = Serializer.getString(config, prefix, "world");
+        x = Serializer.getInt(config, prefix, "x");
+        y = Serializer.getInt(config, prefix, "y");
+        z = Serializer.getInt(config, prefix, "z");
+        pitch = Serializer.getFloat(config, prefix, "pitch");
+        yaw = Serializer.getFloat(config, prefix, "yaw");
+    }
+
+    public void serialize(YamlConfiguration config, String prefix) {
+        Serializer.set(config, prefix, "world", worldName);
+        Serializer.set(config, prefix, "x", x);
+        Serializer.set(config, prefix, "y", y);
+        Serializer.set(config, prefix, "z", z);
+        Serializer.set(config, prefix, "pitch", pitch);
+        Serializer.set(config, prefix, "yaw", yaw);
     }
 
     public Location getLocation() {

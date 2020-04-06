@@ -20,7 +20,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -36,8 +39,9 @@ public class DataManager {
     private static DataManager dm;
     private PluginMain         pm;
     private WaypointManager    wm;
+    private YamlConfiguration  wc;
 
-    private File               playerFolder, waypointDataFile;
+    private File               playerFolder, waypointDataFile, waypointConfigFile;
     private Map<Msg, String>   messages;
 
     public int                 MAX_HOME_WAYPOINTS;
@@ -52,10 +56,14 @@ public class DataManager {
     public DataManager() {
         pm = PluginMain.getPluginInstance();
         wm = WaypointManager.getManager();
+        wc = new YamlConfiguration();
 
         playerFolder = new File(pm.getDataFolder(), "players");
-        waypointDataFile = new File(pm.getDataFolder(), "waypoints.db");
         messages = new HashMap<Msg, String>();
+
+        // (v2.1.0) Note: For transition; remove data file later
+        waypointDataFile = new File(pm.getDataFolder(), "waypoints.db");
+        waypointConfigFile = new File (pm.getDataFolder(), "waypoints.yml");
 
         loadConfig();
     }
@@ -147,114 +155,181 @@ public class DataManager {
     }
 
     public void loadWaypoints() {
-        if (!waypointDataFile.exists())
+        if (!waypointConfigFile.exists() && !waypointDataFile.exists())
             return;
 
-        List<?> uncasted = null;
-
-        try {
-            FileInputStream fis = new FileInputStream(waypointDataFile);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-
+        if (waypointConfigFile.exists()) {
+            // Load
             try {
-                uncasted = (List<?>) ois.readObject();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } finally {
-                ois.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (uncasted != null) {
-            for (Object obj : uncasted) {
-                if (obj instanceof Waypoint) {
-                    Waypoint wp = (Waypoint) obj;
-                    wm.getWaypoints().put(Util.getKey(wp.getName()), wp);
+                wc.load(waypointConfigFile);
+                ConfigurationSection waypoints = wc.getConfigurationSection("waypoints");
+                if (waypoints != null) {
+                    for (String key : waypoints.getKeys(false)) {
+                        Waypoint wp = new Waypoint(wc, "waypoints." + key);
+                        wm.getWaypoints().put(Util.getKey(wp.getName()), wp);
+                    }
                 }
+            } catch (IOException | InvalidConfigurationException e) {
+                e.printStackTrace();
             }
         }
-    }
-
-    public void saveWaypoints() {
-        try {
-            FileOutputStream fos = new FileOutputStream(waypointDataFile);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-
+        // (v2.1.0) Note: For transition; remove later
+        else if (waypointDataFile.exists()) {
+            List<?> uncasted = null;
             try {
-                oos.writeObject(Arrays.asList(wm.getWaypoints().values()
-                        .toArray(new Waypoint[wm.getWaypoints().size()])));
-            } finally {
-                oos.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+                FileInputStream fis = new FileInputStream(waypointDataFile);
 
-    public void unloadPlayerData(UUID player) {
-        if (wm.getPlayers().containsKey(player))
-            wm.getPlayers().remove(player);
-    }
-
-    public PlayerData loadPlayerData(UUID playerUUID) {
-        File playerFile = new File(playerFolder, playerUUID.toString());
-        Map<UUID, PlayerData> players = wm.getPlayers();
-
-        if (!playerFile.exists()) {
-            players.put(playerUUID, new PlayerData(playerUUID));
-        } else {
-            Object uncasted = null;
-
-            try {
-                FileInputStream fis = new FileInputStream(playerFile);
-                ObjectInputStream ois = new ObjectInputStream(fis);
-
-                try {
-                    uncasted = ois.readObject();
+                try (ObjectInputStream ois = new ObjectInputStream(fis)) {
+                    uncasted = (List<?>) ois.readObject();
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
-                } finally {
-                    ois.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             if (uncasted != null) {
-                if (uncasted instanceof PlayerData) {
-                    players.put(playerUUID, (PlayerData) uncasted);
-                } else if (uncasted instanceof ArrayList<?>) {
-                    // (v1.1.0) Note: For transition; remove later
-                    PlayerData pd = new PlayerData(playerUUID);
-
-                    for (Object obj : (ArrayList<?>) uncasted)
-                        if (obj instanceof Waypoint)
-                            pd.addWaypoint((Waypoint) obj);
-
-                    players.put(playerUUID, pd);
+                for (Object obj : uncasted) {
+                    // (v2.1.0) Note: For transition; remove later
+                    if (obj instanceof Waypoint) {
+                        Waypoint wp = (Waypoint) obj;
+                        wm.getWaypoints().put(Util.getKey(wp.getName()), wp);
+                    }
                 }
+                saveWaypoints();
+            }
+        }
+    }
+
+    public void saveWaypoints() {
+        if (!waypointConfigFile.exists()) {
+            try {
+                waypointConfigFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (waypointConfigFile.exists()) {
+            try {
+                // DEBUG
+                pm.getLogger().info(String.format("Waypoints: %s", wm.getWaypoints()));
+                pm.getLogger().info(String.format("Waypoint Size: %d", wm.getWaypoints().size()));
+
+                wc.set("waypoints", null);
+                for (Waypoint wp : wm.getWaypoints().values()) {
+                    wp.serialize(wc, "waypoints." + Util.getKey(wp.getName()));
+                }
+                wc.save(waypointConfigFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // (v2.1.0) Note: For transition; remove later
+        if (waypointDataFile.exists()) {
+            waypointDataFile.delete();
+        }
+    }
+
+    public void unloadPlayerData(UUID player) {
+        wm.getPlayers().remove(player);
+    }
+
+    public PlayerData loadPlayerData(UUID playerUUID) {
+        Map<UUID, PlayerData> players = wm.getPlayers();
+
+        File playerFile = new File(playerFolder, String.format("%s.yml", playerUUID.toString()));
+        if (playerFile.exists()) {
+            players.put(playerUUID, loadPlayerDataConfig(playerUUID, playerFile));
+        } else {
+            // (v2.1.0) Note: For transition; remove later
+            playerFile = new File(playerFolder, playerUUID.toString());
+            if (playerFile.exists()) {
+                PlayerData playerData = loadPlayerDataSerialized(playerUUID, playerFile);
+                if (playerData != null) {
+                    players.put(playerUUID, playerData);
+                    savePlayerData(playerUUID);
+                }
+            } else {
+                players.put(playerUUID, new PlayerData(playerUUID));
             }
         }
 
         return players.get(playerUUID);
     }
 
-    public void savePlayerData(UUID playerUUID) {
-        File playerFile = new File(playerFolder, playerUUID.toString());
+    private PlayerData loadPlayerDataConfig(UUID playerUUID, File playerFile) {
+        YamlConfiguration playerConfigurator = new YamlConfiguration();
+        try {
+            playerConfigurator.load(playerFile);
+            ConfigurationSection player = playerConfigurator.getConfigurationSection("player");
+            if (player != null) {
+                return new PlayerData(playerConfigurator, "player");
+            }
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private PlayerData loadPlayerDataSerialized(UUID playerUUID, File playerFile) {
+        Object uncasted = null;
 
         try {
-            FileOutputStream fos = new FileOutputStream(playerFile);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            FileInputStream fis = new FileInputStream(playerFile);
 
-            try {
-                oos.writeObject(wm.getPlayerData(playerUUID));
-            } finally {
-                oos.close();
+            try (ObjectInputStream ois = new ObjectInputStream(fis)) {
+                uncasted = ois.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        if (uncasted != null) {
+            if (uncasted instanceof PlayerData) {
+                return (PlayerData) uncasted;
+            } else if (uncasted instanceof ArrayList<?>) {
+                // (v1.1.0) Note: For transition; remove later
+                PlayerData pd = new PlayerData(playerUUID);
+
+                for (Object obj : (ArrayList<?>) uncasted)
+                    if (obj instanceof Waypoint)
+                        pd.addWaypoint((Waypoint) obj);
+
+                return pd;
+            }
+        }
+        return null;
+    }
+
+    public void savePlayerData(UUID playerUUID) {
+        File playerFile = new File(playerFolder, String.format("%s.yml", playerUUID.toString()));
+        YamlConfiguration pc = new YamlConfiguration();
+
+        if (!playerFile.exists()) {
+            try {
+                playerFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (playerFile.exists()) {
+            try {
+                wm.getPlayerData(playerUUID).serialize(pc, "player");
+                pc.save(playerFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // (v2.1.0) Note: For transition; remove later
+        File playerDataFile = new File(playerFolder, playerUUID.toString());
+        if (playerDataFile.exists()) {
+            playerDataFile.delete();
         }
     }
 

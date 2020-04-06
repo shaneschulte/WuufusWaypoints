@@ -1,13 +1,14 @@
 package com.github.jarada.waypoints.data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.bukkit.Location;
 
 import com.github.jarada.waypoints.Util;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class PlayerData implements Serializable {
 
@@ -22,6 +23,40 @@ public class PlayerData implements Serializable {
         this.playerUUID = playerUUID;
         homeWaypoints = new ArrayList<Waypoint>();
         discovered = new ArrayList<UUID>();
+    }
+
+    public PlayerData(YamlConfiguration config, String prefix) {
+        playerUUID = Serializer.getUUID(config, prefix, "uuid");
+
+        homeWaypoints = new ArrayList<Waypoint>();
+        if (Serializer.getConfigurationSection(config, prefix, "waypoints") != null) {
+            for (String key : Serializer.getConfigurationSection(config, prefix, "waypoints").getKeys(false)) {
+                homeWaypoints.add(new Waypoint(config, Serializer.setupPrefix(prefix) + "waypoints." + key));
+            }
+        }
+
+        discovered = new ArrayList<UUID>();
+        if (Serializer.isList(config, prefix, "discovered")) {
+            for (Object obj : Serializer.getList(config, prefix, "discovered")) {
+                discovered.add(UUID.fromString((String) obj));
+            }
+        }
+
+        ConfigurationSection section = Serializer.getConfigurationSection(config, prefix, null);
+        if (section != null && section.getKeys(false).contains("spawn")) {
+            spawnPoint = new GridLocation(config, Serializer.setupPrefix(prefix) + "spawn");
+        }
+    }
+
+    public void serialize(YamlConfiguration config, String prefix) {
+        Serializer.set(config, prefix, "uuid", playerUUID.toString());
+        for (Waypoint wp : homeWaypoints) {
+            wp.serialize(config, Serializer.setupPrefix(prefix) + "waypoints." + Util.getKey(wp.getName()));
+        }
+        Serializer.set(config, prefix, "discovered", discovered.stream().map(UUID::toString).collect(Collectors.toList()));
+        if (spawnPoint != null) {
+            spawnPoint.serialize(config, Serializer.setupPrefix(prefix) + "spawn");
+        }
     }
 
     public UUID getUUID() {
