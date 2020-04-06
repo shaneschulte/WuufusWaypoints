@@ -10,6 +10,7 @@ import com.github.jarada.waypoints.Util;
 
 public enum Msg {
 
+    BLOCKED_CANCEL("&cWaypoint location blocked, aborting quantization procedure."),
     BORDER("&2------------------------------"),
     CMD_NO_CONSOLE("&cError: &fCommand unavailable to CONSOLE."),
     COMMAND_CANCEL("&cUnable to act while undergoing quantization."),
@@ -38,6 +39,7 @@ public enum Msg {
     PORT_TASK_4("&9Energizing..."),
     RELOADED("&aWaypoints &freloaded."),
     REMOTELY_ACCESSED("&aWaypoint Beacon: &fEstablished remote connection to waypoint directory."),
+    RESPAWN_BLOCKED("&6%s: &cWaypoint registered for death-induced reintegration blocked."),
     RESPAWN_NO_POWER("&6%s: &fInsufficient power levels may have resulted in reintegration at a closer waypoint."),
     RESPAWN_NOT_FOUND("&cWaypoint registered for death-induced reintegration is no longer functional."),
     SELECTED_1(" &6%s &f&o(%s)"),

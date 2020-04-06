@@ -92,7 +92,7 @@ public class WaypointManager {
         if (!select) {
             if (currentWaypoint != null) {
                 Msg.OPEN_WP_MENU.sendTo(p, currentWaypoint.getName());
-                p.teleport(currentWaypoint.getLocation(), TeleportCause.PLUGIN);
+                p.teleport(Util.teleportLocation(currentWaypoint.getLocation()), TeleportCause.PLUGIN);
             } else {
                 Msg.REMOTELY_ACCESSED.sendTo(p);
             }

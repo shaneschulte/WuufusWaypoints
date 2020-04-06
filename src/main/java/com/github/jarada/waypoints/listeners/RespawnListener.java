@@ -51,10 +51,13 @@ public class RespawnListener implements Listener {
             }
 
             if (home != null) {
-                if (pd.getSpawnPoint().getBlock().getRelative(BlockFace.DOWN).isBlockPowered())
-                    spawnLoc = pd.getSpawnPoint();
-                else
+                if (pd.getSpawnPoint().getBlock().getRelative(BlockFace.DOWN).isBlockPowered()) {
+                    spawnLoc = Util.getSafeLocation(pd.getSpawnPoint());
+                    if (spawnLoc == null)
+                        Msg.RESPAWN_BLOCKED.sendTo(p, home.getName());
+                } else {
                     Msg.RESPAWN_NO_POWER.sendTo(p, home.getName());
+                }
             } else {
                 pd.setSpawnPoint(null);
                 dm.savePlayerData(p.getUniqueId());
@@ -77,7 +80,7 @@ public class RespawnListener implements Listener {
                         key = dist;
 
                 if (key != null)
-                    spawnLoc = distances.get(key).getLocation();
+                    spawnLoc = Util.getSafeLocation(distances.get(key).getLocation());
             }
 
             if (spawnLoc == null || dm.SPAWN_MODE == SpawnMode.BED)

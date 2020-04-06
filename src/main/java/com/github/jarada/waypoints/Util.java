@@ -1,5 +1,7 @@
 package com.github.jarada.waypoints;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.jarada.waypoints.data.Waypoint;
@@ -8,6 +10,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -35,6 +39,24 @@ public class Util {
         return ChatColor.stripColor(string.toLowerCase()).replaceAll(" ", "_");
     }
 
+    public static Location getSafeLocation(Location location) {
+        if (isSafeLocation(location))
+            return teleportLocation(location);
+
+        // Nope, find closest block
+        Block feet = location.getBlock();
+        for (BlockFace face : new ArrayList<>(Arrays.asList(BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST,
+                BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST))) {
+            Block adjusted = feet.getRelative(face);
+            if (isSafeLocation(adjusted.getLocation())) {
+                return teleportLocation(adjusted.getLocation());
+            }
+        }
+
+        // Nope, now this is obstructed
+        return null;
+    }
+
     public static String[] getWrappedLore(String description, int maxLineLength) {
         return WordUtils.wrap(description, maxLineLength, "\n", true).split("\\n");
     }
@@ -48,6 +70,25 @@ public class Util {
             return wp.isDiscoverable() ? true : (select || p.getWorld().getName()
                     .equals(wp.getLocation().getWorld().getName()));
 
+        return false;
+    }
+
+    public static boolean isSafeLocation(Location location) {
+        try {
+            Block feet = location.getBlock();
+            if (feet.getType().isSolid()) {
+                return false; // not transparent (will suffocate)
+            }
+            Block head = feet.getRelative(BlockFace.UP);
+            if (head.getType().isSolid()) {
+                return false; // not transparent (will suffocate)
+            }
+            Block ground = feet.getRelative(BlockFace.DOWN);
+            // returns if the ground is solid or not.
+            return ground.getType().isSolid();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -73,6 +114,10 @@ public class Util {
 
         item.setItemMeta(im);
         return item;
+    }
+
+    public static Location teleportLocation(Location location) {
+        return location.add(0.5, 0, 0.5);
     }
 
 }

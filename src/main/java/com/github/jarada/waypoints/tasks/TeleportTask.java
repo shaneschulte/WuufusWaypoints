@@ -26,10 +26,12 @@ public class TeleportTask implements Listener, Runnable {
     private float      walkSpeed, flySpeed;
     private Player     p;
     private Waypoint   wp;
+    private Location   destination;
 
     public TeleportTask(Player p, Waypoint wp) {
         pm = PluginMain.getPluginInstance();
 
+        destination = Util.getSafeLocation(wp.getLocation());
         counter = p.hasPermission("wp.instant") ? 1 : 5;
         walkSpeed = p.getWalkSpeed();
         flySpeed = p.getFlySpeed();
@@ -55,6 +57,7 @@ public class TeleportTask implements Listener, Runnable {
         counter = 0;
         p = null;
         wp = null;
+        destination = null;
     }
 
     @Override
@@ -66,6 +69,9 @@ public class TeleportTask implements Listener, Runnable {
             case 5:
                 Util.playSound(p.getLocation(), Sound.BLOCK_PORTAL_TRIGGER);
                 Msg.PORT_TASK_1.sendTo(p, wp.getName(), p.getName());
+                if (destination == null) {
+                    counter = 2;
+                }
                 break;
             case 4:
                 Msg.PORT_TASK_2.sendTo(p);
@@ -76,17 +82,21 @@ public class TeleportTask implements Listener, Runnable {
             case 2:
                 break;
             case 1:
-                Msg.PORT_TASK_4.sendTo(p);
+                if (destination != null) {
+                    Msg.PORT_TASK_4.sendTo(p);
 
-                Location from = p.getLocation();
-                from.setY(from.getY() + 2);
+                    Location from = p.getLocation();
+                    from.setY(from.getY() + 2);
 
-                Location to = wp.getLocation();
-                to.setY(to.getY() + 2);
+                    Location to = wp.getLocation();
+                    to.setY(to.getY() + 2);
 
-                from.getWorld().strikeLightningEffect(from);
-                p.teleport(wp.getLocation(), TeleportCause.COMMAND);
-                to.getWorld().strikeLightningEffect(to);
+                    from.getWorld().strikeLightningEffect(from);
+                    p.teleport(destination, TeleportCause.COMMAND);
+                    to.getWorld().strikeLightningEffect(to);
+                } else {
+                    Msg.BLOCKED_CANCEL.sendTo(p);
+                }
                 break;
             default:
                 destroy();
