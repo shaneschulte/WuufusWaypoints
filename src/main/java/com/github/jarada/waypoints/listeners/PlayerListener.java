@@ -148,6 +148,9 @@ public class PlayerListener implements Listener {
         Player p = joinEvent.getPlayer();
         PlayerData pd = dm.loadPlayerData(p.getUniqueId());
 
+        // Reset Movement Data if present in file
+        boolean savePlayerData = pd.clearMovementData(p);
+
         // (v1.1.0) Note: For transition; remove later
         for (Waypoint wp : pd.getAllWaypoints())
             if (!wp.isEnabled())
@@ -159,7 +162,8 @@ public class PlayerListener implements Listener {
         for (Waypoint wp : wm.getWaypoints().values())
             waypoints.add(wp.getUUID());
 
-        if (pd.retainDiscoveries(waypoints))
+        savePlayerData = pd.retainDiscoveries(waypoints) || savePlayerData;
+        if (savePlayerData)
             dm.savePlayerData(p.getUniqueId());
     }
 

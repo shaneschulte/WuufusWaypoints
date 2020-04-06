@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import com.github.jarada.waypoints.Util;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 public class PlayerData implements Serializable {
 
@@ -18,6 +19,7 @@ public class PlayerData implements Serializable {
     private List<Waypoint>    homeWaypoints;
     private List<UUID>        discovered;
     private GridLocation      spawnPoint;
+    private MovementData      movementData;
 
     public PlayerData(UUID playerUUID) {
         this.playerUUID = playerUUID;
@@ -43,8 +45,13 @@ public class PlayerData implements Serializable {
         }
 
         ConfigurationSection section = Serializer.getConfigurationSection(config, prefix, null);
-        if (section != null && section.getKeys(false).contains("spawn")) {
-            spawnPoint = new GridLocation(config, Serializer.setupPrefix(prefix) + "spawn");
+        if (section != null) {
+            if (section.getKeys(false).contains("spawn")) {
+                spawnPoint = new GridLocation(config, Serializer.setupPrefix(prefix) + "spawn");
+            }
+            if (section.getKeys(false).contains("movement")) {
+                movementData = new MovementData(config, Serializer.setupPrefix(prefix) + "movement");
+            }
         }
     }
 
@@ -56,6 +63,9 @@ public class PlayerData implements Serializable {
         Serializer.set(config, prefix, "discovered", discovered.stream().map(UUID::toString).collect(Collectors.toList()));
         if (spawnPoint != null) {
             spawnPoint.serialize(config, Serializer.setupPrefix(prefix) + "spawn");
+        }
+        if (movementData != null) {
+            movementData.serialize(config, Serializer.setupPrefix(prefix) + "movement");
         }
     }
 
@@ -116,4 +126,21 @@ public class PlayerData implements Serializable {
         spawnPoint = loc != null ? new GridLocation(loc) : null;
     }
 
+    public MovementData getMovementData() {
+        return movementData;
+    }
+
+    public void setMovementData(MovementData movementData) {
+        this.movementData = movementData;
+    }
+
+    public boolean clearMovementData(Player p) {
+        if (movementData != null) {
+            p.setWalkSpeed(movementData.getWalkSpeed());
+            p.setFlySpeed(movementData.getFlySpeed());
+            movementData = null;
+            return true;
+        }
+        return false;
+    }
 }

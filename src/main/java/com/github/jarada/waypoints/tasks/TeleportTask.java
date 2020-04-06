@@ -1,5 +1,7 @@
 package com.github.jarada.waypoints.tasks;
 
+import com.github.jarada.waypoints.WaypointManager;
+import com.github.jarada.waypoints.data.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -15,28 +17,31 @@ import org.bukkit.metadata.FixedMetadataValue;
 
 import com.github.jarada.waypoints.PluginMain;
 import com.github.jarada.waypoints.Util;
-import com.github.jarada.waypoints.data.Msg;
-import com.github.jarada.waypoints.data.Waypoint;
 
 public class TeleportTask implements Listener, Runnable {
 
-    private PluginMain pm;
+    private PluginMain      pm;
+    private DataManager     dm;
+    private WaypointManager wm;
 
-    private int        counter;
-    private float      walkSpeed, flySpeed;
-    private Player     p;
-    private Waypoint   wp;
-    private Location   destination;
+    private int             counter;
+    private Player          p;
+    private Waypoint        wp;
+    private Location        destination;
 
     public TeleportTask(Player p, Waypoint wp) {
         pm = PluginMain.getPluginInstance();
+        dm = DataManager.getManager();
+        wm = WaypointManager.getManager();
 
         destination = Util.getSafeLocation(wp.getLocation());
         counter = p.hasPermission("wp.instant") ? 1 : 5;
-        walkSpeed = p.getWalkSpeed();
-        flySpeed = p.getFlySpeed();
         this.p = p;
         this.wp = wp;
+
+        PlayerData playerData = wm.getPlayerData(p.getUniqueId());
+        playerData.setMovementData(new MovementData(p));
+        dm.savePlayerData(p.getUniqueId());
 
         p.setWalkSpeed(0);
         p.setFlySpeed(0);
@@ -47,10 +52,10 @@ public class TeleportTask implements Listener, Runnable {
     }
 
     public void destroy() {
-        p.setWalkSpeed(walkSpeed);
-        p.setFlySpeed(flySpeed);
+        wm.getPlayerData(p.getUniqueId()).clearMovementData(p);
         p.setCanPickupItems(true);
         p.removeMetadata("Wayporting", pm);
+        dm.savePlayerData(p.getUniqueId());
 
         HandlerList.unregisterAll(this);
 
