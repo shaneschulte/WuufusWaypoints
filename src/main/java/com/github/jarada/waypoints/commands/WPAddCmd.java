@@ -32,7 +32,7 @@ public class WPAddCmd implements PluginCommand {
             return;
         }
 
-        if (wm.getWaypoint(waypointName) != null || waypointName.equals("Bed") || waypointName.equals("Spawn")) {
+        if (wm.getWaypoint(waypointName) != null || wm.isSystemName(waypointName)) {
             Msg.WP_DUPLICATE_NAME.sendTo(p, waypointName);
             return;
         }

@@ -21,6 +21,7 @@ public enum Msg {
     DISCOVERY_MODE_ENABLED_WORLD("&6%s: &fDiscovery mode set to &aWorld-specific&f."),
     HOME_WP_ALREADY_HERE("&cError: &fHome waypoint &6%s &falready lies at this location."),
     HOME_WP_CREATED("&aSuccess: &fCoordinates received for &6%s&f."),
+    HOME_WP_LOCATION_UPDATED("&aSuccess: &fCoordinates updated for &6%s&f."),
     HOME_WP_REPLACED("&aSuccess: &fOverflow; &6%s &freplaced with coordinates to &6%s&f."),
     INSUFFICIENT_POWER("&cInsufficient power."),
     INVALD_DURABILITY("&cError: &fInvalid durability value."),

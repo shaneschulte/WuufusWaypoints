@@ -1,5 +1,7 @@
 package com.github.jarada.waypoints.listeners;
 
+import com.github.jarada.waypoints.SelectionManager;
+import com.github.jarada.waypoints.WaypointManager;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,13 +31,39 @@ public class WaypointListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onWaypointInteract(WaypointInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getItem() == null)
+        if ((event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK) ||
+                event.getItem() == null)
             return;
 
         DataManager dm = DataManager.getManager();
+        WaypointManager wm = WaypointManager.getManager();
         Player p = event.getPlayer();
         Waypoint wp = event.getWaypoint();
         ItemStack is = event.getItem();
+
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK && p.hasPermission("wp.player") &&
+                !event.isServerDefined() && is.getType() == Material.COMPASS && !is.hasItemMeta()) {
+            if (wm.getWaypoint(wp.getName()) != null) {
+                wm.removeWaypoint(wp);
+                DataManager.getManager().saveWaypoints();
+            } else {
+                PlayerData pd = event.getPlayerData();
+                pd.removeWaypoint(wp);
+                DataManager.getManager().savePlayerData(pd.getUUID());
+            }
+
+            SelectionManager.getManager().clearSelectionsWith(wp);
+            Util.playSound(wp.getLocation(), Sound.BLOCK_GLASS_BREAK);
+            Util.playEffect(wp.getLocation(), Effect.ENDER_SIGNAL);
+
+            is.setAmount(is.getAmount() - 1);
+            p.getInventory().setItemInMainHand(is);
+            Msg.WP_REMOVED.sendTo(p, wp.getName());
+            return;
+        }
+
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
+            return;
 
         if (dm.ENABLE_BEACON && dm.HANDLE_RESPAWNING && p.hasPermission("wp.respawn") && is.isSimilar(dm.BEACON)) {
             if (event.isPowered()) {
@@ -77,6 +105,16 @@ public class WaypointListener implements Listener {
                 p.closeInventory();
                 wp.setDescription(content);
                 Msg.WP_DESC_UPDATED_BOOK.sendTo(p, wp.getName(), bm.getTitle());
+            } else if (m == Material.COMPASS && is.hasItemMeta() && is.getItemMeta().hasDisplayName()) {
+                String newWaypointName = Util.color(is.getItemMeta().getDisplayName());
+                String oldName = wp.getName();
+
+                if (!wm.renameWaypoint(wp, p, newWaypointName))
+                    return;
+
+                is.setAmount(is.getAmount() - 1);
+                p.getInventory().setItemInMainHand(is);
+                Msg.WP_RENAMED.sendTo(p, oldName, newWaypointName);
             } else {
                 if (is.hasItemMeta())
                     return;

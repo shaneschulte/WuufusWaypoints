@@ -54,12 +54,13 @@ public class PlayerListener implements Listener {
         // waypoint
         if (p.isSneaking() && (a == Action.RIGHT_CLICK_BLOCK || a == Action.LEFT_CLICK_BLOCK)) {
             Block clicked = event.getClickedBlock();
-            Location toCheck = clicked.getLocation().add(0, 1D, 0);
+            Location toCheckAbove = clicked.getLocation().add(0, 1D, 0);
             Set<Waypoint> waypoints = new HashSet<Waypoint>(wm.getWaypoints().values());
             waypoints.addAll(wm.getPlayerData(p.getUniqueId()).getAllWaypoints());
 
             for (Waypoint wp : waypoints) {
-                if (Util.isSameLoc(toCheck, wp.getLocation(), true)) {
+                if (Util.isSameLoc(clicked.getLocation(), wp.getLocation(), true) ||
+                        Util.isSameLoc(toCheckAbove, wp.getLocation(), true)) {
                     Bukkit.getPluginManager().callEvent(
                             new WaypointInteractEvent(p, wp, a, is, clicked.isBlockPowered()));
                     event.setCancelled(true);

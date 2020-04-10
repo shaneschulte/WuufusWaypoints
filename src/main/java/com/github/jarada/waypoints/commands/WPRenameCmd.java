@@ -38,38 +38,9 @@ public class WPRenameCmd implements PluginCommand {
             return;
         }
 
-        if (newWaypointName.equals("Bed") || newWaypointName.equals("Spawn")) {
-            Msg.WP_DUPLICATE_NAME.sendTo(sender, newWaypointName);
-            return;
-        }
-
-        boolean serverDefined = wm.isServerDefined(wp);
-
-        if (serverDefined) {
-            if (wm.getWaypoint(newWaypointName) != null) {
-                Msg.WP_DUPLICATE_NAME.sendTo(sender, newWaypointName);
-                return;
-            }
-
-            wm.removeWaypoint(wp);
-        } else {
-            PlayerData pd = wm.getPlayerData(((Player) sender).getUniqueId());
-
-            if (pd.getWaypoint(newWaypointName) != null) {
-                Msg.WP_DUPLICATE_NAME.sendTo(sender, newWaypointName);
-                return;
-            }
-
-            pd.removeWaypoint(wp);
-        }
-
         String oldName = wp.getName();
-        wp.setName(newWaypointName);
-
-        if (serverDefined)
-            wm.addWaypoint(wp);
-        else
-            wm.getPlayerData(((Player) sender).getUniqueId()).addWaypoint(wp);
+        if (!wm.renameWaypoint(wp, (Player) sender, newWaypointName))
+            return;
 
         DataManager.getManager().saveWaypoint(sender, wp);
         Msg.WP_RENAMED.sendTo(sender, oldName, newWaypointName);

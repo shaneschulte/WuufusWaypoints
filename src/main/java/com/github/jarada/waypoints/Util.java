@@ -6,12 +6,10 @@ import java.util.List;
 
 import com.github.jarada.waypoints.data.Waypoint;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.Effect;
-import org.bukkit.Location;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Slab;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -45,11 +43,15 @@ public class Util {
 
         // Nope, find closest block
         Block feet = location.getBlock();
-        for (BlockFace face : new ArrayList<>(Arrays.asList(BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST,
-                BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST))) {
+        for (BlockFace face : new ArrayList<>(Arrays.asList(BlockFace.UP, BlockFace.NORTH, BlockFace.NORTH_EAST,
+                BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST,
+                BlockFace.NORTH_WEST))) {
             Block adjusted = feet.getRelative(face);
             if (isSafeLocation(adjusted.getLocation())) {
-                return teleportLocation(adjusted.getLocation());
+                Location adjustedLocation = adjusted.getLocation();
+                adjustedLocation.setPitch(location.getPitch());
+                adjustedLocation.setYaw(location.getYaw());
+                return teleportLocation(adjustedLocation);
             }
         }
 

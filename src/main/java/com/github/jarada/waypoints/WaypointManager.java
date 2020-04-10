@@ -50,6 +50,10 @@ public class WaypointManager {
         return waypoints.values().contains(wp);
     }
 
+    public boolean isSystemName(String name) {
+        return name.equals("Bed") || name.equals("Spawn");
+    }
+
     public void addWaypoint(Waypoint wp) {
         waypoints.put(Util.getKey(wp.getName()), wp);
         sortWaypoints();
@@ -58,6 +62,42 @@ public class WaypointManager {
     public void removeWaypoint(Waypoint wp) {
         waypoints.remove(Util.getKey(wp.getName()));
         sortWaypoints();
+    }
+
+    public boolean renameWaypoint(Waypoint wp, Player p, String newWaypointName) {
+        if (isSystemName(newWaypointName)) {
+            Msg.WP_DUPLICATE_NAME.sendTo(p, newWaypointName);
+            return false;
+        }
+
+        boolean serverDefined = isServerDefined(wp);
+
+        if (serverDefined) {
+            if (getWaypoint(newWaypointName) != null) {
+                Msg.WP_DUPLICATE_NAME.sendTo(p, newWaypointName);
+                return false;
+            }
+
+            removeWaypoint(wp);
+        } else {
+            PlayerData pd = getPlayerData(p.getUniqueId());
+
+            if (pd.getWaypoint(newWaypointName) != null) {
+                Msg.WP_DUPLICATE_NAME.sendTo(p, newWaypointName);
+                return false;
+            }
+
+            pd.removeWaypoint(wp);
+        }
+
+        wp.setName(newWaypointName);
+
+        if (serverDefined)
+            wm.addWaypoint(wp);
+        else
+            getPlayerData(p.getUniqueId()).addWaypoint(wp);
+
+        return true;
     }
 
     public Map<String, Waypoint> getWaypoints() {
@@ -141,15 +181,22 @@ public class WaypointManager {
         PlayerData pd = getPlayerData(p.getUniqueId());
         Location playerLoc = p.getLocation();
 
+        if (isSystemName(waypointName)) {
+            Msg.WP_DUPLICATE_NAME.sendTo(p, waypointName);
+            return false;
+        }
+
         for (Waypoint wp : pd.getAllWaypoints()) {
             if (Util.isSameLoc(playerLoc, wp.getLocation(), true)) {
                 Msg.HOME_WP_ALREADY_HERE.sendTo(p, wp.getName());
                 return false;
             }
 
-            if (waypointName.equals(wp.getName()) || waypointName.equals("Bed") || waypointName.equals("Spawn")) {
-                Msg.WP_DUPLICATE_NAME.sendTo(p, waypointName);
-                return false;
+            if (waypointName.equals(wp.getName())) {
+                wp.setLocation(p.getLocation());
+                DataManager.getManager().savePlayerData(p.getUniqueId());
+                Msg.HOME_WP_LOCATION_UPDATED.sendTo(p, waypointName);
+                return true;
             }
         }
 
