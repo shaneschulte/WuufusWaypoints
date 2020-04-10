@@ -16,7 +16,7 @@
      usage: /setspawn
  permissions:
    wp.*:
-     description: Grants all plugin permissions
+     description: Grants all plugin permissions except instant teleportation
      children:
        wp.admin: true
        wp.player: true
@@ -26,7 +26,7 @@
        wp.respawn: true
      default: op
    wp.admin:
-     description: Grants all commands except reload, allows player to select server-defined waypoints
+     description: Grants access to all commands except reload, allows player to select server-defined waypoints
      children:
        wp.bypass: true
        wp.add: true
@@ -44,14 +44,42 @@
      children:
        wp.access.bed: true
        wp.access.spawn: true
+   wp.add:
+     description: Grants ability to add server-defined waypoints
    wp.beacon.*:
      description: Grants all beacon permissions
      children:
        wp.beacon.use: true
        wp.beacon.server: true
        wp.beacon.unlimited: true
+   wp.bypass:
+     description: Grants ability to teleport to disabled waypoints
+   wp.desc:
+     description: Grants ability to set a selected waypoint's description using commands
+   wp.icon:
+     description: Grants ability to set a selected waypoint's icon using commands
+   wp.instant:
+     description: Grants instant teleportation
+   wp.move:
+     description: Grants ability to move a selected waypoint using commands
+   wp.player:
+     description: Grants access to create manage home waypoints through world interaction
+   wp.reload:
+     description: Grants access to reload the plugin
+   wp.remove:
+     description: Grants ability to remove a selected waypoint using commands
+   wp.rename:
+     description: Grants ability to rename a selected waypoint icon using commands
+   wp.respawn:
+     description: Grants players the ability to use Waypoint Beacons to set their respawn point to home waypoints
    wp.select.*:
      description: Grants access to select using both methods
      children:
        wp.select.beacon: true
        wp.select.command: true
+   wp.sethome:
+     description: Grants players the ability to create home waypoints using commands
+   wp.setspawn:
+     description: Grants players ability to set their spawn point using commands
+   wp.toggle:
+     description: Grants ability to enable or disable a selected waypoint using commands

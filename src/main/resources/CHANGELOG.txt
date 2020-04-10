@@ -1,5 +1,20 @@
 CHANGELOG
 
+2.1.0 (10/03/2020)
+- Waypoints are now saved in YAML instead of Java Serialization which makes for a much nicer storage
+  mechanism
+- Home Waypoints can now be moved using an identically named Clock
+- Home Waypoints can now be renamed and removed using compasses while sneaking; a named compass right-clicked
+  on an existing home waypoint while sneaking will rename that waypoint, while an unnamed compass left-clicked
+  on an existing home waypoint while sneaking removes it.
+- Listed all permissions in plugin definition so they would visibly autocomplete in permission editors such as
+  LuckPerms when adding/removing permissions
+- Bug fixes to prevent teleporting into walls or obstructions and to center teleport locations to the middle
+  of a block instead of the edge
+- Bug fixes for dealing with accessing waypoints under half blocks like carpet or slabs
+- Bug fix for a rare occasion where a server shutdown during teleportation would end up with a player unable
+  to move correctly
+
 2.0.1 (29/03/2020):
 - Corrected wp command output
 - Updated to support 1.13 and 1.14 additionally
