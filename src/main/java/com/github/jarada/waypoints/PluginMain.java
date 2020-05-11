@@ -65,6 +65,12 @@ public class PluginMain extends JavaPlugin {
 
         for (Player p : getServer().getOnlinePlayers())
             DataManager.getManager().loadPlayerData(p.getUniqueId());
+
+        new UpdateChecker(this, 76603).getVersion(version -> {
+            if (!this.getDescription().getVersion().equalsIgnoreCase(version)) {
+                getLogger().info(String.format("Version %s now available!", version));
+            }
+        });
     }
 
     @Override
