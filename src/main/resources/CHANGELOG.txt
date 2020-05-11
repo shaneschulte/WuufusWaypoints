@@ -1,6 +1,12 @@
 CHANGELOG
 
-2.1.0 (10/03/2020)
+2.1.1 (05/11/2020)
+- Rewritten movement management code to prevent bugs where the Spigot server ignores resetting these back to
+  their proper values, leaving a player stranded with only jump powers
+- Added update checking code
+- Changelog now back to US style dates (as a Brit, this hurts!)
+
+2.1.0 (03/10/2020)
 - Waypoints are now saved in YAML instead of Java Serialization which makes for a much nicer storage
   mechanism
 - Home Waypoints can now be moved using an identically named Clock
@@ -15,11 +21,11 @@ CHANGELOG
 - Bug fix for a rare occasion where a server shutdown during teleportation would end up with a player unable
   to move correctly
 
-2.0.1 (29/03/2020):
+2.0.1 (03/29/2020):
 - Corrected wp command output
 - Updated to support 1.13 and 1.14 additionally
 
-2.0.0 (28/03/2020):
+2.0.0 (03/28/2020):
 - New Owner!
 - Updated to Spigot 1.15
 - Split permissions between selecting via command and selecting via beacon so you can tailor how players
