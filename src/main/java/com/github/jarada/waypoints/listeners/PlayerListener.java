@@ -15,10 +15,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.jarada.waypoints.SelectionManager;
@@ -100,10 +98,20 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPlayerPickup(EntityPickupItemEvent pickupItemEvent) {
+        if (pickupItemEvent.getEntity() instanceof Player) {
+            Player p = (Player)pickupItemEvent.getEntity();
+            if (p.hasMetadata("Wayporting")) {
+                pickupItemEvent.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerMove(PlayerMoveEvent moveEvent) {
         Player p = moveEvent.getPlayer();
-
-        if (p.hasMetadata("InMenu") || p.hasMetadata("Wayporting"))
+        
+        if (p.hasMetadata("InMenu"))
             return;
 
         Location from = moveEvent.getFrom();
@@ -111,6 +119,11 @@ public class PlayerListener implements Listener {
 
         if (Util.isSameLoc(from, to, true))
             return;
+
+        if (p.hasMetadata("Wayporting")) {
+            moveEvent.setCancelled(true);
+            return;
+        }
 
         if (Util.isSameLoc(p.getWorld().getSpawnLocation(), to, true)) {
             Waypoint spawn = new Waypoint("Spawn", p.getWorld().getSpawnLocation());
@@ -149,9 +162,6 @@ public class PlayerListener implements Listener {
         Player p = joinEvent.getPlayer();
         PlayerData pd = dm.loadPlayerData(p.getUniqueId());
 
-        // Reset Movement Data if present in file
-        boolean savePlayerData = pd.clearMovementData(p);
-
         // (v1.1.0) Note: For transition; remove later
         for (Waypoint wp : pd.getAllWaypoints())
             if (!wp.isEnabled())
@@ -163,8 +173,7 @@ public class PlayerListener implements Listener {
         for (Waypoint wp : wm.getWaypoints().values())
             waypoints.add(wp.getUUID());
 
-        savePlayerData = pd.retainDiscoveries(waypoints) || savePlayerData;
-        if (savePlayerData)
+        if (pd.retainDiscoveries(waypoints))
             dm.savePlayerData(p.getUniqueId());
     }
 

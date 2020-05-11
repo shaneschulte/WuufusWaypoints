@@ -39,24 +39,12 @@ public class TeleportTask implements Listener, Runnable {
         this.p = p;
         this.wp = wp;
 
-        PlayerData playerData = wm.getPlayerData(p.getUniqueId());
-        playerData.setMovementData(new MovementData(p));
-        dm.savePlayerData(p.getUniqueId());
-
-        p.setWalkSpeed(0);
-        p.setFlySpeed(0);
-        p.setCanPickupItems(false);
         p.setMetadata("Wayporting", new FixedMetadataValue(pm, true));
-
         Bukkit.getPluginManager().registerEvents(this, pm);
     }
 
     public void destroy() {
-        wm.getPlayerData(p.getUniqueId()).clearMovementData(p);
-        p.setCanPickupItems(true);
         p.removeMetadata("Wayporting", pm);
-        dm.savePlayerData(p.getUniqueId());
-
         HandlerList.unregisterAll(this);
 
         counter = 0;
