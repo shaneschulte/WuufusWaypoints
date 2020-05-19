@@ -1,5 +1,8 @@
 CHANGELOG
 
+2.1.2 (05/19/2020)
+- Bug fix for when interacting with Waypoints while holding an item in your offhand and not in your main hand
+
 2.1.1 (05/11/2020)
 - Rewritten movement management code to prevent bugs where the Spigot server ignores resetting these back to
   their proper values, leaving a player stranded with only jump powers
