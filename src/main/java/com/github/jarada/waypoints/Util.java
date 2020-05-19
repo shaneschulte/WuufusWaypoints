@@ -9,7 +9,6 @@ import org.apache.commons.lang.WordUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.type.Slab;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -27,6 +26,15 @@ public class Util {
         }
 
         return sb.toString();
+    }
+
+    public static void checkChunkLoad(final Block b) {
+        final World w = b.getWorld();
+        final Chunk c = b.getChunk();
+
+        if (!w.isChunkLoaded(c)) {
+            w.loadChunk(c);
+        }
     }
 
     public static String color(String string) {
@@ -69,7 +77,7 @@ public class Util {
 
         if (wp.isDiscoverable() != null
                 && WaypointManager.getManager().getPlayerData(p.getUniqueId()).hasDiscovered(wp.getUUID()))
-            return wp.isDiscoverable() ? true : (select || p.getWorld().getName()
+            return wp.isDiscoverable() || (select || p.getWorld().getName()
                     .equals(wp.getLocation().getWorld().getName()));
 
         return false;

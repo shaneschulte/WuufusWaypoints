@@ -44,8 +44,9 @@ public class PlayerListener implements Listener {
         Player p = event.getPlayer();
         Action a = event.getAction();
         ItemStack is = event.getItem();
+        boolean mainHand = is != null && is.equals(p.getInventory().getItemInMainHand());
 
-        if (a == Action.PHYSICAL || p.hasMetadata("InMenu") || p.hasMetadata("Wayporting"))
+        if (!mainHand || a == Action.PHYSICAL || p.hasMetadata("InMenu") || p.hasMetadata("Wayporting"))
             return;
 
         // Calls WaypointInteractEvent if sneaking and clicked block is a
@@ -66,9 +67,6 @@ public class PlayerListener implements Listener {
                 }
             }
         }
-
-        if (is == null)
-            return;
 
         // Creates a new home waypoint if player is sneaking and right-clicking
         // with a renamed clock
