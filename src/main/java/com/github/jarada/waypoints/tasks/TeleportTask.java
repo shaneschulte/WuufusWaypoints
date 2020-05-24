@@ -73,6 +73,8 @@ public class TeleportTask implements Listener, Runnable {
                 Msg.PORT_TASK_3.sendTo(p);
                 break;
             case 2:
+                if (destination != null)
+                    Util.checkChunkLoad(destination.getBlock());
                 break;
             case 1:
                 if (destination != null) {

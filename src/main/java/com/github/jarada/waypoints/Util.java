@@ -50,20 +50,22 @@ public class Util {
             return teleportLocation(location);
 
         // Nope, find closest block
-        Block feet = location.getBlock();
-        for (BlockFace face : new ArrayList<>(Arrays.asList(BlockFace.UP, BlockFace.NORTH, BlockFace.NORTH_EAST,
-                BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST,
-                BlockFace.NORTH_WEST))) {
-            Block adjusted = feet.getRelative(face);
-            if (isSafeLocation(adjusted.getLocation())) {
-                Location adjustedLocation = adjusted.getLocation();
-                adjustedLocation.setPitch(location.getPitch());
-                adjustedLocation.setYaw(location.getYaw());
-                return teleportLocation(adjustedLocation);
+        try {
+            Block feet = location.getBlock();
+            for (BlockFace face : new ArrayList<>(Arrays.asList(BlockFace.UP, BlockFace.NORTH, BlockFace.NORTH_EAST,
+                    BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST,
+                    BlockFace.NORTH_WEST))) {
+                Block adjusted = feet.getRelative(face);
+                if (isSafeLocation(adjusted.getLocation())) {
+                    Location adjustedLocation = adjusted.getLocation();
+                    adjustedLocation.setPitch(location.getPitch());
+                    adjustedLocation.setYaw(location.getYaw());
+                    return teleportLocation(adjustedLocation);
+                }
             }
-        }
+        } catch (Exception ignored) {}
 
-        // Nope, now this is obstructed
+        // Nope, now this is obstructed or unavailable
         return null;
     }
 
