@@ -90,20 +90,20 @@ public class WaypointListener implements Listener {
                 if (bm.hasDisplayName() || bm.hasLore())
                     return;
 
-                String content = "";
+                StringBuilder content = new StringBuilder();
 
                 for (int page = 1; page <= bm.getPageCount(); page++) {
-                    content += bm.getPage(page);
+                    content.append(bm.getPage(page));
 
                     if (page != bm.getPageCount())
-                        content += " ";
+                        content.append(" ");
                 }
 
                 if (content.length() > dm.WP_DESC_MAX_LENGTH)
-                    content = content.substring(0, dm.WP_DESC_MAX_LENGTH);
+                    content = new StringBuilder(content.substring(0, dm.WP_DESC_MAX_LENGTH));
 
                 p.closeInventory();
-                wp.setDescription(content);
+                wp.setDescription(content.toString());
                 Msg.WP_DESC_UPDATED_BOOK.sendTo(p, wp.getName(), bm.getTitle());
             } else if (m == Material.COMPASS && is.hasItemMeta() && is.getItemMeta().hasDisplayName()) {
                 String newWaypointName = Util.color(is.getItemMeta().getDisplayName());
