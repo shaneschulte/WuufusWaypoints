@@ -33,7 +33,7 @@ public class Util {
         final Chunk c = b.getChunk();
 
         if (!w.isChunkLoaded(c)) {
-            w.loadChunk(c);
+            w.getChunkAt(b).load();
         }
     }
 
