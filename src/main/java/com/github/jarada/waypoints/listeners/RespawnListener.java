@@ -73,6 +73,9 @@ public class RespawnListener implements Listener {
                     if (p.getWorld().getName().equals(wp.getLocation().getWorld().getName()))
                         distances.put(p.getLocation().distanceSquared(wp.getLocation()), wp);
 
+                if (dm.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE && p.getBedSpawnLocation() != null)
+                    distances.put(p.getLocation().distanceSquared(p.getBedSpawnLocation()), new Waypoint("Bed", p.getBedSpawnLocation()));
+
                 Double key = null;
 
                 for (Double dist : distances.keySet())

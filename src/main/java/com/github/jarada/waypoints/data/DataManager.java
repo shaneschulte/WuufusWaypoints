@@ -50,6 +50,7 @@ public class DataManager {
     public boolean             BEACON_UNLIMITED_PERMANENT;
     public ItemStack           BEACON;
     public boolean             HANDLE_RESPAWNING;
+    public boolean             RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE;
     public SpawnMode           SPAWN_MODE;
     public String              CITY_WORLD_NAME;
 
@@ -87,6 +88,7 @@ public class DataManager {
         config.addDefault("Waypoints.ENABLE_BEACON", true);
         config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT", false);
         config.addDefault("Waypoints.HANDLE_RESPAWNING", true);
+        config.addDefault("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_WAYPOINT_LIST", false);
         config.addDefault("Waypoints.SPAWN_MODE", "home");
         config.addDefault("Waypoints.CITY_WORLD_NAME", "world");
 
@@ -102,6 +104,7 @@ public class DataManager {
         ENABLE_BEACON = config.getBoolean("Waypoints.ENABLE_BEACON");
         BEACON_UNLIMITED_PERMANENT = config.getBoolean("Waypoints.BEACON_UNLIMITED_PERMANENT");
         HANDLE_RESPAWNING = config.getBoolean("Waypoints.HANDLE_RESPAWNING");
+        RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE = config.getBoolean("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE");
         SPAWN_MODE = SpawnMode.valueOf(config.getString("Waypoints.SPAWN_MODE").toUpperCase());
         CITY_WORLD_NAME = config.getString("Waypoints.CITY_WORLD_NAME");
 
