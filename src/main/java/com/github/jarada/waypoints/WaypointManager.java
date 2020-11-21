@@ -165,7 +165,7 @@ public class WaypointManager {
             accessList.addAll(pd.getAllWaypoints());
 
         p.setMetadata("InMenu", new FixedMetadataValue(PluginMain.getPluginInstance(), true));
-        new WaypointMenu(p, currentWaypoint, accessList, select).open();
+        new WaypointMenu(p, pd, currentWaypoint, accessList, select).open();
     }
 
     public void openWaypointSelectionMenu(Player p) {

@@ -123,30 +123,43 @@ public class PlayerListener implements Listener {
             return;
         }
 
+        PlayerData pd = wm.getPlayerData(p.getUniqueId());
+        boolean silenceWaypoints = (pd.isSilentWaypoints() && p.getInventory().contains(dm.BEACON));
+
+        // Spawn
         if (Util.isSameLoc(p.getWorld().getSpawnLocation(), to, true)) {
-            Waypoint spawn = new Waypoint("Spawn", p.getWorld().getSpawnLocation());
-            spawn.setIcon(Material.NETHER_STAR);
-            wm.openWaypointMenu(p, spawn, true, true, false);
+            if (!silenceWaypoints) {
+                Waypoint spawn = new Waypoint("Spawn", p.getWorld().getSpawnLocation());
+                spawn.setIcon(Material.NETHER_STAR);
+                wm.openWaypointMenu(p, spawn, true, true, false);
+            }
             return;
         }
 
-        PlayerData pd = wm.getPlayerData(p.getUniqueId());
-
+        // Global Waypoints
         for (Waypoint wp : wm.getWaypoints().values()) {
             if (Util.isSameLoc(wp.getLocation(), to, true) && (wp.isEnabled() || p.hasPermission("wp.bypass"))) {
+                boolean discovered = false;
                 if (wp.isDiscoverable() != null && !pd.hasDiscovered(wp.getUUID())) {
                     pd.addDiscovery(wp.getUUID());
                     dm.savePlayerData(p.getUniqueId());
                     Msg.DISCOVERED_WAYPOINT.sendTo(p, wp.getName());
+                    discovered = true;
                 }
 
                 if (Util.hasAccess(p, wp, false)) {
-                    wm.openWaypointMenu(p, wp, true, true, false);
+                    if (!silenceWaypoints || discovered)
+                        wm.openWaypointMenu(p, wp, true, true, false);
                     return;
                 }
             }
         }
 
+        // Check if Waypoints are ignored
+        if (silenceWaypoints)
+            return;
+
+        // Player Waypoints
         for (Waypoint wp : pd.getAllWaypoints()) {
             if (Util.isSameLoc(wp.getLocation(), to, true)) {
                 wm.openWaypointMenu(p, wp, false, true, false);

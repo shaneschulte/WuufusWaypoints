@@ -9,7 +9,6 @@ import org.bukkit.Location;
 import com.github.jarada.waypoints.Util;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 public class PlayerData implements Serializable {
 
@@ -19,6 +18,7 @@ public class PlayerData implements Serializable {
     private List<Waypoint>    homeWaypoints;
     private List<UUID>        discovered;
     private GridLocation      spawnPoint;
+    private boolean           silentWaypoints;
 
     public PlayerData(UUID playerUUID) {
         this.playerUUID = playerUUID;
@@ -49,6 +49,8 @@ public class PlayerData implements Serializable {
                 spawnPoint = new GridLocation(config, Serializer.setupPrefix(prefix) + "spawn");
             }
         }
+
+        silentWaypoints = Serializer.getBoolean(config, prefix, "silentWaypoints");
     }
 
     public void serialize(YamlConfiguration config, String prefix) {
@@ -60,6 +62,7 @@ public class PlayerData implements Serializable {
         if (spawnPoint != null) {
             spawnPoint.serialize(config, Serializer.setupPrefix(prefix) + "spawn");
         }
+        Serializer.set(config, prefix, "silentWaypoints", silentWaypoints);
     }
 
     public UUID getUUID() {
@@ -117,5 +120,13 @@ public class PlayerData implements Serializable {
 
     public void setSpawnPoint(Location loc) {
         spawnPoint = loc != null ? new GridLocation(loc) : null;
+    }
+
+    public boolean isSilentWaypoints() {
+        return silentWaypoints;
+    }
+
+    public void setSilentWaypoints(boolean silentWaypoints) {
+        this.silentWaypoints = silentWaypoints;
     }
 }

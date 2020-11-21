@@ -1,5 +1,7 @@
 package com.github.jarada.waypoints;
 
+import com.github.jarada.waypoints.data.DataManager;
+import com.github.jarada.waypoints.data.PlayerData;
 import com.github.jarada.waypoints.data.Waypoint;
 import com.github.jarada.waypoints.tasks.TeleportTask;
 import org.bukkit.Bukkit;
@@ -28,9 +30,11 @@ public class WaypointMenu implements Listener {
     private PluginMain     pm;
 
     private Player         p;
+    private PlayerData     pd;
     private Waypoint currentWaypoint;
     private List<Waypoint> accessList;
     private boolean        select;
+    private boolean        fromBeacon;
 
     private int            page;
     private int            size;
@@ -38,13 +42,15 @@ public class WaypointMenu implements Listener {
     private ItemStack[]    optionIcons;
     private Waypoint[]     optionWaypoints;
 
-    public WaypointMenu(Player p, Waypoint currentWaypoint, List<Waypoint> accessList, boolean select) {
+    public WaypointMenu(Player p, PlayerData pd, Waypoint currentWaypoint, List<Waypoint> accessList, boolean select) {
         pm = PluginMain.getPluginInstance();
 
         this.p = p;
+        this.pd = pd;
         this.select = select;
         this.currentWaypoint = currentWaypoint;
         this.accessList = accessList;
+        this.fromBeacon = !select && currentWaypoint == null;
 
         page = 1;
         buildMenu();
@@ -108,6 +114,9 @@ public class WaypointMenu implements Listener {
                 page = 1;
             } else if (optionNames[slot].equals("Next")) {
                 page++;
+            } else if (optionNames[slot].equals("Silence")) {
+                pd.setSilentWaypoints(!pd.isSilentWaypoints());
+                DataManager.getManager().savePlayerData(pd.getUUID());
             }
 
             buildMenu();
@@ -130,7 +139,7 @@ public class WaypointMenu implements Listener {
     }
 
     public void buildMenu() {
-        size = accessList.size() > 9 ? 18 : 9;
+        size = accessList.size() > 9 || fromBeacon ? 18 : 9;
         optionNames = new String[size];
         optionIcons = new ItemStack[size];
         optionWaypoints = new Waypoint[size];
@@ -161,6 +170,16 @@ public class WaypointMenu implements Listener {
             ItemStack is = new ItemStack(Material.PAPER, 1);
             Util.setItemNameAndLore(is, Util.color("&aNext Page"), null);
             setOption(14, "Next", is);
+        }
+
+        if (fromBeacon) {
+            ItemStack is = new ItemStack(Material.LEATHER_BOOTS, 1);
+
+            List<String> lore = new ArrayList<>();
+            lore.add(Util.color(pd.isSilentWaypoints() ? "&4Silenced" : "&2Active"));
+
+            Util.setItemNameAndLore(is, Util.color("&aShow Waypoints on Walk"), lore);
+            setOption(17, "Silence", is);
         }
     }
 
