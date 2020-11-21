@@ -65,8 +65,6 @@ public class DataManager {
         // (v2.1.0) Note: For transition; remove data file later
         waypointDataFile = new File(pm.getDataFolder(), "waypoints.db");
         waypointConfigFile = new File (pm.getDataFolder(), "waypoints.yml");
-
-        loadConfig();
     }
 
     public static DataManager getManager() {
@@ -113,12 +111,12 @@ public class DataManager {
 
         if (ENABLE_BEACON) {
             List<String> lore = new ArrayList<String>();
-            lore.add(Util.color("&fBroadcasts signal to"));
-            lore.add(Util.color("&fwaypoint directory for"));
-            lore.add(Util.color("&fremote connection."));
-            lore.add(Util.color("&8&oRight-click to use"));
+            lore.add(Util.color(Msg.LORE_BEACON_1.toString()));
+            lore.add(Util.color(Msg.LORE_BEACON_2.toString()));
+            lore.add(Util.color(Msg.LORE_BEACON_3.toString()));
+            lore.add(Util.color(Msg.LORE_BEACON_4.toString()));
 
-            BEACON = Util.setItemNameAndLore(new ItemStack(Material.COMPASS, 1), "&aWaypoint Beacon", lore);
+            BEACON = Util.setItemNameAndLore(new ItemStack(Material.COMPASS, 1), Msg.LORE_BEACON_NAME.toString(), lore);
 
             ShapedRecipe sr = new ShapedRecipe(new NamespacedKey(pm, "waypointbeacon"), BEACON);
             sr.shape("RRR", "RCR", "RRR").setIngredient('R', Material.REDSTONE).setIngredient('C', Material.COMPASS);
@@ -215,10 +213,6 @@ public class DataManager {
 
         if (waypointConfigFile.exists()) {
             try {
-                // DEBUG
-                pm.getLogger().info(String.format("Waypoints: %s", wm.getWaypoints()));
-                pm.getLogger().info(String.format("Waypoint Size: %d", wm.getWaypoints().size()));
-
                 wc.set("waypoints", null);
                 for (Waypoint wp : wm.getWaypoints().values()) {
                     wp.serialize(wc, "waypoints." + Util.getKey(wp.getName()));

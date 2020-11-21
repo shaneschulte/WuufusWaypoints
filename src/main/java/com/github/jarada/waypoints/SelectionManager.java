@@ -80,7 +80,7 @@ public class SelectionManager {
         String displayName = wp.getName();
 
         if (serverDefined && !wp.isEnabled())
-            displayName += Util.color(" &f[&cDisabled&f]");
+            displayName += Util.color(" &f[&c" + Msg.WORD_DISABLED.toString() + "&f]");
 
         Msg.BORDER.sendTo(sender);
         Msg.SELECTED_1.sendTo(sender, displayName, loc.getWorld().getName());
@@ -90,8 +90,8 @@ public class SelectionManager {
         Msg.SELECTED_4.sendTo(sender, loc.getBlockZ());
 
         if (serverDefined) {
-            String discoveryMode = wp.isDiscoverable() == null ? "Disabled" : (wp.isDiscoverable() ? "Server-wide"
-                    : "World-specific");
+            String discoveryMode = wp.isDiscoverable() == null ? Msg.WORD_DISABLED.toString() : (
+                    wp.isDiscoverable() ? Msg.WORD_SERVER_WIDE.toString() : Msg.WORD_WORLD_SPECIFIC.toString());
             sender.sendMessage("");
             Msg.SELECTED_DISCOVER.sendTo(sender, discoveryMode);
         }

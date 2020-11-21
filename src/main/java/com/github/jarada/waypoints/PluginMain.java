@@ -28,6 +28,8 @@ import com.github.jarada.waypoints.commands.WPRenameCmd;
 import com.github.jarada.waypoints.commands.WPSelectCmd;
 import com.github.jarada.waypoints.commands.WPToggleCmd;
 
+import javax.xml.crypto.Data;
+
 public class PluginMain extends JavaPlugin {
 
     private static PluginMain          instance;
@@ -41,6 +43,7 @@ public class PluginMain extends JavaPlugin {
     public void onEnable() {
         instance = this;
         saveResource("CHANGELOG.txt", true);
+        DataManager.getManager().loadConfig();
         DataManager.getManager().loadWaypoints();
 
         commands = new HashMap<>();

@@ -156,19 +156,19 @@ public class WaypointMenu implements Listener {
 
         if (page > 1) {
             ItemStack is = new ItemStack(Material.PAPER, 1);
-            Util.setItemNameAndLore(is, Util.color("&aPrevious Page"), null);
+            Util.setItemNameAndLore(is, Util.color(Msg.MENU_PAGE_PREVIOUS.toString()), null);
             setOption(12, "Previous", is);
         }
 
         if (accessList.size() > 9) {
             ItemStack is = new ItemStack(Material.BOOK, page);
-            Util.setItemNameAndLore(is, Util.color(String.format("&aPage: &6%d", page)), null);
+            Util.setItemNameAndLore(is, Util.color(String.format(Msg.MENU_PAGE.toString() + ": &6%d", page)), null);
             setOption(13, "Page", is);
         }
 
         if (accessList.size() > page * 9) {
             ItemStack is = new ItemStack(Material.PAPER, 1);
-            Util.setItemNameAndLore(is, Util.color("&aNext Page"), null);
+            Util.setItemNameAndLore(is, Util.color(Msg.MENU_PAGE_NEXT.toString()), null);
             setOption(14, "Next", is);
         }
 
@@ -176,9 +176,9 @@ public class WaypointMenu implements Listener {
             ItemStack is = new ItemStack(Material.LEATHER_BOOTS, 1);
 
             List<String> lore = new ArrayList<>();
-            lore.add(Util.color(pd.isSilentWaypoints() ? "&4Silenced" : "&2Active"));
+            lore.add(Util.color(pd.isSilentWaypoints() ? Msg.MENU_WALK_SILENCED.toString() : Msg.MENU_WALK_ACTIVE.toString()));
 
-            Util.setItemNameAndLore(is, Util.color("&aShow Waypoints on Walk"), lore);
+            Util.setItemNameAndLore(is, Util.color(Msg.MENU_WALK.toString()), lore);
             setOption(17, "Silence", is);
         }
     }
@@ -194,7 +194,7 @@ public class WaypointMenu implements Listener {
         String displayName = "&6" + wp.getName();
 
         if (!wp.isEnabled() && WaypointManager.getManager().isServerDefined(wp))
-            displayName += " &f[&cDisabled&f]";
+            displayName += " &f[&c" + Msg.WORD_DISABLED.toString() + "&f]";
 
         List<String> lore = new ArrayList<String>();
         lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));

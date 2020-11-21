@@ -51,7 +51,7 @@ public class WaypointManager {
     }
 
     public boolean isSystemName(String name) {
-        return name.equals("Bed") || name.equals("Spawn");
+        return name.equals(Msg.WORD_BED.toString()) || name.equals(Msg.WORD_SPAWN.toString());
     }
 
     public void addWaypoint(Waypoint wp) {
@@ -138,17 +138,17 @@ public class WaypointManager {
             }
 
             if (p.hasPermission("wp.access.spawn")) {
-                if (currentWaypoint != null && currentWaypoint.getName().equals("Spawn")) {
+                if (currentWaypoint != null && currentWaypoint.getName().equals(Msg.WORD_SPAWN.toString())) {
                     accessList.add(currentWaypoint);
                 } else {
-                    Waypoint spawn = new Waypoint("Spawn", p.getWorld().getSpawnLocation());
+                    Waypoint spawn = new Waypoint(Msg.WORD_SPAWN.toString(), p.getWorld().getSpawnLocation());
                     spawn.setIcon(Material.NETHER_STAR);
                     accessList.add(spawn);
                 }
             }
 
             if (p.hasPermission("wp.access.bed") && p.getBedSpawnLocation() != null) {
-                Waypoint bed = new Waypoint("Bed", p.getBedSpawnLocation());
+                Waypoint bed = new Waypoint(Msg.WORD_BED.toString(), p.getBedSpawnLocation());
                 bed.setIcon(Material.WHITE_BED);
                 accessList.add(bed);
             }

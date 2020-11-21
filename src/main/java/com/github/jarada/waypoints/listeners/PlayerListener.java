@@ -129,7 +129,7 @@ public class PlayerListener implements Listener {
         // Spawn
         if (Util.isSameLoc(p.getWorld().getSpawnLocation(), to, true)) {
             if (!silenceWaypoints) {
-                Waypoint spawn = new Waypoint("Spawn", p.getWorld().getSpawnLocation());
+                Waypoint spawn = new Waypoint(Msg.WORD_SPAWN.toString(), p.getWorld().getSpawnLocation());
                 spawn.setIcon(Material.NETHER_STAR);
                 wm.openWaypointMenu(p, spawn, true, true, false);
             }
