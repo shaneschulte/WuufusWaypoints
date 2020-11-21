@@ -211,7 +211,18 @@ public class WaypointManager {
         else
             Msg.HOME_WP_CREATED.sendTo(p, waypointName);
 
+        updatePlayerOnHomeCount(p, pd);
+
         return true;
+    }
+
+    private void updatePlayerOnHomeCount(Player p, PlayerData pd) {
+        int maxHomeWaypoints = DataManager.getManager().MAX_HOME_WAYPOINTS - pd.getAllWaypoints().size();
+
+        if (maxHomeWaypoints > 0)
+            Msg.HOME_WP_REMAINING.sendTo(p, maxHomeWaypoints);
+        else
+            Msg.HOME_WP_FULL.sendTo(p, maxHomeWaypoints);
     }
 
 }
