@@ -65,10 +65,11 @@ public class PluginMain extends JavaPlugin {
 
         for (Player p : getServer().getOnlinePlayers())
             DataManager.getManager().loadPlayerData(p.getUniqueId());
+        getLogger().info("Waypoints system online!");
 
         new UpdateChecker(this, 76603).getVersion(version -> {
             if (!this.getDescription().getVersion().equalsIgnoreCase(version)) {
-                getLogger().info(String.format("Version %s now available!", version));
+                getLogger().info(String.format("Waypoints system update: %s now available!", version));
             }
         });
     }
