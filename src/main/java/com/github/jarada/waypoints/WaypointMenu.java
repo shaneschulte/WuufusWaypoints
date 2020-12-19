@@ -1,8 +1,6 @@
 package com.github.jarada.waypoints;
 
-import com.github.jarada.waypoints.data.DataManager;
-import com.github.jarada.waypoints.data.PlayerData;
-import com.github.jarada.waypoints.data.Waypoint;
+import com.github.jarada.waypoints.data.*;
 import com.github.jarada.waypoints.tasks.TeleportTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,31 +16,31 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.jarada.waypoints.data.Msg;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class WaypointMenu implements Listener {
 
-    private PluginMain     pm;
+    private PluginMain            pm;
 
-    private Player         p;
-    private PlayerData     pd;
-    private Waypoint currentWaypoint;
-    private List<Waypoint> accessList;
-    private boolean        select;
-    private boolean        fromBeacon;
+    private Player                p;
+    private PlayerData            pd;
+    private Waypoint              currentWaypoint;
+    private List<WaypointHolder>  accessList;
+    private boolean               select;
+    private boolean               fromBeacon;
 
-    private int            page;
-    private int            size;
-    private String[]       optionNames;
-    private ItemStack[]    optionIcons;
-    private Waypoint[]     optionWaypoints;
+    private int                   page;
+    private int                   size;
+    private String[]              optionNames;
+    private ItemStack[]           optionIcons;
+    private Waypoint[]            optionWaypoints;
 
-    public WaypointMenu(Player p, PlayerData pd, Waypoint currentWaypoint, List<Waypoint> accessList, boolean select) {
+    public WaypointMenu(Player p, PlayerData pd, Waypoint currentWaypoint, List<WaypointHolder> accessList, boolean select) {
         pm = PluginMain.getPluginInstance();
 
         this.p = p;
@@ -94,6 +92,12 @@ public class WaypointMenu implements Listener {
             return;
 
         if (optionWaypoints[slot] != null) {
+            Optional<WaypointHolder> holder = accessList.stream()
+                    .filter(x -> x.getWaypoint() == optionWaypoints[slot])
+                    .findFirst();
+            if (holder.isPresent() && holder.get().isDiscoverable())
+                return;
+            
             Bukkit.getScheduler().runTask(pm, new Runnable() {
 
                 @Override
@@ -150,8 +154,9 @@ public class WaypointMenu implements Listener {
             if (index > accessList.size() - 1)
                 break;
 
-            Waypoint wp = accessList.get(index);
-            setOption(slot, wp, wp == currentWaypoint);
+            WaypointHolder holder = accessList.get(index);
+            Waypoint wp = holder.getWaypoint();
+            setOption(slot, wp, holder.isDiscoverable(), wp == currentWaypoint);
         }
 
         if (page > 1) {
@@ -189,7 +194,7 @@ public class WaypointMenu implements Listener {
         optionWaypoints[slot] = null;
     }
 
-    public void setOption(int slot, Waypoint wp, boolean selected) {
+    public void setOption(int slot, Waypoint wp, boolean discoverable, boolean selected) {
         Location loc = wp.getLocation();
         String displayName = "&6" + wp.getName();
 
@@ -197,22 +202,29 @@ public class WaypointMenu implements Listener {
             displayName += " &f[&c" + Msg.WORD_DISABLED.toString() + "&f]";
 
         List<String> lore = new ArrayList<String>();
-        lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
-        lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
-        lore.add(Util.color(String.format("&aY: &f%s", loc.getBlockY())));
-        lore.add(Util.color(String.format("&aZ: &f%s", loc.getBlockZ())));
+        if (discoverable) {
+            lore.add(Util.color(Msg.DISCOVERABLE_WAYPOINT.toString()));
 
-        if (wp.getDescription().length() > 0)
-            lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getDescription(), 25)));
+            if (wp.getHint().length() > 0)
+                lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getHint(), 25)));
+        } else {
+            lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
+            lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
+            lore.add(Util.color(String.format("&aY: &f%s", loc.getBlockY())));
+            lore.add(Util.color(String.format("&aZ: &f%s", loc.getBlockZ())));
+
+            if (wp.getDescription().length() > 0)
+                lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getDescription(), 25)));
+        }
 
         optionNames[slot] = Util.color(displayName);
 
         if (currentWaypoint != null && selected)
             optionNames[slot] = Util.color("&a* ") + optionNames[slot];
 
-        ItemStack icon = new ItemStack(wp.getIcon(), 1);
+        ItemStack icon = new ItemStack((discoverable) ? Material.LIGHT_GRAY_STAINED_GLASS_PANE : wp.getIcon(), 1);
         ItemMeta meta = icon.getItemMeta();
-        if (meta instanceof Damageable) {
+        if (!discoverable && meta instanceof Damageable) {
             ((org.bukkit.inventory.meta.Damageable)meta).setDamage(wp.getDurability());
             icon.setItemMeta(meta);
         }

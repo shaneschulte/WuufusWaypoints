@@ -31,6 +31,7 @@
        wp.bypass: true
        wp.add: true
        wp.desc: true
+       wp.hint: true
        wp.icon: true
        wp.move: true
        wp.remove: true
@@ -56,6 +57,8 @@
      description: Grants ability to teleport to disabled waypoints
    wp.desc:
      description: Grants ability to set a selected waypoint's description using commands
+   wp.hint:
+     description: Grants ability to set a selected waypoint's hint used when showing waypoints in discovery mode using commands
    wp.icon:
      description: Grants ability to set a selected waypoint's icon using commands
    wp.instant:

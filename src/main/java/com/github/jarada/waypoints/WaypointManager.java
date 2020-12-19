@@ -7,11 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import com.github.jarada.waypoints.data.DataManager;
-import com.github.jarada.waypoints.data.Msg;
-import com.github.jarada.waypoints.data.PlayerData;
-import com.github.jarada.waypoints.data.Waypoint;
+import com.github.jarada.waypoints.data.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -127,7 +125,7 @@ public class WaypointManager {
 
     public void openWaypointMenu(Player p, Waypoint currentWaypoint, boolean addServerWaypoints,
             boolean addHomeWaypoints, boolean select) {
-        List<Waypoint> accessList = new ArrayList<Waypoint>();
+        List<WaypointHolder> accessList = new ArrayList<>();
 
         if (!select) {
             if (currentWaypoint != null) {
@@ -139,18 +137,18 @@ public class WaypointManager {
 
             if (p.hasPermission("wp.access.spawn")) {
                 if (currentWaypoint != null && currentWaypoint.getName().equals(Msg.WORD_SPAWN.toString())) {
-                    accessList.add(currentWaypoint);
+                    accessList.add(new WaypointHolder(currentWaypoint));
                 } else {
                     Waypoint spawn = new Waypoint(Msg.WORD_SPAWN.toString(), p.getWorld().getSpawnLocation());
                     spawn.setIcon(Material.NETHER_STAR);
-                    accessList.add(spawn);
+                    accessList.add(new WaypointHolder(spawn));
                 }
             }
 
             if (p.hasPermission("wp.access.bed") && p.getBedSpawnLocation() != null) {
                 Waypoint bed = new Waypoint(Msg.WORD_BED.toString(), p.getBedSpawnLocation());
                 bed.setIcon(Material.WHITE_BED);
-                accessList.add(bed);
+                accessList.add(new WaypointHolder(bed));
             }
         }
 
@@ -159,10 +157,14 @@ public class WaypointManager {
         if (addServerWaypoints && (!select || p.hasPermission("wp.admin")))
             for (Waypoint wp : waypoints.values())
                 if (Util.hasAccess(p, wp, select))
-                    accessList.add(wp);
+                    accessList.add(new WaypointHolder(wp));
+                else if (DataManager.getManager().SHOW_DISCOVERABLE_WAYPOINTS && Util.canDiscover(p, wp))
+                    accessList.add(new WaypointHolder(wp, true));
 
         if (addHomeWaypoints)
-            accessList.addAll(pd.getAllWaypoints());
+            accessList.addAll(pd.getAllWaypoints().stream()
+                    .map(WaypointHolder::new)
+                    .collect(Collectors.toList()));
 
         p.setMetadata("InMenu", new FixedMetadataValue(PluginMain.getPluginInstance(), true));
         new WaypointMenu(p, pd, currentWaypoint, accessList, select).open();

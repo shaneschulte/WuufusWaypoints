@@ -53,6 +53,7 @@ public class DataManager {
     public boolean             RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE;
     public SpawnMode           SPAWN_MODE;
     public String              CITY_WORLD_NAME;
+    public boolean             SHOW_DISCOVERABLE_WAYPOINTS;
 
     public DataManager() {
         pm = PluginMain.getPluginInstance();
@@ -89,6 +90,7 @@ public class DataManager {
         config.addDefault("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_WAYPOINT_LIST", false);
         config.addDefault("Waypoints.SPAWN_MODE", "home");
         config.addDefault("Waypoints.CITY_WORLD_NAME", "world");
+        config.addDefault("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS", false);
 
         for (Msg msg : Msg.values()) {
             String path = "Waypoints.Messages." + msg.name();
@@ -105,6 +107,7 @@ public class DataManager {
         RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE = config.getBoolean("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE");
         SPAWN_MODE = SpawnMode.valueOf(config.getString("Waypoints.SPAWN_MODE").toUpperCase());
         CITY_WORLD_NAME = config.getString("Waypoints.CITY_WORLD_NAME");
+        SHOW_DISCOVERABLE_WAYPOINTS = config.getBoolean("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS");
 
         config.options().copyDefaults(true);
         pm.saveConfig();

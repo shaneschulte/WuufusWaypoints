@@ -105,6 +105,12 @@ public class SelectionManager {
                 Msg.LORE_LINE.sendTo(sender, ChatColor.stripColor(Util.color(line)));
 
         Msg.BORDER.sendTo(sender);
+
+        if (wp.getHint().length() > 0) {
+            for (String line : Util.getWrappedLore(wp.getHint(), 35))
+                Msg.LORE_LINE.sendTo(sender, ChatColor.stripColor(Util.color(line)));
+            Msg.BORDER.sendTo(sender);
+        }
     }
 
 }

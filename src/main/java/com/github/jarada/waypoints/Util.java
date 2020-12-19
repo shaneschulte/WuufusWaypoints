@@ -85,6 +85,12 @@ public class Util {
         return false;
     }
 
+    public static boolean canDiscover(Player p, Waypoint wp) {
+        return wp.isDiscoverable() != null && (wp.isDiscoverable() || p.getWorld().getName()
+                .equals(wp.getLocation().getWorld().getName())) &&
+                !WaypointManager.getManager().getPlayerData(p.getUniqueId()).hasDiscovered(wp.getUUID());
+    }
+
     public static boolean isSafeLocation(Location location) {
         try {
             Block feet = location.getBlock();

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.jarada.waypoints.commands.*;
 import com.github.jarada.waypoints.data.*;
 import com.github.jarada.waypoints.listeners.PlayerListener;
 import com.github.jarada.waypoints.listeners.WaypointListener;
@@ -13,20 +14,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.github.jarada.waypoints.commands.PluginCommand;
-import com.github.jarada.waypoints.commands.SetHomeCmd;
-import com.github.jarada.waypoints.commands.SetSpawnCmd;
-import com.github.jarada.waypoints.commands.WPAddCmd;
-import com.github.jarada.waypoints.commands.WPDescCmd;
-import com.github.jarada.waypoints.commands.WPDiscoverCmd;
-import com.github.jarada.waypoints.commands.WPIconCmd;
-import com.github.jarada.waypoints.commands.WPMoveCmd;
-import com.github.jarada.waypoints.commands.WPReloadCmd;
-import com.github.jarada.waypoints.commands.WPRemoveCmd;
-import com.github.jarada.waypoints.commands.WPRenameCmd;
-import com.github.jarada.waypoints.commands.WPSelectCmd;
-import com.github.jarada.waypoints.commands.WPToggleCmd;
 
 import javax.xml.crypto.Data;
 
@@ -52,6 +39,7 @@ public class PluginMain extends JavaPlugin {
         commands.put("add", new WPAddCmd());
         commands.put("desc", new WPDescCmd());
         commands.put("discover", new WPDiscoverCmd());
+        commands.put("hint", new WPHintCmd());
         commands.put("icon", new WPIconCmd());
         commands.put("move", new WPMoveCmd());
         commands.put("reload", new WPReloadCmd());

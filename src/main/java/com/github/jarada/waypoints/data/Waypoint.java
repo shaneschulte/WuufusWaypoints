@@ -11,7 +11,7 @@ public class Waypoint extends GridLocation {
     private static final long serialVersionUID = 3872196300104397877L;
 
     private UUID              uuid;
-    private String            name, description;
+    private String            name, description, hint;
     private Material          icon;
     private short             durability;
     private Boolean           discoverable;
@@ -21,6 +21,7 @@ public class Waypoint extends GridLocation {
         super(loc);
         setName(name);
         setDescription("");
+        setHint("");
         setIcon(Material.IRON_DOOR);
         setEnabled(true);
     }
@@ -30,6 +31,7 @@ public class Waypoint extends GridLocation {
         uuid = Serializer.getUUID(config, prefix, "uuid");
         setName(Serializer.getString(config, prefix, "name"));
         setDescription(Serializer.getString(config, prefix, "desc"));
+        setHint(Serializer.getString(config, prefix, "hint"));
         setDurability(Serializer.getShort(config, prefix, "icon_damage"));
         setDiscoverable(Serializer.getBoolean(config, prefix, "discoverable"));
         setEnabled(Serializer.getBoolean(config, prefix, "enabled"));
@@ -48,6 +50,7 @@ public class Waypoint extends GridLocation {
         Serializer.set(config, prefix, "uuid", getUUID().toString());
         Serializer.set(config, prefix, "name", getName());
         Serializer.set(config, prefix, "desc", getDescription());
+        Serializer.set(config, prefix, "hint", getHint());
         Serializer.set(config, prefix, "icon", getIcon().getKey().toString());
         Serializer.set(config, prefix, "icon_damage", getDurability());
         Serializer.set(config, prefix, "discoverable", isDiscoverable());
@@ -70,11 +73,19 @@ public class Waypoint extends GridLocation {
     }
 
     public String getDescription() {
-        return description;
+        return (description == null) ? "" : description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getHint() {
+        return (hint == null) ? "" : hint;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
     }
 
     public Material getIcon() {
