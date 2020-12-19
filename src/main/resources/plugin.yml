@@ -39,6 +39,7 @@
        wp.select.*: true
        wp.sethome: true
        wp.setspawn: true
+       wp.spawn.beacon: true
        wp.toggle: true
    wp.access.*:
      description: Grants access to all waypoints
@@ -84,5 +85,7 @@
      description: Grants players the ability to create home waypoints using commands
    wp.setspawn:
      description: Grants players ability to set their spawn point using commands
+   wp.spawn.beacon:
+     description: Grants players ability to spawn a beacon using commands
    wp.toggle:
      description: Grants ability to enable or disable a selected waypoint using commands

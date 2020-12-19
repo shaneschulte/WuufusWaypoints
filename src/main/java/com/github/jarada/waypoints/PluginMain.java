@@ -37,6 +37,7 @@ public class PluginMain extends JavaPlugin {
         commands.put("sethome", new SetHomeCmd());
         commands.put("setspawn", new SetSpawnCmd());
         commands.put("add", new WPAddCmd());
+        commands.put("beacon", new WPBeaconCmd());
         commands.put("desc", new WPDescCmd());
         commands.put("discover", new WPDiscoverCmd());
         commands.put("hint", new WPHintCmd());
