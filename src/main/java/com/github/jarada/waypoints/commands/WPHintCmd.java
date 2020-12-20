@@ -36,7 +36,7 @@ public class WPHintCmd implements PluginCommand {
 
         wp.setHint(hint);
         dm.saveWaypoint(sender, wp);
-        Msg.WP_DESC_UPDATED.sendTo(sender, wp.getName());
+        Msg.WP_HINT_UPDATED.sendTo(sender, wp.getName());
     }
 
     @Override
