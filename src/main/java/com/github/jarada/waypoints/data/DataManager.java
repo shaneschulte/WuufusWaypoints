@@ -105,12 +105,24 @@ public class DataManager {
         WP_DESC_MAX_LENGTH = config.getInt("Waypoints.WP_DESC_MAX_LENGTH");
         ENABLE_BEACON = config.getBoolean("Waypoints.ENABLE_BEACON");
         BEACON_UNLIMITED_PERMANENT = config.getBoolean("Waypoints.BEACON_UNLIMITED_PERMANENT");
-        MENU_SIZE = MenuSize.valueOf(config.getString("Waypoints.MENU_SIZE").toUpperCase());
         HANDLE_RESPAWNING = config.getBoolean("Waypoints.HANDLE_RESPAWNING");
         RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE = config.getBoolean("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE");
-        SPAWN_MODE = SpawnMode.valueOf(config.getString("Waypoints.SPAWN_MODE").toUpperCase());
         CITY_WORLD_NAME = config.getString("Waypoints.CITY_WORLD_NAME");
         SHOW_DISCOVERABLE_WAYPOINTS = config.getBoolean("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS");
+
+        try {
+            MENU_SIZE = MenuSize.valueOf(config.getString("Waypoints.MENU_SIZE").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            MENU_SIZE = MenuSize.COMPACT;
+            pm.getLogger().warning("Invalid Menu Size in Config, using compact!");
+        }
+
+        try {
+            SPAWN_MODE = SpawnMode.valueOf(config.getString("Waypoints.SPAWN_MODE").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            SPAWN_MODE = SpawnMode.HOME;
+            pm.getLogger().warning("Invalid Spawn Mode in Config, using home!");
+        }
 
         config.options().copyDefaults(true);
         pm.saveConfig();
