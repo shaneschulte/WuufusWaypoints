@@ -36,6 +36,8 @@ public class WaypointMenu implements Listener {
 
     private int                   page;
     private int                   size;
+    private int                   dataSize;
+    private MenuSize              menuSize;
     private String[]              optionNames;
     private ItemStack[]           optionIcons;
     private Waypoint[]            optionWaypoints;
@@ -49,6 +51,7 @@ public class WaypointMenu implements Listener {
         this.currentWaypoint = currentWaypoint;
         this.accessList = accessList;
         this.fromBeacon = !select && currentWaypoint == null;
+        this.menuSize = DataManager.getManager().MENU_SIZE;
 
         page = 1;
         buildMenu();
@@ -143,13 +146,14 @@ public class WaypointMenu implements Listener {
     }
 
     public void buildMenu() {
-        size = accessList.size() > 9 || fromBeacon ? 18 : 9;
+        size = menuSize.getFullSize(accessList.size(), accessList.size() > MenuSize.STEP_SIZE || fromBeacon);
+        dataSize = menuSize.getDataSize(accessList.size());
         optionNames = new String[size];
         optionIcons = new ItemStack[size];
         optionWaypoints = new Waypoint[size];
 
-        for (int slot = 0; slot < 9; slot++) {
-            int index = ((page - 1) * 9) + slot;
+        for (int slot = 0; slot < dataSize; slot++) {
+            int index = ((page - 1) * dataSize) + slot;
 
             if (index > accessList.size() - 1)
                 break;
@@ -162,19 +166,19 @@ public class WaypointMenu implements Listener {
         if (page > 1) {
             ItemStack is = new ItemStack(Material.PAPER, 1);
             Util.setItemNameAndLore(is, Util.color(Msg.MENU_PAGE_PREVIOUS.toString()), null);
-            setOption(12, "Previous", is);
+            setOption(dataSize + 3, "Previous", is);
         }
 
-        if (accessList.size() > 9) {
+        if (accessList.size() > dataSize) {
             ItemStack is = new ItemStack(Material.BOOK, page);
             Util.setItemNameAndLore(is, Util.color(String.format(Msg.MENU_PAGE.toString() + ": &6%d", page)), null);
-            setOption(13, "Page", is);
+            setOption(dataSize + 4, "Page", is);
         }
 
-        if (accessList.size() > page * 9) {
+        if (accessList.size() > page * dataSize) {
             ItemStack is = new ItemStack(Material.PAPER, 1);
             Util.setItemNameAndLore(is, Util.color(Msg.MENU_PAGE_NEXT.toString()), null);
-            setOption(14, "Next", is);
+            setOption(dataSize + 5, "Next", is);
         }
 
         if (fromBeacon) {
@@ -184,7 +188,7 @@ public class WaypointMenu implements Listener {
             lore.add(Util.color(pd.isSilentWaypoints() ? Msg.MENU_WALK_SILENCED.toString() : Msg.MENU_WALK_ACTIVE.toString()));
 
             Util.setItemNameAndLore(is, Util.color(Msg.MENU_WALK.toString()), lore);
-            setOption(17, "Silence", is);
+            setOption(dataSize + 8, "Silence", is);
         }
     }
 

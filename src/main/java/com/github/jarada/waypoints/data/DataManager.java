@@ -54,6 +54,7 @@ public class DataManager {
     public SpawnMode           SPAWN_MODE;
     public String              CITY_WORLD_NAME;
     public boolean             SHOW_DISCOVERABLE_WAYPOINTS;
+    public MenuSize            MENU_SIZE;
 
     public DataManager() {
         pm = PluginMain.getPluginInstance();
@@ -86,6 +87,7 @@ public class DataManager {
         config.addDefault("Waypoints.WP_DESC_MAX_LENGTH", 100);
         config.addDefault("Waypoints.ENABLE_BEACON", true);
         config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT", false);
+        config.addDefault("Waypoints.MENU_SIZE", "compact");
         config.addDefault("Waypoints.HANDLE_RESPAWNING", true);
         config.addDefault("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_WAYPOINT_LIST", false);
         config.addDefault("Waypoints.SPAWN_MODE", "home");
@@ -103,6 +105,7 @@ public class DataManager {
         WP_DESC_MAX_LENGTH = config.getInt("Waypoints.WP_DESC_MAX_LENGTH");
         ENABLE_BEACON = config.getBoolean("Waypoints.ENABLE_BEACON");
         BEACON_UNLIMITED_PERMANENT = config.getBoolean("Waypoints.BEACON_UNLIMITED_PERMANENT");
+        MENU_SIZE = MenuSize.valueOf(config.getString("Waypoints.MENU_SIZE").toUpperCase());
         HANDLE_RESPAWNING = config.getBoolean("Waypoints.HANDLE_RESPAWNING");
         RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE = config.getBoolean("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE");
         SPAWN_MODE = SpawnMode.valueOf(config.getString("Waypoints.SPAWN_MODE").toUpperCase());
