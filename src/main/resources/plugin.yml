@@ -7,7 +7,7 @@
  commands:
    wp:
      description: Waypoints top-level command
-     usage: /wp <add | move | remove | rename | select | desc | icon | discover | toggle | reload>
+     usage: /wp <add | move | remove | rename | select | desc | hint | icon | discover | toggle | reload>
    sethome:
      description: Save up to three locations as waypoints
      usage: /sethome <name>
