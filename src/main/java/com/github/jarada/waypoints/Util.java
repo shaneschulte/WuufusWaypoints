@@ -74,7 +74,7 @@ public class Util {
     }
 
     public static boolean hasAccess(Player p, Waypoint wp, boolean select) {
-        if (p.hasPermission("wp.access." + getKey(wp.getName())))
+        if (p.hasPermission("wp.access.*") || p.hasPermission("wp.access." + getKey(wp.getName())))
             return true;
 
         if (wp.isDiscoverable() != null
