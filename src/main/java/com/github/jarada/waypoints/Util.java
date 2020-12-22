@@ -42,7 +42,7 @@ public class Util {
     }
 
     public static String getKey(String string) {
-        return ChatColor.stripColor(string.toLowerCase()).replaceAll(" ", "_");
+        return ChatColor.stripColor(string.toLowerCase()).replace(" ", "_").replace(".", "");
     }
 
     public static Location getSafeLocation(Location location) {
