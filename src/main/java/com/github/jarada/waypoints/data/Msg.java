@@ -10,6 +10,7 @@ import com.github.jarada.waypoints.Util;
 
 public enum Msg {
 
+    BEACON_DISABLED("&cError: &fBeacon disabled in config!"),
     BLOCKED_CANCEL("&cWaypoint location blocked, aborting quantization procedure."),
     BORDER("&2------------------------------"),
     CMD_NO_CONSOLE("&cError: &fCommand unavailable to CONSOLE."),

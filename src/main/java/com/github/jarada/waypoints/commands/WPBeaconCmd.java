@@ -1,6 +1,7 @@
 package com.github.jarada.waypoints.commands;
 
 import com.github.jarada.waypoints.data.DataManager;
+import com.github.jarada.waypoints.data.Msg;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -12,8 +13,12 @@ public class WPBeaconCmd implements PluginCommand {
         DataManager dm = DataManager.getManager();
         Player p = (Player) sender;
 
-        ItemStack beacon = dm.BEACON;
-        p.getInventory().addItem(beacon);
+        if (dm.ENABLE_BEACON) {
+            ItemStack beacon = dm.BEACON;
+            p.getInventory().addItem(beacon);
+        } else {
+            Msg.BEACON_DISABLED.sendTo(p);
+        }
     }
 
     @Override
