@@ -38,7 +38,7 @@ public class WPIconCmd implements PluginCommand {
             try {
                 durability = Short.parseShort(input[1]);
             } catch (NumberFormatException e) {
-                Msg.INVALD_DURABILITY.sendTo(sender);
+                Msg.INVALID_DURABILITY.sendTo(sender);
                 return;
             }
         }

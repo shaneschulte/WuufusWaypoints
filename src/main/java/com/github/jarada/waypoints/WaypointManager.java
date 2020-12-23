@@ -1,15 +1,10 @@
 package com.github.jarada.waypoints;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.jarada.waypoints.data.*;
+import com.github.jarada.waypoints.menus.WaypointMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -22,10 +17,14 @@ public class WaypointManager {
 
     private Map<UUID, PlayerData>  players;
     private Map<String, Waypoint>  waypoints;
+    private Map<String, Category>  categories;
+    private Map<String, List<Waypoint>> categoryListMap;
 
     public WaypointManager() {
-        players = new HashMap<UUID, PlayerData>();
-        waypoints = new LinkedHashMap<String, Waypoint>();
+        players = new HashMap<>();
+        waypoints = new LinkedHashMap<>();
+        categories = new LinkedHashMap<>();
+        categoryListMap = new HashMap<>();
     }
 
     public static WaypointManager getManager() {
@@ -123,9 +122,95 @@ public class WaypointManager {
         return players;
     }
 
+    public Category addCategory(String name) {
+        Category category = new Category(name);
+        category.setOrder(categories.size() + 1);
+        categories.put(category.getUUID().toString(), category);
+        return category;
+    }
+
+    public void recordWaypointCategory(Waypoint waypoint) {
+        if (waypoint.getCategory() != null) {
+            Category category = getCategoryFromUUID(waypoint.getCategory());
+            if (category != null) {
+                if (!categoryListMap.containsKey(category.getUUID().toString())) {
+                    categoryListMap.put(category.getUUID().toString(), new ArrayList<>());
+                }
+                categoryListMap.get(category.getUUID().toString()).add(waypoint);
+            }
+        }
+    }
+
+    public void unrecordWaypointCategory(Waypoint waypoint) {
+        if (waypoint.getCategory() != null) {
+            Category category = getCategoryFromUUID(waypoint.getCategory());
+            if (category != null && categoryListMap.containsKey(category.getUUID().toString())) {
+                categoryListMap.get(category.getUUID().toString()).remove(waypoint);
+                if (categoryListMap.get(category.getUUID().toString()).isEmpty()) {
+                    categoryListMap.remove(category.getUUID().toString());
+                    categories.remove(category.getUUID().toString());
+                }
+            }
+            waypoint.clearCategory();
+        }
+    }
+
+    public void removeCategory(Category category) {
+        List<Waypoint> toRemove = new ArrayList<>(categoryListMap.get(category.getUUID().toString()));
+        toRemove.forEach(this::unrecordWaypointCategory);
+    }
+
+    public Category getCategoryFromName(String name) {
+        String keyName = Util.getKey(name);
+        return categories.values().stream()
+                .filter(x -> Util.getKey(x.getName()).equals(keyName))
+                .findFirst().orElse(null);
+    }
+
+    public Category getCategoryFromUUID(String uuid) {
+        return categories.get(uuid);
+    }
+
+    public Map<String, Category> getCategories() {
+        return categories;
+    }
+
+    public List<WaypointMenuItem> getMenuWaypointsForCategory(Category category, Player p, boolean select) {
+        List<WaypointMenuItem> accessList = new ArrayList<>();
+
+        for (Waypoint wp : categoryListMap.get(category.getUUID().toString())) {
+            if (Util.hasAccess(p, wp, select))
+                accessList.add(new WaypointMenuItem(wp));
+            else if (DataManager.getManager().SHOW_DISCOVERABLE_WAYPOINTS && Util.canDiscover(p, wp))
+                accessList.add(new WaypointMenuItem(wp, true));
+        }
+
+        accessList.sort(Comparator.comparing(WaypointMenuItem::getWaypointKey));
+        return accessList;
+    }
+
+    public void sortCategories() {
+        List<Category> sortedCategoresList = new ArrayList<>(categories.values()).stream()
+                .sorted(new CategoryComparator())
+                .collect(Collectors.toList());
+        for (int i = 0; i < sortedCategoresList.size(); i++) {
+            sortedCategoresList.get(i).setOrder(i + 1);
+            sortedCategoresList.get(i).setOrderSet(false);
+        }
+
+        Map<String, Category> sortedCategories = new LinkedHashMap<>();
+        sortedCategoresList.forEach(x -> {
+            sortedCategories.put(x.getUUID().toString(), x);
+        });
+
+        categories.clear();
+        categories.putAll(sortedCategories);
+    }
+
     public void openWaypointMenu(Player p, Waypoint currentWaypoint, boolean addServerWaypoints,
             boolean addHomeWaypoints, boolean select) {
-        List<WaypointHolder> accessList = new ArrayList<>();
+        List<WaypointMenuItem> accessList = new ArrayList<>();
+        List<Category> categoriesList = new ArrayList<>();
 
         if (!select) {
             if (currentWaypoint != null) {
@@ -137,33 +222,52 @@ public class WaypointManager {
 
             if (p.hasPermission("wp.access.spawn")) {
                 if (currentWaypoint != null && currentWaypoint.getName().equals(Msg.WORD_SPAWN.toString())) {
-                    accessList.add(new WaypointHolder(currentWaypoint));
+                    accessList.add(new WaypointMenuItem(currentWaypoint));
                 } else {
                     Waypoint spawn = new Waypoint(Msg.WORD_SPAWN.toString(), p.getWorld().getSpawnLocation());
                     spawn.setIcon(Material.NETHER_STAR);
-                    accessList.add(new WaypointHolder(spawn));
+                    accessList.add(new WaypointMenuItem(spawn));
                 }
             }
 
             if (p.hasPermission("wp.access.bed") && p.getBedSpawnLocation() != null) {
                 Waypoint bed = new Waypoint(Msg.WORD_BED.toString(), p.getBedSpawnLocation());
                 bed.setIcon(Material.WHITE_BED);
-                accessList.add(new WaypointHolder(bed));
+                accessList.add(new WaypointMenuItem(bed));
             }
         }
 
         PlayerData pd = getPlayerData(p.getUniqueId());
 
         if (addServerWaypoints && (!select || p.hasPermission("wp.admin")))
-            for (Waypoint wp : waypoints.values())
-                if (Util.hasAccess(p, wp, select))
-                    accessList.add(new WaypointHolder(wp));
-                else if (DataManager.getManager().SHOW_DISCOVERABLE_WAYPOINTS && Util.canDiscover(p, wp))
-                    accessList.add(new WaypointHolder(wp, true));
+            for (Waypoint wp : waypoints.values()) {
+                boolean hasCategory = wp.getCategory() != null && getCategoryFromUUID(wp.getCategory()) != null;
+                if (Util.hasAccess(p, wp, select)) {
+                    if (hasCategory) {
+                        if (!categoriesList.contains(getCategoryFromUUID(wp.getCategory())))
+                            categoriesList.add(getCategoryFromUUID(wp.getCategory()));
+                    } else {
+                        accessList.add(new WaypointMenuItem(wp));
+                    }
+                } else if (DataManager.getManager().SHOW_DISCOVERABLE_WAYPOINTS && Util.canDiscover(p, wp)) {
+                    if (hasCategory) {
+                        if (!categoriesList.contains(getCategoryFromUUID(wp.getCategory())))
+                            categoriesList.add(getCategoryFromUUID(wp.getCategory()));
+                    } else {
+                        accessList.add(new WaypointMenuItem(wp, true));
+                    }
+                }
+            }
 
         if (addHomeWaypoints)
             accessList.addAll(pd.getAllWaypoints().stream()
-                    .map(WaypointHolder::new)
+                    .map(WaypointMenuItem::new)
+                    .collect(Collectors.toList()));
+
+        if (!categoriesList.isEmpty())
+            accessList.addAll(0, categoriesList.stream()
+                    .sorted(new CategoryComparator())
+                    .map(WaypointMenuItem::new)
                     .collect(Collectors.toList()));
 
         p.setMetadata("InMenu", new FixedMetadataValue(PluginMain.getPluginInstance(), true));

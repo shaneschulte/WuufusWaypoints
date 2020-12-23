@@ -23,7 +23,7 @@ public enum MenuSize {
         if (smallSize > 0)
             return smallSize;
 
-        int smallSizeAdj = (size % STEP_SIZE) * STEP_SIZE;
+        int smallSizeAdj = (int) (Math.ceil((double)size / (double)STEP_SIZE) * STEP_SIZE);
         if (smallSizeAdj > (largeSize - STEP_SIZE)) {
             smallSizeAdj = largeSize - STEP_SIZE;
         }

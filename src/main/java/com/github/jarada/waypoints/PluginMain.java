@@ -48,6 +48,13 @@ public class PluginMain extends JavaPlugin {
         commands.put("rename", new WPRenameCmd());
         commands.put("select", new WPSelectCmd());
         commands.put("toggle", new WPToggleCmd());
+        commands.put("caticon", new WPCatIconCmd());
+        commands.put("catlist", new WPCatListCmd());
+        commands.put("catorder", new WPCatOrderCmd());
+        commands.put("catremove", new WPCatRemoveCmd());
+        commands.put("catrename", new WPCatRenameCmd());
+        commands.put("catset", new WPCatSetCmd());
+        commands.put("catunset", new WPCatUnsetCmd());
 
         getCommand("wp").setExecutor(this);
         getCommand("sethome").setExecutor(this);

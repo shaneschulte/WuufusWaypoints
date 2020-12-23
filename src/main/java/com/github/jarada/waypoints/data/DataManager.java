@@ -85,13 +85,13 @@ public class DataManager {
         config.addDefault("Waypoints.MAX_HOME_WAYPOINTS", 3);
         config.addDefault("Waypoints.WP_NAME_MAX_LENGTH", 18);
         config.addDefault("Waypoints.WP_DESC_MAX_LENGTH", 100);
+        config.addDefault("Waypoints.MENU_SIZE", "compact");
         config.addDefault("Waypoints.ENABLE_BEACON", true);
         config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT", false);
-        config.addDefault("Waypoints.MENU_SIZE", "compact");
         config.addDefault("Waypoints.HANDLE_RESPAWNING", true);
-        config.addDefault("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_WAYPOINT_LIST", false);
         config.addDefault("Waypoints.SPAWN_MODE", "home");
         config.addDefault("Waypoints.CITY_WORLD_NAME", "world");
+        config.addDefault("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_WAYPOINT_LIST", false);
         config.addDefault("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS", false);
 
         for (Msg msg : Msg.values()) {
@@ -100,14 +100,14 @@ public class DataManager {
             messages.put(msg, config.getString(path));
         }
 
-        MAX_HOME_WAYPOINTS = config.getInt("Waypoints.MAX_HOME_WAYPOINTS");
+        MAX_HOME_WAYPOINTS = Math.max(1, config.getInt("Waypoints.MAX_HOME_WAYPOINTS"));
         WP_NAME_MAX_LENGTH = config.getInt("Waypoints.WP_NAME_MAX_LENGTH");
         WP_DESC_MAX_LENGTH = config.getInt("Waypoints.WP_DESC_MAX_LENGTH");
         ENABLE_BEACON = config.getBoolean("Waypoints.ENABLE_BEACON");
         BEACON_UNLIMITED_PERMANENT = config.getBoolean("Waypoints.BEACON_UNLIMITED_PERMANENT");
         HANDLE_RESPAWNING = config.getBoolean("Waypoints.HANDLE_RESPAWNING");
-        RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE = config.getBoolean("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE");
         CITY_WORLD_NAME = config.getString("Waypoints.CITY_WORLD_NAME");
+        RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE = config.getBoolean("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE");
         SHOW_DISCOVERABLE_WAYPOINTS = config.getBoolean("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS");
 
         try {
@@ -181,11 +181,20 @@ public class DataManager {
             // Load
             try {
                 wc.load(waypointConfigFile);
+                ConfigurationSection categories = wc.getConfigurationSection("categories");
+                if (categories != null) {
+                    for (String key : categories.getKeys(false)) {
+                        Category category = new Category(wc, "categories." + key);
+                        wm.getCategories().put(category.getUUID().toString(), category);
+                    }
+                    wm.sortCategories();
+                }
                 ConfigurationSection waypoints = wc.getConfigurationSection("waypoints");
                 if (waypoints != null) {
                     for (String key : waypoints.getKeys(false)) {
                         Waypoint wp = new Waypoint(wc, "waypoints." + key);
                         wm.getWaypoints().put(Util.getKey(wp.getName()), wp);
+                        wm.recordWaypointCategory(wp);
                     }
                 }
             } catch (IOException | InvalidConfigurationException e) {
@@ -234,6 +243,10 @@ public class DataManager {
                 wc.set("waypoints", null);
                 for (Waypoint wp : wm.getWaypoints().values()) {
                     wp.serialize(wc, "waypoints." + Util.getKey(wp.getName()));
+                }
+                wc.set("categories", null);
+                for (Category cat : wm.getCategories().values()) {
+                    cat.serialize(wc, "categories." + Util.getKey(cat.getName()));
                 }
                 wc.save(waypointConfigFile);
             } catch (IOException e) {

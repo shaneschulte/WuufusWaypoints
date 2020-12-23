@@ -8,8 +8,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class GridLocation implements Serializable {
 
-    private static final long serialVersionUID = 3704833816570970873L;
-
     private String            worldName;
     private int               x, y, z;
     private float             pitch, yaw;

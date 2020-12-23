@@ -8,10 +8,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class Waypoint extends GridLocation {
 
-    private static final long serialVersionUID = 3872196300104397877L;
-
     private UUID              uuid;
-    private String            name, description, hint;
+    private String            name, description, hint, category;
     private Material          icon;
     private short             durability;
     private Boolean           discoverable;
@@ -32,6 +30,8 @@ public class Waypoint extends GridLocation {
         setName(Serializer.getString(config, prefix, "name"));
         setDescription(Serializer.getString(config, prefix, "desc"));
         setHint(Serializer.getString(config, prefix, "hint"));
+        if (hint == null)
+            setHint("");
         setDurability(Serializer.getShort(config, prefix, "icon_damage"));
         setDiscoverable(Serializer.getBoolean(config, prefix, "discoverable"));
         setEnabled(Serializer.getBoolean(config, prefix, "enabled"));
@@ -42,6 +42,7 @@ public class Waypoint extends GridLocation {
         if (icon == null) {
             setIcon(Material.IRON_DOOR);
         }
+        setCategory(Serializer.getString(config, prefix, "category"));
     }
 
     @Override
@@ -50,11 +51,13 @@ public class Waypoint extends GridLocation {
         Serializer.set(config, prefix, "uuid", getUUID().toString());
         Serializer.set(config, prefix, "name", getName());
         Serializer.set(config, prefix, "desc", getDescription());
-        Serializer.set(config, prefix, "hint", getHint());
+        if (!hint.isEmpty())
+            Serializer.set(config, prefix, "hint", getHint());
         Serializer.set(config, prefix, "icon", getIcon().getKey().toString());
         Serializer.set(config, prefix, "icon_damage", getDurability());
         Serializer.set(config, prefix, "discoverable", isDiscoverable());
         Serializer.set(config, prefix, "enabled", isEnabled());
+        Serializer.set(config, prefix, "category", getCategory());
     }
 
     public UUID getUUID() {
@@ -120,4 +123,19 @@ public class Waypoint extends GridLocation {
         this.enabled = enabled;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String categoryUUID) {
+        this.category = categoryUUID;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category.getUUID().toString();
+    }
+
+    public void clearCategory() {
+        this.category = null;
+    }
 }

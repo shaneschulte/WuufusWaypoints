@@ -1,5 +1,9 @@
-package com.github.jarada.waypoints;
+package com.github.jarada.waypoints.menus;
 
+import com.github.jarada.waypoints.PluginMain;
+import com.github.jarada.waypoints.SelectionManager;
+import com.github.jarada.waypoints.Util;
+import com.github.jarada.waypoints.WaypointManager;
 import com.github.jarada.waypoints.data.*;
 import com.github.jarada.waypoints.tasks.TeleportTask;
 import org.bukkit.Bukkit;
@@ -25,30 +29,34 @@ import java.util.Optional;
 
 public class WaypointMenu implements Listener {
 
-    private PluginMain            pm;
+    private PluginMain              pm;
+    private Inventory               activeInventory;
 
-    private Player                p;
-    private PlayerData            pd;
-    private Waypoint              currentWaypoint;
-    private List<WaypointHolder>  accessList;
-    private boolean               select;
-    private boolean               fromBeacon;
+    private Player                  p;
+    private PlayerData              pd;
+    private Waypoint                currentWaypoint;
+    private List<WaypointMenuItem>  rootAccessList;
+    private List<WaypointMenuItem>  accessList;
+    private boolean                 select;
+    private boolean                 fromBeacon;
 
-    private int                   page;
-    private int                   size;
-    private int                   dataSize;
-    private MenuSize              menuSize;
-    private String[]              optionNames;
-    private ItemStack[]           optionIcons;
-    private Waypoint[]            optionWaypoints;
+    private int                     page;
+    private int                     size;
+    private int                     dataSize;
+    private MenuSize                menuSize;
+    private String[]                optionNames;
+    private ItemStack[]             optionIcons;
+    private Waypoint[]              optionWaypoints;
+    private Category[]              optionCategories;
 
-    public WaypointMenu(Player p, PlayerData pd, Waypoint currentWaypoint, List<WaypointHolder> accessList, boolean select) {
+    public WaypointMenu(Player p, PlayerData pd, Waypoint currentWaypoint, List<WaypointMenuItem> accessList, boolean select) {
         pm = PluginMain.getPluginInstance();
 
         this.p = p;
         this.pd = pd;
         this.select = select;
         this.currentWaypoint = currentWaypoint;
+        this.rootAccessList = accessList;
         this.accessList = accessList;
         this.fromBeacon = !select && currentWaypoint == null;
         this.menuSize = DataManager.getManager().MENU_SIZE;
@@ -59,9 +67,20 @@ public class WaypointMenu implements Listener {
     }
 
     public void open() {
-        Inventory waypointMenu = Bukkit.createInventory(p, size, Msg.MENU_NAME.toString());
-        waypointMenu.setContents(optionIcons);
-        p.openInventory(waypointMenu);
+        activeInventory = Bukkit.createInventory(p, size, Msg.MENU_NAME.toString());
+        activeInventory.setContents(optionIcons);
+        p.openInventory(activeInventory);
+    }
+
+    private void reopen(boolean resize) {
+        buildMenu();
+        if (resize && menuSize == MenuSize.RESIZE) {
+            p.closeInventory();
+            open();
+        } else {
+            activeInventory.clear();
+            activeInventory.setContents(optionIcons);
+        }
     }
 
     private void destroy() {
@@ -95,10 +114,10 @@ public class WaypointMenu implements Listener {
             return;
 
         if (optionWaypoints[slot] != null) {
-            Optional<WaypointHolder> holder = accessList.stream()
+            Optional<WaypointMenuItem> holder = accessList.stream()
                     .filter(x -> x.getWaypoint() == optionWaypoints[slot])
                     .findFirst();
-            if (holder.isPresent() && holder.get().isDiscoverable())
+            if (!select && holder.isPresent() && holder.get().isDiscoverMode())
                 return;
             
             Bukkit.getScheduler().runTask(pm, new Runnable() {
@@ -114,6 +133,13 @@ public class WaypointMenu implements Listener {
                 }
 
             });
+        } else if (optionCategories[slot] != null) {
+            Category category = optionCategories[slot];
+            accessList = WaypointManager.getManager().getMenuWaypointsForCategory(category, p, select);
+            reopen(true);
+        } else if (optionNames[slot].equals("Root")) {
+            accessList = rootAccessList;
+            reopen(true);
         } else {
             if (optionNames[slot].equals("Previous")) {
                 page--;
@@ -125,9 +151,7 @@ public class WaypointMenu implements Listener {
                 pd.setSilentWaypoints(!pd.isSilentWaypoints());
                 DataManager.getManager().savePlayerData(pd.getUUID());
             }
-
-            buildMenu();
-            clickEvent.getInventory().setContents(optionIcons);
+            reopen(false);
         }
     }
 
@@ -146,11 +170,12 @@ public class WaypointMenu implements Listener {
     }
 
     public void buildMenu() {
-        size = menuSize.getFullSize(accessList.size(), accessList.size() > MenuSize.STEP_SIZE || fromBeacon);
+        size = menuSize.getFullSize(accessList.size(), hasCategories() || accessList.size() > MenuSize.STEP_SIZE || fromBeacon);
         dataSize = menuSize.getDataSize(accessList.size());
         optionNames = new String[size];
         optionIcons = new ItemStack[size];
         optionWaypoints = new Waypoint[size];
+        optionCategories = new Category[size];
 
         for (int slot = 0; slot < dataSize; slot++) {
             int index = ((page - 1) * dataSize) + slot;
@@ -158,9 +183,14 @@ public class WaypointMenu implements Listener {
             if (index > accessList.size() - 1)
                 break;
 
-            WaypointHolder holder = accessList.get(index);
-            Waypoint wp = holder.getWaypoint();
-            setOption(slot, wp, holder.isDiscoverable(), wp == currentWaypoint);
+            WaypointMenuItem holder = accessList.get(index);
+            if (holder.isCategory()) {
+                Category cat = holder.getCategory();
+                setOption(slot, cat);
+            } else {
+                Waypoint wp = holder.getWaypoint();
+                setOption(slot, wp, holder.isDiscoverMode(), wp == currentWaypoint);
+            }
         }
 
         if (page > 1) {
@@ -170,7 +200,7 @@ public class WaypointMenu implements Listener {
         }
 
         if (accessList.size() > dataSize) {
-            ItemStack is = new ItemStack(Material.BOOK, page);
+            ItemStack is = new ItemStack(Material.BOOK, Math.min(page, 64));
             Util.setItemNameAndLore(is, Util.color(String.format(Msg.MENU_PAGE.toString() + ": &6%d", page)), null);
             setOption(dataSize + 4, "Page", is);
         }
@@ -181,7 +211,11 @@ public class WaypointMenu implements Listener {
             setOption(dataSize + 5, "Next", is);
         }
 
-        if (fromBeacon) {
+        if (!accessList.equals(rootAccessList)) {
+            ItemStack is = new ItemStack(Material.DARK_OAK_DOOR, 1);
+            Util.setItemNameAndLore(is, Util.color(Msg.MENU_PAGE_CLOSE.toString()), null);
+            setOption(dataSize + 8, "Root", is);
+        } else if (fromBeacon) {
             ItemStack is = new ItemStack(Material.LEATHER_BOOTS, 1);
 
             List<String> lore = new ArrayList<>();
@@ -192,10 +226,34 @@ public class WaypointMenu implements Listener {
         }
     }
 
+    private boolean hasCategories() {
+        return !WaypointManager.getManager().getCategories().isEmpty();
+    }
+
     public void setOption(int slot, String name, ItemStack icon) {
         optionNames[slot] = name;
         optionIcons[slot] = icon;
         optionWaypoints[slot] = null;
+        optionCategories[slot] = null;
+    }
+
+    public void setOption(int slot, Category cat) {
+        String displayName = "&6" + cat.getName();
+
+        List<String> lore = new ArrayList<String>();
+        lore.add(Util.color(String.format("&a%s&f", Msg.WORD_CATEGORY.toString())));
+
+        optionNames[slot] = Util.color(displayName);
+
+        ItemStack icon = new ItemStack(cat.getIcon(), 1);
+        ItemMeta meta = icon.getItemMeta();
+        if (meta instanceof Damageable) {
+            ((org.bukkit.inventory.meta.Damageable)meta).setDamage(cat.getDurability());
+            icon.setItemMeta(meta);
+        }
+
+        optionIcons[slot] = Util.setItemNameAndLore(icon, optionNames[slot], lore);
+        optionCategories[slot] = cat;
     }
 
     public void setOption(int slot, Waypoint wp, boolean discoverable, boolean selected) {
@@ -212,10 +270,18 @@ public class WaypointMenu implements Listener {
             if (wp.getHint().length() > 0)
                 lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getHint(), 25)));
         } else {
-            lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
-            lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
-            lore.add(Util.color(String.format("&aY: &f%s", loc.getBlockY())));
-            lore.add(Util.color(String.format("&aZ: &f%s", loc.getBlockZ())));
+            if (loc == null || loc.getWorld() == null) {
+                lore.add(Util.color("&c&o(Invalid Location)"));
+            } else {
+                lore.add(Util.color(String.format("&f&o(%s)", loc.getWorld().getName())));
+                lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
+                lore.add(Util.color(String.format("&aY: &f%s", loc.getBlockY())));
+                lore.add(Util.color(String.format("&aZ: &f%s", loc.getBlockZ())));
+                if (wp.isDiscoverable() != null) {
+                    lore.add(Util.color(String.format("&a%s", Boolean.TRUE.equals(wp.isDiscoverable()) ?
+                            Msg.WORD_SERVER_WIDE.toString() : Msg.WORD_WORLD_SPECIFIC.toString())));
+                }
+            }
 
             if (wp.getDescription().length() > 0)
                 lore.addAll(Arrays.asList(Util.getWrappedLore(wp.getDescription(), 25)));

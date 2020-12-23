@@ -32,6 +32,7 @@
      children:
        wp.bypass: true
        wp.add: true
+       wp.category.*: true
        wp.desc: true
        wp.hint: true
        wp.icon: true
@@ -55,6 +56,16 @@
        wp.beacon.use: true
        wp.beacon.server: true
        wp.beacon.unlimited: true
+   wp.category.*:
+     description: Grants all category modification permissions
+     children:
+       wp.category.icon: true
+       wp.category.list: true
+       wp.category.order: true
+       wp.category.remove: true
+       wp.category.rename: true
+       wp.category.set: true
+       wp.category.unset: true
    wp.bypass:
      description: Grants ability to teleport to disabled waypoints
    wp.desc:

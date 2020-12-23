@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.github.jarada.waypoints.data.Category;
 import com.github.jarada.waypoints.data.Msg;
 import com.github.jarada.waypoints.data.Waypoint;
 import org.bukkit.ChatColor;
@@ -78,12 +79,15 @@ public class SelectionManager {
         boolean serverDefined = WaypointManager.getManager().isServerDefined(wp);
         Location loc = wp.getLocation();
         String displayName = wp.getName();
+        Category category = wp.getCategory() != null ? WaypointManager.getManager().getCategoryFromUUID(wp.getCategory()) : null;
 
         if (serverDefined && !wp.isEnabled())
             displayName += Util.color(" &f[&c" + Msg.WORD_DISABLED.toString() + "&f]");
 
         Msg.BORDER.sendTo(sender);
         Msg.SELECTED_1.sendTo(sender, displayName, loc.getWorld().getName());
+        if (category != null)
+            Msg.WP_CATEGORY_ORDER.sendTo(sender, Integer.toString(category.getOrder()), category.getName());
         Msg.BORDER.sendTo(sender);
         Msg.SELECTED_2.sendTo(sender, loc.getBlockX(), (int) loc.getPitch());
         Msg.SELECTED_3.sendTo(sender, loc.getBlockY(), (int) loc.getYaw());
@@ -91,7 +95,8 @@ public class SelectionManager {
 
         if (serverDefined) {
             String discoveryMode = wp.isDiscoverable() == null ? Msg.WORD_DISABLED.toString() : (
-                    wp.isDiscoverable() ? Msg.WORD_SERVER_WIDE.toString() : Msg.WORD_WORLD_SPECIFIC.toString());
+                    Boolean.TRUE.equals(wp.isDiscoverable()) ? Msg.WORD_SERVER_WIDE.toString() :
+                            Msg.WORD_WORLD_SPECIFIC.toString());
             sender.sendMessage("");
             Msg.SELECTED_DISCOVER.sendTo(sender, discoveryMode);
         }

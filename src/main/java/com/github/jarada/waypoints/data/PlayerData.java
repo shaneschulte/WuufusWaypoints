@@ -12,9 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class PlayerData implements Serializable {
 
-    private static final long serialVersionUID = -8683386697368529683L;
-
-    private UUID              playerUUID;
+    private final UUID        playerUUID;
     private List<Waypoint>    homeWaypoints;
     private List<UUID>        discovered;
     private GridLocation      spawnPoint;
