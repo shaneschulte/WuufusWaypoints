@@ -1,5 +1,17 @@
 CHANGELOG
 
+2.2.0 (12/24/2020)
+- Server Waypoints can now be categorised using the new Category commands. Categories can have their own icons,
+  can be ordered, and can be set upon multiple Waypoints, providing submenus for these Waypoints.
+- Added ability to show discoverable waypoints (set in config).
+- Added to have hints on shown discoverable waypoints.
+- Added command to receive beacon using /wp beacon command, wp.spawn.beacon permission
+- Added ability to resize Waypoint Menu (in config, options are: compact, small, medium, large, max, resize)
+- Fix for Waypoints containing full stops in name being wiped out.
+- Fix for invalid Spawn Mode set in config wiping out waypoints.
+- Fix for `wp.access.*` permission not working as intended.
+- Fixes to Messages and Permissions.
+
 2.1.4 (11/21/2020)
 - Beacons can now prevent waypoints activating while walking when you have them in your inventory. This does
   not affect waypoints that you discover.
