@@ -60,7 +60,7 @@ public class TeleportTask implements Listener, Runnable {
 
         switch (counter) {
             case 5:
-                Util.playSound(p.getLocation(), Sound.BLOCK_PORTAL_TRIGGER);
+                dm.WARP_EFFECT.playLoadingEffectAtLocation(p.getLocation());
                 Msg.PORT_TASK_1.sendTo(p, wp.getName(), p.getName());
                 if (destination == null) {
                     counter = 2;
@@ -86,9 +86,9 @@ public class TeleportTask implements Listener, Runnable {
                     Location to = wp.getLocation();
                     to.setY(to.getY() + 2);
 
-                    from.getWorld().strikeLightningEffect(from);
+                    dm.WARP_EFFECT.playWarpingEffectAtLocation(from, false);
                     p.teleport(destination, TeleportCause.COMMAND);
-                    to.getWorld().strikeLightningEffect(to);
+                    dm.WARP_EFFECT.playWarpingEffectAtLocation(destination, !from.equals(to));
                 } else {
                     Msg.BLOCKED_CANCEL.sendTo(p);
                 }
@@ -99,7 +99,8 @@ public class TeleportTask implements Listener, Runnable {
         }
 
         if (counter-- > 0) {
-            Util.playEffect(p.getLocation(), Effect.ENDER_SIGNAL);
+            dm.WARP_EFFECT.playTickEffectAtLocation(p.getLocation(), counter, false);
+            dm.WARP_EFFECT.playTickEffectAtLocation(destination, counter, true);
             Bukkit.getScheduler().runTaskLater(pm, this, 20L);
         }
     }

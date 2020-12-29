@@ -55,6 +55,7 @@ public class DataManager {
     public String              CITY_WORLD_NAME;
     public boolean             SHOW_DISCOVERABLE_WAYPOINTS;
     public MenuSize            MENU_SIZE;
+    public WarpEffect          WARP_EFFECT;
 
     public DataManager() {
         pm = PluginMain.getPluginInstance();
@@ -93,6 +94,7 @@ public class DataManager {
         config.addDefault("Waypoints.CITY_WORLD_NAME", "world");
         config.addDefault("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_WAYPOINT_LIST", false);
         config.addDefault("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS", false);
+        config.addDefault("Waypoints.WARP_EFFECT", "thunder");
 
         for (Msg msg : Msg.values()) {
             String path = "Waypoints.Messages." + msg.name();
@@ -122,6 +124,13 @@ public class DataManager {
         } catch (IllegalArgumentException e) {
             SPAWN_MODE = SpawnMode.HOME;
             pm.getLogger().warning("Invalid Spawn Mode in Config, using home!");
+        }
+
+        try {
+            WARP_EFFECT = WarpEffect.valueOf(config.getString("Waypoints.WARP_EFFECT").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            WARP_EFFECT = WarpEffect.THUNDER;
+            pm.getLogger().warning("Invalid Warp Effect in Config, using thunder!");
         }
 
         config.options().copyDefaults(true);

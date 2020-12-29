@@ -121,6 +121,10 @@ public class Util {
         loc.getWorld().playEffect(loc, effect, 0);
     }
 
+    public static void playParticle(Location loc, Particle particle, int count) {
+        loc.getWorld().spawnParticle(particle, loc, count);
+    }
+
     public static void playSound(Location loc, Sound sound) {
         loc.getWorld().playSound(loc, sound, 10F, 1F);
     }
