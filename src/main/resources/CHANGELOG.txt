@@ -1,5 +1,9 @@
 CHANGELOG
 
+2.2.1 (12/29/2020)
+- Added ability to choose different warp effects during transportation (in config, options are: blaze, bubble,
+  ender, nether, quiet, thunder)
+
 2.2.0 (12/24/2020)
 - Server Waypoints can now be categorised using the new Category commands. Categories can have their own icons,
   can be ordered, and can be set upon multiple Waypoints, providing submenus for these Waypoints.
