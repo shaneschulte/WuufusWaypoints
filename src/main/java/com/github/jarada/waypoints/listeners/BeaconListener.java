@@ -118,8 +118,19 @@ public class BeaconListener implements Listener {
             PlayerInventory inv = p.getInventory();
 
             if (!inv.containsAtLeast(dm.BEACON, 1)) {
-                int emptySlot = inv.firstEmpty();
+                int desiredSlot = dm.BEACON_UNLIMITED_PERMANENT_SLOT;
+                if (desiredSlot > 0) {
+                    desiredSlot -= 1;
 
+                    if (desiredSlot < 36 && inv.getItem(desiredSlot) == null) {
+                        // The player's hotbar is indexed 0-8 in setItem(). The order goes: 0-8 hotbar, 9-35 normal inventory, 36 boots,
+                        // 37 leggings, 38 chestplate, and 39 helmet. For indexes > 39 an ArrayIndexOutOfBoundsException will be thrown.
+                        inv.setItem(desiredSlot, dm.BEACON);
+                        return;
+                    }
+                }
+
+                int emptySlot = inv.firstEmpty();
                 if (emptySlot > -1)
                     inv.setItem(emptySlot, dm.BEACON);
             }
