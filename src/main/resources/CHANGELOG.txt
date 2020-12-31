@@ -1,5 +1,8 @@
 CHANGELOG
 
+2.2.2 (12/31/2020)
+- Added ability to set beacon's preferred slot when plugin assigns a player a permanent beacon.
+
 2.2.1 (12/29/2020)
 - Added ability to choose different warp effects during transportation (in config, options are: blaze, bubble,
   ender, nether, quiet, thunder)
