@@ -14,6 +14,12 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
+		<!-- CodeMC (for NBT Support) -->
+		<repository>
+			<id>codemc-repo</id>
+			<url>https://repo.codemc.org/repository/maven-public/</url>
+			<layout>default</layout>
+		</repository>
 	</repositories>
 	<dependencies>
 		<!--This adds the Spigot API artifact to the build -->
@@ -22,6 +28,12 @@
 			<artifactId>spigot-api</artifactId>
 			<version>1.16.1-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
+		</dependency>
+		<!-- CodeMC (for NBT Support) -->
+		<dependency>
+			<groupId>de.tr7zw</groupId>
+			<artifactId>item-nbt-api-plugin</artifactId>
+			<version>2.7.1</version>
 		</dependency>
 	</dependencies>
 	<build>

@@ -4,6 +4,8 @@
  version: ${project.version}
  prefix: WuufusWaypoints
  api-version: 1.13
+ softdepend:
+   - NBTAPI
  commands:
    wp:
      description: Waypoints top-level command

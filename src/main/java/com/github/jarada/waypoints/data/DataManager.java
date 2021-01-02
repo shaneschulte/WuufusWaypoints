@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import com.github.jarada.waypoints.listeners.BeaconListener;
 import com.github.jarada.waypoints.listeners.RespawnListener;
+import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -146,9 +147,12 @@ public class DataManager {
             lore.add(Util.color(Msg.LORE_BEACON_3.toString()));
             lore.add(Util.color(Msg.LORE_BEACON_4.toString()));
 
-            BEACON = Util.setItemNameAndLore(new ItemStack(Material.COMPASS, 1), Msg.LORE_BEACON_NAME.toString(), lore);
+            final String beaconKey = "waypointbeacon";
+            BEACON = Util.setItemNameAndLore(
+                    NBTItemManager.getNBTItem(new ItemStack(Material.COMPASS, 1), beaconKey),
+                    Msg.LORE_BEACON_NAME.toString(), lore);
 
-            ShapedRecipe sr = new ShapedRecipe(new NamespacedKey(pm, "waypointbeacon"), BEACON);
+            ShapedRecipe sr = new ShapedRecipe(new NamespacedKey(pm, beaconKey), BEACON);
             sr.shape("RRR", "RCR", "RRR").setIngredient('R', Material.REDSTONE).setIngredient('C', Material.COMPASS);
             Bukkit.addRecipe(sr);
 
@@ -378,6 +382,20 @@ public class DataManager {
             saveWaypoints();
         else
             savePlayerData(((Player) sender).getUniqueId());
+    }
+
+    static class NBTItemManager {
+
+        public static ItemStack getNBTItem(ItemStack item, String key) {
+            if (Bukkit.getPluginManager().isPluginEnabled("NBTAPI")) {
+                NBTItem nbtItem = new NBTItem(item);
+                nbtItem.setByte("DoesNotConvert", (byte) 1);
+                nbtItem.setByte(key, (byte) 1);
+                return nbtItem.getItem();
+            }
+            return item;
+        }
+
     }
 
 }
