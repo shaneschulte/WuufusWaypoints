@@ -1,5 +1,15 @@
 CHANGELOG
 
+2.2.4 (01/14/2021)
+- Added support to have beacons be enchanted books. This is to offset issues with compass beacons being
+  interfered with on 1.16 due to lodestones. Book beacons can be activated in the config, have a separate
+  crafting recipe, and can be used whether you encounter issues with the previous beacons or not!
+- Added ability to set worlds that permanent beacons are assigned on.
+- Added ability to set permanent beacons as immovable when assigned to a hotbar slot and the player is not
+  creative.
+- Fixed the issue where the mouse would reset while navigating categories when the menu size was set to
+  resize.
+
 2.2.3 (01/02/2021)
 - Added support for NBT Tags being added to items for integration with plugins that require NBT tags to
   identify items.
