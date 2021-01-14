@@ -2,12 +2,9 @@ package com.github.jarada.waypoints.data;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +45,7 @@ public class DataManager {
     public int                 MAX_HOME_WAYPOINTS;
     public int                 WP_NAME_MAX_LENGTH, WP_DESC_MAX_LENGTH;
     public boolean             ENABLE_BEACON;
+    public boolean             BEACON_AS_BOOK;
     public boolean             BEACON_UNLIMITED_PERMANENT;
     public int                 BEACON_UNLIMITED_PERMANENT_SLOT;
     public ItemStack           BEACON;
@@ -90,6 +88,7 @@ public class DataManager {
         config.addDefault("Waypoints.WP_DESC_MAX_LENGTH", 100);
         config.addDefault("Waypoints.MENU_SIZE", "compact");
         config.addDefault("Waypoints.ENABLE_BEACON", true);
+        config.addDefault("Waypoints.BEACON_AS_BOOK", false);
         config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT", false);
         config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT_SLOT", 0);
         config.addDefault("Waypoints.HANDLE_RESPAWNING", true);
@@ -109,6 +108,7 @@ public class DataManager {
         WP_NAME_MAX_LENGTH = config.getInt("Waypoints.WP_NAME_MAX_LENGTH");
         WP_DESC_MAX_LENGTH = config.getInt("Waypoints.WP_DESC_MAX_LENGTH");
         ENABLE_BEACON = config.getBoolean("Waypoints.ENABLE_BEACON");
+        BEACON_AS_BOOK = config.getBoolean("Waypoints.BEACON_AS_BOOK");
         BEACON_UNLIMITED_PERMANENT = config.getBoolean("Waypoints.BEACON_UNLIMITED_PERMANENT");
         BEACON_UNLIMITED_PERMANENT_SLOT = config.getInt("Waypoints.BEACON_UNLIMITED_PERMANENT_SLOT");
         HANDLE_RESPAWNING = config.getBoolean("Waypoints.HANDLE_RESPAWNING");
@@ -149,11 +149,21 @@ public class DataManager {
 
             final String beaconKey = "waypointbeacon";
             BEACON = Util.setItemNameAndLore(
-                    NBTItemManager.getNBTItem(new ItemStack(Material.COMPASS, 1), beaconKey),
+                    NBTItemManager.getNBTItem(new ItemStack(
+                            BEACON_AS_BOOK ? Material.ENCHANTED_BOOK : Material.COMPASS, 1), beaconKey),
                     Msg.LORE_BEACON_NAME.toString(), lore);
 
             ShapedRecipe sr = new ShapedRecipe(new NamespacedKey(pm, beaconKey), BEACON);
-            sr.shape("RRR", "RCR", "RRR").setIngredient('R', Material.REDSTONE).setIngredient('C', Material.COMPASS);
+            if (BEACON_AS_BOOK) {
+                sr.shape("RRR", "RCR", "RBR")
+                        .setIngredient('R', Material.REDSTONE)
+                        .setIngredient('C', Material.COMPASS)
+                        .setIngredient('B', Material.BOOK);
+            } else {
+                sr.shape("RRR", "RCR", "RRR")
+                        .setIngredient('R', Material.REDSTONE)
+                        .setIngredient('C', Material.COMPASS);
+            }
             Bukkit.addRecipe(sr);
 
             Bukkit.getPluginManager().registerEvents(BeaconListener.getListener(), pm);
