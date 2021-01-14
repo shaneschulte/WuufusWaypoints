@@ -4,12 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import com.github.jarada.waypoints.listeners.BeaconListener;
 import com.github.jarada.waypoints.listeners.RespawnListener;
@@ -48,6 +43,8 @@ public class DataManager {
     public boolean             BEACON_AS_BOOK;
     public boolean             BEACON_UNLIMITED_PERMANENT;
     public int                 BEACON_UNLIMITED_PERMANENT_SLOT;
+    public boolean             BEACON_UNLIMITED_PERMANENT_IMMOVABLE;
+    public List<String>        BEACON_UNLIMITED_PERMANENT_WORLDS;
     public ItemStack           BEACON;
     public boolean             HANDLE_RESPAWNING;
     public boolean             RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE;
@@ -91,6 +88,8 @@ public class DataManager {
         config.addDefault("Waypoints.BEACON_AS_BOOK", false);
         config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT", false);
         config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT_SLOT", 0);
+        config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT_IMMOVABLE", false);
+        config.addDefault("Waypoints.BEACON_UNLIMITED_PERMANENT_WORLDS", Collections.emptyList());
         config.addDefault("Waypoints.HANDLE_RESPAWNING", true);
         config.addDefault("Waypoints.SPAWN_MODE", "home");
         config.addDefault("Waypoints.CITY_WORLD_NAME", "world");
@@ -111,6 +110,8 @@ public class DataManager {
         BEACON_AS_BOOK = config.getBoolean("Waypoints.BEACON_AS_BOOK");
         BEACON_UNLIMITED_PERMANENT = config.getBoolean("Waypoints.BEACON_UNLIMITED_PERMANENT");
         BEACON_UNLIMITED_PERMANENT_SLOT = config.getInt("Waypoints.BEACON_UNLIMITED_PERMANENT_SLOT");
+        BEACON_UNLIMITED_PERMANENT_IMMOVABLE = config.getBoolean("Waypoints.BEACON_UNLIMITED_PERMANENT_IMMOVABLE");
+        BEACON_UNLIMITED_PERMANENT_WORLDS = config.getStringList("Waypoints.BEACON_UNLIMITED_PERMANENT_WORLDS");
         HANDLE_RESPAWNING = config.getBoolean("Waypoints.HANDLE_RESPAWNING");
         CITY_WORLD_NAME = config.getString("Waypoints.CITY_WORLD_NAME");
         RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE = config.getBoolean("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE");

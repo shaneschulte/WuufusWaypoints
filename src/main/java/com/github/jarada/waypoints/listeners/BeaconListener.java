@@ -2,6 +2,8 @@ package com.github.jarada.waypoints.listeners;
 
 import java.util.Iterator;
 
+import org.bukkit.GameMode;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -56,9 +58,11 @@ public class BeaconListener implements Listener {
         DataManager dm = DataManager.getManager();
         InventoryType type = clickEvent.getInventory().getType();
         InventoryAction a = clickEvent.getAction();
+        HumanEntity p = clickEvent.getWhoClicked();
 
         if (dm.BEACON_UNLIMITED_PERMANENT && clickEvent.getWhoClicked().hasPermission("wp.beacon.unlimited")) {
-            if (!(type == InventoryType.PLAYER || type == InventoryType.CREATIVE || type == InventoryType.CRAFTING)) {
+            if (!(type == InventoryType.PLAYER || type == InventoryType.CREATIVE || type == InventoryType.CRAFTING) ||
+                    isBeaconImmovable(p, type)) {
                 if (clickEvent.getCurrentItem() != null && clickEvent.getCurrentItem().isSimilar(dm.BEACON))
                     clickEvent.setCancelled(true);
 
@@ -114,7 +118,8 @@ public class BeaconListener implements Listener {
 
         // If BEACON_UNLIMITED_PERMANENT is true, gives players with
         // "wp.beacon.unlimited" a Waypoint Beacon if they don't have one
-        if (dm.BEACON_UNLIMITED_PERMANENT && p.hasPermission("wp.beacon.unlimited")) {
+        if (dm.BEACON_UNLIMITED_PERMANENT && p.hasPermission("wp.beacon.unlimited") &&
+                doesWorldGivePermanentBeacons(p.getWorld().getName())) {
             PlayerInventory inv = p.getInventory();
 
             if (!inv.containsAtLeast(dm.BEACON, 1)) {
@@ -135,6 +140,21 @@ public class BeaconListener implements Listener {
                     inv.setItem(emptySlot, dm.BEACON);
             }
         }
+    }
+
+    private boolean isBeaconImmovable(HumanEntity player, InventoryType type) {
+        if (player.getGameMode() == GameMode.CREATIVE || type == InventoryType.CREATIVE)
+            return false;
+
+        DataManager dm = DataManager.getManager();
+        return dm.BEACON_UNLIMITED_PERMANENT_IMMOVABLE && dm.BEACON_UNLIMITED_PERMANENT_SLOT > 0 &&
+                dm.BEACON_UNLIMITED_PERMANENT_SLOT < 10;
+    }
+
+    private boolean doesWorldGivePermanentBeacons(String worldName) {
+        DataManager dm = DataManager.getManager();
+        return dm.BEACON_UNLIMITED_PERMANENT_WORLDS.isEmpty() ||
+                dm.BEACON_UNLIMITED_PERMANENT_WORLDS.contains(worldName);
     }
 
 }
