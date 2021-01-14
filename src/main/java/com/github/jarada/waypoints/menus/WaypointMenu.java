@@ -75,7 +75,6 @@ public class WaypointMenu implements Listener {
     private void reopen(boolean resize) {
         buildMenu();
         if (resize && menuSize == MenuSize.RESIZE) {
-            p.closeInventory();
             open();
         } else {
             activeInventory.clear();
