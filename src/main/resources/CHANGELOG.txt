@@ -1,5 +1,8 @@
 CHANGELOG
 
+2.2.5 (01/16/2021)
+- Added ability to set the icon in config to use for shown discoverable waypoints
+
 2.2.4 (01/14/2021)
 - Added support to have beacons be enchanted books. This is to offset issues with compass beacons being
   interfered with on 1.16 due to lodestones. Book beacons can be activated in the config, have a separate
