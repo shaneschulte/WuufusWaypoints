@@ -291,7 +291,7 @@ public class WaypointMenu implements Listener {
         if (currentWaypoint != null && selected)
             optionNames[slot] = Util.color("&a* ") + optionNames[slot];
 
-        ItemStack icon = new ItemStack((discoverable) ? Material.LIGHT_GRAY_STAINED_GLASS_PANE : wp.getIcon(), 1);
+        ItemStack icon = new ItemStack((discoverable) ? getDiscoverableIcon() : wp.getIcon(), 1);
         ItemMeta meta = icon.getItemMeta();
         if (!discoverable && meta instanceof Damageable) {
             ((org.bukkit.inventory.meta.Damageable)meta).setDamage(wp.getDurability());
@@ -302,6 +302,11 @@ public class WaypointMenu implements Listener {
 
         if ((wp.isEnabled() || p.hasPermission("wp.bypass")) || select)
             optionWaypoints[slot] = wp;
+    }
+
+    private Material getDiscoverableIcon() {
+        Material discoverable = Material.getMaterial(DataManager.getManager().SHOW_DISCOVERABLE_WAYPOINTS_ICON.toUpperCase());
+        return (discoverable != null) ? discoverable : Material.LIGHT_GRAY_STAINED_GLASS_PANE;
     }
 
 }

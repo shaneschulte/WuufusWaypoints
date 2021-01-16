@@ -51,6 +51,7 @@ public class DataManager {
     public SpawnMode           SPAWN_MODE;
     public String              CITY_WORLD_NAME;
     public boolean             SHOW_DISCOVERABLE_WAYPOINTS;
+    public String              SHOW_DISCOVERABLE_WAYPOINTS_ICON;
     public MenuSize            MENU_SIZE;
     public WarpEffect          WARP_EFFECT;
 
@@ -95,6 +96,7 @@ public class DataManager {
         config.addDefault("Waypoints.CITY_WORLD_NAME", "world");
         config.addDefault("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_WAYPOINT_LIST", false);
         config.addDefault("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS", false);
+        config.addDefault("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS_ICON", "LIGHT_GRAY_STAINED_GLASS_PANE");
         config.addDefault("Waypoints.WARP_EFFECT", "thunder");
 
         for (Msg msg : Msg.values()) {
@@ -116,6 +118,7 @@ public class DataManager {
         CITY_WORLD_NAME = config.getString("Waypoints.CITY_WORLD_NAME");
         RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE = config.getBoolean("Waypoints.RESPAWN_INCLUDE_BED_IN_HOME_SPAWN_MODE");
         SHOW_DISCOVERABLE_WAYPOINTS = config.getBoolean("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS");
+        SHOW_DISCOVERABLE_WAYPOINTS_ICON = config.getString("Waypoints.SHOW_DISCOVERABLE_WAYPOINTS_ICON");
 
         try {
             MENU_SIZE = MenuSize.valueOf(config.getString("Waypoints.MENU_SIZE").toUpperCase());
