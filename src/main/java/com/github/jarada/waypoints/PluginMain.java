@@ -15,8 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.crypto.Data;
-
 public class PluginMain extends JavaPlugin {
 
     private static PluginMain          instance;
@@ -38,6 +36,7 @@ public class PluginMain extends JavaPlugin {
         commands.put("setspawn", new SetSpawnCmd());
         commands.put("add", new WPAddCmd());
         commands.put("beacon", new WPBeaconCmd());
+        commands.put("beaconperm", new WPBeaconPermanentCmd());
         commands.put("desc", new WPDescCmd());
         commands.put("discover", new WPDiscoverCmd());
         commands.put("hint", new WPHintCmd());
