@@ -1,5 +1,11 @@
 CHANGELOG
 
+2.2.6 (01/21/2021)
+- Added command to receive permanent beacon using /wp beaconperm command, wp.spawn.beacon permission. Player
+  must also have wp.beacon.unlimited and the permanent beacon flag be enabled. This command follows the rules
+  of permanent beacons in that if a player already has a beacon, they will not be given one; however it
+  ignores the permanent beacon world whitelist and will work in all worlds.
+
 2.2.5 (01/16/2021)
 - Added ability to set the icon in config to use for shown discoverable waypoints
 
