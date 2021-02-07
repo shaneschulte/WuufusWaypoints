@@ -1,5 +1,10 @@
 CHANGELOG
 
+2.2.7 (02/07/2021)
+- Add config option to prevent menu at spawn point appearing without permission
+- Fix for icons that aren't items being allowed to be set on Waypoints through the icon command (which breaks
+  the plugin)
+
 2.2.6 (01/21/2021)
 - Added command to receive permanent beacon using /wp beaconperm command, wp.spawn.beacon permission. Player
   must also have wp.beacon.unlimited and the permanent beacon flag be enabled. This command follows the rules
