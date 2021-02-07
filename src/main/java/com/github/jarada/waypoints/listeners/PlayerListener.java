@@ -128,7 +128,7 @@ public class PlayerListener implements Listener {
 
         // Spawn
         if (Util.isSameLoc(p.getWorld().getSpawnLocation(), to, true)) {
-            if (!silenceWaypoints) {
+            if (!silenceWaypoints && (!dm.MENU_AT_SPAWN_REQUIRES_ACCESS || p.hasPermission("wp.access.spawn"))) {
                 Waypoint spawn = new Waypoint(Msg.WORD_SPAWN.toString(), p.getWorld().getSpawnLocation());
                 spawn.setIcon(Material.NETHER_STAR);
                 wm.openWaypointMenu(p, spawn, true, true, false);
