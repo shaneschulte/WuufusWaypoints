@@ -29,7 +29,7 @@ public class WPIconCmd implements PluginCommand {
         String[] input = args[0].split(":");
         Material icon = Material.matchMaterial(input[0]);
 
-        if (icon == null) {
+        if (icon == null || !icon.isItem()) {
             Msg.INVALID_MATERIAL.sendTo(sender);
             return;
         }
