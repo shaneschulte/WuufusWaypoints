@@ -66,7 +66,7 @@ public class BeaconListener implements Listener {
                 if (clickEvent.getCurrentItem() != null && clickEvent.getCurrentItem().isSimilar(dm.BEACON))
                     clickEvent.setCancelled(true);
 
-                if (a == InventoryAction.HOTBAR_MOVE_AND_READD || a == InventoryAction.HOTBAR_SWAP) {
+                if (clickEvent.getHotbarButton() != -1 && (a == InventoryAction.HOTBAR_MOVE_AND_READD || a == InventoryAction.HOTBAR_SWAP)) {
                     ItemStack is = clickEvent.getView().getBottomInventory().getItem(clickEvent.getHotbarButton());
 
                     if (is != null && is.isSimilar(dm.BEACON))
