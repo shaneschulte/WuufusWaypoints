@@ -1,5 +1,8 @@
 CHANGELOG
 
+2.2.8 (04/05/2021)
+- Fix for error appearing when interacting with hotbar
+
 2.2.7 (02/07/2021)
 - Add config option to prevent menu at spawn point appearing without permission
 - Fix for icons that aren't items being allowed to be set on Waypoints through the icon command (which breaks
