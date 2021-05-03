@@ -39,6 +39,7 @@
        wp.hint: true
        wp.icon: true
        wp.move: true
+       wp.open: true
        wp.remove: true
        wp.rename: true
        wp.select.*: true
@@ -84,6 +85,8 @@
      description: Grants ability to move a selected waypoint using commands
    wp.player:
      description: Grants access to create manage home waypoints through world interaction
+   wp.open:
+     description: Grants access to open waypoint directory from command
    wp.reload:
      description: Grants access to reload the plugin
    wp.remove:

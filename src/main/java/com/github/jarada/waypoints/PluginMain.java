@@ -42,6 +42,7 @@ public class PluginMain extends JavaPlugin {
         commands.put("hint", new WPHintCmd());
         commands.put("icon", new WPIconCmd());
         commands.put("move", new WPMoveCmd());
+        commands.put("open", new WPOpenCmd());
         commands.put("reload", new WPReloadCmd());
         commands.put("remove", new WPRemoveCmd());
         commands.put("rename", new WPRenameCmd());
