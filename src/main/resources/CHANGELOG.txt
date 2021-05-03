@@ -1,5 +1,10 @@
 CHANGELOG
 
+2.2.9 (05/03/2021)
+- Added command to open Waypoints Directory using /wp open command, wp.open permission. This is designed for
+  server admins to link with additional plugins rather than player usage, but can also be used as a player
+  perk if desired.
+
 2.2.8 (04/05/2021)
 - Fix for error appearing when interacting with hotbar
 
