@@ -42,6 +42,10 @@ public class WaypointManager {
         for(Waypoint wp : getAllPlayerWaypoints()) {
             waypointIndex.add(new IndexLocation(wp.getLocation()));
         }
+
+//        for(IndexLocation l : waypointIndex) {
+//            Bukkit.getLogger().info(l.toString());
+//        }
     }
 
     public static WaypointManager getManager() {
@@ -329,7 +333,7 @@ public class WaypointManager {
                 }
             }
 
-            accessList.addAll(playerDefinedWaypoints.keySet().stream()
+            accessList.addAll(playerDefinedWaypoints.keySet().stream().filter(x -> !playerDefinedWaypoints.get(x).isEmpty())
                     .map(WaypointMenuItem::new)
                     .collect(Collectors.toList()));
 
@@ -349,7 +353,7 @@ public class WaypointManager {
         if (selectedWaypoint != null)
             Msg.WP_SELECTED.sendTo(p, selectedWaypoint.getName());
 
-        openWaypointMenu(p, selectedWaypoint, true, true, true, false);
+        openWaypointMenu(p, selectedWaypoint, true, true, true);
     }
 
     public boolean setHome(Player p, String waypointName) {
@@ -386,7 +390,7 @@ public class WaypointManager {
 
         Msg.HOME_WP_CREATED.sendTo(p, waypointName);
 
-        // TODO: save global
+        DataManager.getManager().saveWaypoints();
 
         return true;
     }

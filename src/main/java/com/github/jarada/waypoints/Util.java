@@ -76,6 +76,9 @@ public class Util {
     }
 
     public static boolean hasAccess(Player p, Waypoint wp, boolean select) {
+        if (p.getUniqueId().equals(wp.getCreator())) {
+            return true;
+        }
         if (p.hasPermission("wp.access.*") || p.hasPermission("wp.access." + getKey(wp.getName())))
             return true;
 
@@ -88,6 +91,9 @@ public class Util {
     }
 
     public static boolean canDiscover(Player p, Waypoint wp) {
+        if (p.getUniqueId().equals(wp.getCreator())) {
+            return false;
+        }
         return wp.isDiscoverable() != null && (wp.isDiscoverable() || p.getWorld().getName()
                 .equals(wp.getLocation().getWorld().getName())) &&
                 !WaypointManager.getManager().getPlayerData(p.getUniqueId()).hasDiscovered(wp.getUUID());

@@ -193,6 +193,9 @@ public class PlayerListener implements Listener {
 
         // Player Waypoints
         for (Waypoint wp : wm.getAllPlayerWaypoints()) {
+            if (wp.getCreator().equals(p.getUniqueId())) {
+                continue;
+            }
             if (Util.isSameLoc(wp.getLocation(), to, true)) {
                 if (wp.isDiscoverable() != null && !pd.hasDiscovered(wp.getUUID())) {
                     pd.addDiscovery(wp.getUUID());

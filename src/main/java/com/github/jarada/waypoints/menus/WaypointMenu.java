@@ -236,7 +236,7 @@ public class WaypointMenu implements Listener {
     }
 
     private boolean hasCategories() {
-        return !WaypointManager.getManager().getCategories().isEmpty();
+        return true;
     }
 
     public void setOption(int slot, String name, ItemStack icon) {
@@ -306,10 +306,6 @@ public class WaypointMenu implements Listener {
                 lore.add(Util.color(String.format("&aX: &f%s", loc.getBlockX())));
                 lore.add(Util.color(String.format("&aY: &f%s", loc.getBlockY())));
                 lore.add(Util.color(String.format("&aZ: &f%s", loc.getBlockZ())));
-                if (wp.isDiscoverable() != null) {
-                    lore.add(Util.color(String.format("&a%s", Boolean.TRUE.equals(wp.isDiscoverable()) ?
-                            Msg.WORD_SERVER_WIDE.toString() : Msg.WORD_WORLD_SPECIFIC.toString())));
-                }
             }
 
             if (wp.getDescription().length() > 0)

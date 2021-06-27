@@ -48,8 +48,7 @@ public class WaypointListener implements Listener {
                 DataManager.getManager().saveWaypoints();
             } else {
                 wm.removePlayerDefinedWaypoint(p, wp);
-                // TODO: Save properly
-                // DataManager.getManager().savePlayerData(p.getUniqueId());
+                DataManager.getManager().saveWaypoints();
             }
 
             SelectionManager.getManager().clearSelectionsWith(wp);

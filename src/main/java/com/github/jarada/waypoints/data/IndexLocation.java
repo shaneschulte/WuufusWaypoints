@@ -20,6 +20,15 @@ public class IndexLocation extends Object {
     }
 
     @Override
+    public String toString() {
+        return "IndexLocation{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

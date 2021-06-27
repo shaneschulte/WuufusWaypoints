@@ -59,8 +59,11 @@ public class PluginMain extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new WaypointListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 
-        for (Player p : getServer().getOnlinePlayers())
+        for (Player p : getServer().getOnlinePlayers()) {
             DataManager.getManager().loadPlayerData(p.getUniqueId());
+            p.removeMetadata("Wayporting", this);
+            p.removeMetadata("InMenu", this);
+        }
         getLogger().info("Waypoints system online!");
     }
 

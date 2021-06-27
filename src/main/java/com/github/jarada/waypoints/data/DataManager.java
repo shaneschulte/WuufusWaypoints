@@ -221,7 +221,6 @@ public class DataManager {
                                 Waypoint wp = new Waypoint(wc, "player_waypoints." + key + "." + key2);
                                 wp.setCreator(UUID.fromString(key));
                                 waypoints.add(wp);
-                                Bukkit.getLogger().info("hey it's me " + key2);
                             }
                             wm.getPlayerWaypointMap().put(UUID.fromString(key), waypoints);
                         }
@@ -257,7 +256,7 @@ public class DataManager {
                 for (Waypoint wp : wm.getWaypoints().values()) {
                     wp.serialize(wc, "waypoints." + Util.getKey(wp.getName()));
                 }
-                wc.set("player_defined_waypoints", null);
+                wc.set("player_waypoints", null);
                 Map<UUID, List<Waypoint>> playerMap = wm.getPlayerWaypointMap();
                 for (UUID player : playerMap.keySet()) {
                     for(Waypoint wp : playerMap.get(player)) {
