@@ -40,3 +40,5 @@ Icon
 # IDE Files
 /.idea
 /WuufusWaypoints.iml
+out
+waypoints.iml
