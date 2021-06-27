@@ -63,10 +63,6 @@ public class DataManager {
 
         playerFolder = new File(pm.getDataFolder(), "players");
         messages = new HashMap<Msg, String>();
-
-        // (v2.1.0) Note: For transition; remove data file later
-        waypointDataFile = new File(pm.getDataFolder(), "waypoints.db");
-        waypointConfigFile = new File (pm.getDataFolder(), "waypoints.yml");
     }
 
     public static DataManager getManager() {
@@ -234,32 +230,6 @@ public class DataManager {
                 e.printStackTrace();
             }
         }
-        // (v2.1.0) Note: For transition; remove later
-        else if (waypointDataFile.exists()) {
-            List<?> uncasted = null;
-            try {
-                FileInputStream fis = new FileInputStream(waypointDataFile);
-
-                try (ObjectInputStream ois = new ObjectInputStream(fis)) {
-                    uncasted = (List<?>) ois.readObject();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if (uncasted != null) {
-                for (Object obj : uncasted) {
-                    // (v2.1.0) Note: For transition; remove later
-                    if (obj instanceof Waypoint) {
-                        Waypoint wp = (Waypoint) obj;
-                        wm.getWaypoints().put(Util.getKey(wp.getName()), wp);
-                    }
-                }
-                saveWaypoints();
-            }
-        }
     }
 
     public void saveWaypoints() {
@@ -286,11 +256,6 @@ public class DataManager {
                 e.printStackTrace();
             }
         }
-
-        // (v2.1.0) Note: For transition; remove later
-        if (waypointDataFile.exists()) {
-            waypointDataFile.delete();
-        }
     }
 
     public void unloadPlayerData(UUID player) {
@@ -304,17 +269,7 @@ public class DataManager {
         if (playerFile.exists()) {
             players.put(playerUUID, loadPlayerDataConfig(playerUUID, playerFile));
         } else {
-            // (v2.1.0) Note: For transition; remove later
-            playerFile = new File(playerFolder, playerUUID.toString());
-            if (playerFile.exists()) {
-                PlayerData playerData = loadPlayerDataSerialized(playerUUID, playerFile);
-                if (playerData != null) {
-                    players.put(playerUUID, playerData);
-                    savePlayerData(playerUUID);
-                }
-            } else {
-                players.put(playerUUID, new PlayerData(playerUUID));
-            }
+            players.put(playerUUID, new PlayerData(playerUUID));
         }
 
         return players.get(playerUUID);
@@ -330,38 +285,6 @@ public class DataManager {
             }
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
-        }
-        return null;
-    }
-
-    private PlayerData loadPlayerDataSerialized(UUID playerUUID, File playerFile) {
-        Object uncasted = null;
-
-        try {
-            FileInputStream fis = new FileInputStream(playerFile);
-
-            try (ObjectInputStream ois = new ObjectInputStream(fis)) {
-                uncasted = ois.readObject();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (uncasted != null) {
-            if (uncasted instanceof PlayerData) {
-                return (PlayerData) uncasted;
-            } else if (uncasted instanceof ArrayList<?>) {
-                // (v1.1.0) Note: For transition; remove later
-                PlayerData pd = new PlayerData(playerUUID);
-
-                for (Object obj : (ArrayList<?>) uncasted)
-                    if (obj instanceof Waypoint)
-                        pd.addWaypoint((Waypoint) obj);
-
-                return pd;
-            }
         }
         return null;
     }
@@ -385,12 +308,6 @@ public class DataManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-
-        // (v2.1.0) Note: For transition; remove later
-        File playerDataFile = new File(playerFolder, playerUUID.toString());
-        if (playerDataFile.exists()) {
-            playerDataFile.delete();
         }
     }
 
