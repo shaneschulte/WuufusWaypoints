@@ -47,9 +47,9 @@ public class WaypointListener implements Listener {
                 wm.removeWaypoint(wp);
                 DataManager.getManager().saveWaypoints();
             } else {
-                PlayerData pd = event.getPlayerData();
-                pd.removeWaypoint(wp);
-                DataManager.getManager().savePlayerData(pd.getUUID());
+                wm.removePlayerDefinedWaypoint(p, wp);
+                // TODO: Save properly
+                // DataManager.getManager().savePlayerData(p.getUniqueId());
             }
 
             SelectionManager.getManager().clearSelectionsWith(wp);
@@ -65,23 +65,7 @@ public class WaypointListener implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
 
-        if (dm.ENABLE_BEACON && dm.HANDLE_RESPAWNING && p.hasPermission("wp.respawn") && is.isSimilar(dm.BEACON)) {
-            if (event.isPowered()) {
-                PlayerData pd = event.getPlayerData();
-                pd.setSpawnPoint(wp.getLocation());
-                dm.savePlayerData(p.getUniqueId());
-
-                if (!p.hasPermission("wp.beacon.unlimited")) {
-                    is.setAmount(is.getAmount() - 1);
-                    p.getInventory().setItemInMainHand(is);
-                }
-
-                Msg.SET_PLAYER_SPAWN.sendTo(p, wp.getName());
-            } else {
-                Msg.INSUFFICIENT_POWER.sendTo(p);
-                return;
-            }
-        } else if (p.hasPermission("wp.player") && !event.isServerDefined()) {
+        if (p.hasPermission("wp.player") && !event.isServerDefined()) {
             Material m = is.getType();
 
             if (m == Material.WRITTEN_BOOK) {

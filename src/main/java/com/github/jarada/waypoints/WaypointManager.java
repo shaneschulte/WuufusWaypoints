@@ -2,9 +2,11 @@ package com.github.jarada.waypoints;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.jarada.waypoints.data.*;
 import com.github.jarada.waypoints.menus.WaypointMenu;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -17,14 +19,29 @@ public class WaypointManager {
 
     private Map<UUID, PlayerData>  players;
     private Map<String, Waypoint>  waypoints;
+    private Map<UUID, List<Waypoint>> playerDefinedWaypoints;
     private Map<String, Category>  categories;
     private Map<String, List<Waypoint>> categoryListMap;
+
+    private HashSet<IndexLocation> waypointIndex;
 
     public WaypointManager() {
         players = new HashMap<>();
         waypoints = new LinkedHashMap<>();
+        playerDefinedWaypoints = new LinkedHashMap<>();
         categories = new LinkedHashMap<>();
         categoryListMap = new HashMap<>();
+        waypointIndex = new HashSet<>();
+    }
+
+    public void rebuildIndex() {
+        waypointIndex = new HashSet<>();
+        for(Waypoint wp : waypoints.values()) {
+            waypointIndex.add(new IndexLocation(wp.getLocation()));
+        }
+        for(Waypoint wp : getAllPlayerWaypoints()) {
+            waypointIndex.add(new IndexLocation(wp.getLocation()));
+        }
     }
 
     public static WaypointManager getManager() {
@@ -54,11 +71,29 @@ public class WaypointManager {
     public void addWaypoint(Waypoint wp) {
         waypoints.put(Util.getKey(wp.getName()), wp);
         sortWaypoints();
+        rebuildIndex();
+    }
+
+    public void addPlayerDefinedWaypoint(Player p, Waypoint wp) {
+        if (playerDefinedWaypoints.get(p.getUniqueId()) == null) {
+            playerDefinedWaypoints.put(p.getUniqueId(), new ArrayList<>());
+        }
+        playerDefinedWaypoints.get(p.getUniqueId()).add(wp);
+        rebuildIndex();
     }
 
     public void removeWaypoint(Waypoint wp) {
         waypoints.remove(Util.getKey(wp.getName()));
         sortWaypoints();
+        rebuildIndex();
+    }
+
+    public void removePlayerDefinedWaypoint(Player p, Waypoint wp) {
+        List<Waypoint> playerWaypoints = playerDefinedWaypoints.get(p.getUniqueId());
+        if(playerWaypoints == null) return;
+        List<Waypoint> filteredList = playerWaypoints.stream().filter(x -> !x.getName().equals(wp.getName())).collect(Collectors.toList());
+        playerDefinedWaypoints.put(p.getUniqueId(), filteredList);
+        rebuildIndex();
     }
 
     public boolean renameWaypoint(Waypoint wp, Player p, String newWaypointName) {
@@ -77,14 +112,20 @@ public class WaypointManager {
 
             removeWaypoint(wp);
         } else {
-            PlayerData pd = getPlayerData(p.getUniqueId());
+            List<Waypoint> waypoints = playerDefinedWaypoints.get(p.getUniqueId());
 
-            if (pd.getWaypoint(newWaypointName) != null) {
-                Msg.WP_DUPLICATE_NAME.sendTo(p, newWaypointName);
-                return false;
+            if (waypoints != null) {
+                for(Waypoint wp_i : waypoints) {
+                    if (wp_i.getName().equals(wp.getName())) {
+
+
+                    Msg.WP_DUPLICATE_NAME.sendTo(p, newWaypointName);
+                    return false;
+                    }
+                }
             }
 
-            pd.removeWaypoint(wp);
+            removePlayerDefinedWaypoint(p, wp);
         }
 
         wp.setName(newWaypointName);
@@ -92,7 +133,7 @@ public class WaypointManager {
         if (serverDefined)
             wm.addWaypoint(wp);
         else
-            getPlayerData(p.getUniqueId()).addWaypoint(wp);
+            wm.addPlayerDefinedWaypoint(p, wp);
 
         return true;
     }
@@ -101,6 +142,14 @@ public class WaypointManager {
         return waypoints;
     }
 
+    public List<Waypoint> getPlayersWaypoints(UUID p) {
+        List<Waypoint> result = playerDefinedWaypoints.get(p);
+        return result == null ? new ArrayList<>() : result;
+    }
+
+    public List<Waypoint> getAllPlayerWaypoints() {
+        return Stream.of(playerDefinedWaypoints.values()).flatMap(x -> x.stream()).flatMap(x -> x.stream()).collect(Collectors.toList());
+    }
     private void sortWaypoints() {
         List<String> keys = new ArrayList<String>(waypoints.keySet());
         Collections.sort(keys);
@@ -175,10 +224,31 @@ public class WaypointManager {
         return categories;
     }
 
+    public Map<UUID, List<Waypoint>> getPlayerWaypointMap() {
+        return playerDefinedWaypoints;
+    }
+
     public List<WaypointMenuItem> getMenuWaypointsForCategory(Category category, Player p, boolean select) {
         List<WaypointMenuItem> accessList = new ArrayList<>();
 
         for (Waypoint wp : categoryListMap.get(category.getUUID().toString())) {
+            if (Util.hasAccess(p, wp, select))
+                accessList.add(new WaypointMenuItem(wp));
+            else if (DataManager.getManager().SHOW_DISCOVERABLE_WAYPOINTS && Util.canDiscover(p, wp))
+                accessList.add(new WaypointMenuItem(wp, true));
+        }
+
+        accessList.sort(Comparator.comparing(WaypointMenuItem::getWaypointKey));
+        return accessList;
+    }
+
+    public boolean checkIndex(Location l) {
+        return waypointIndex.contains(new IndexLocation(l));
+    }
+    public List<WaypointMenuItem> getMenuWaypointsForPlayer(UUID player, Player p, boolean select) {
+        List<WaypointMenuItem> accessList = new ArrayList<>();
+
+        for (Waypoint wp : playerDefinedWaypoints.get(player)) {
             if (Util.hasAccess(p, wp, select))
                 accessList.add(new WaypointMenuItem(wp));
             else if (DataManager.getManager().SHOW_DISCOVERABLE_WAYPOINTS && Util.canDiscover(p, wp))
@@ -259,8 +329,7 @@ public class WaypointManager {
                 }
             }
 
-        if (addHomeWaypoints)
-            accessList.addAll(pd.getAllWaypoints().stream()
+            accessList.addAll(playerDefinedWaypoints.keySet().stream()
                     .map(WaypointMenuItem::new)
                     .collect(Collectors.toList()));
 
@@ -280,7 +349,7 @@ public class WaypointManager {
         if (selectedWaypoint != null)
             Msg.WP_SELECTED.sendTo(p, selectedWaypoint.getName());
 
-        openWaypointMenu(p, selectedWaypoint, true, true, true);
+        openWaypointMenu(p, selectedWaypoint, true, true, true, false);
     }
 
     public boolean setHome(Player p, String waypointName) {
@@ -292,43 +361,33 @@ public class WaypointManager {
             return false;
         }
 
-        for (Waypoint wp : pd.getAllWaypoints()) {
-            if (Util.isSameLoc(playerLoc, wp.getLocation(), true)) {
-                Msg.HOME_WP_ALREADY_HERE.sendTo(p, wp.getName());
-                return false;
-            }
+        List<Waypoint> allWaypoints = playerDefinedWaypoints.get(p.getUniqueId());
+        if (allWaypoints != null) {
+            for (Waypoint wp : allWaypoints) {
+                if (Util.isSameLoc(playerLoc, wp.getLocation(), true)) {
+                    Msg.HOME_WP_ALREADY_HERE.sendTo(p, wp.getName());
+                    return false;
+                }
 
-            if (waypointName.equals(wp.getName())) {
-                wp.setLocation(p.getLocation());
-                DataManager.getManager().savePlayerData(p.getUniqueId());
-                Msg.HOME_WP_LOCATION_UPDATED.sendTo(p, waypointName);
-                return true;
+                if (waypointName.equals(wp.getName())) {
+                    wp.setLocation(p.getLocation());
+                    DataManager.getManager().savePlayerData(p.getUniqueId());
+                    Msg.HOME_WP_LOCATION_UPDATED.sendTo(p, waypointName);
+                    return true;
+                }
             }
         }
 
         Waypoint wp = new Waypoint(waypointName, playerLoc);
         wp.setDescription(Msg.SETHOME_DEFAULT_DESC.toString());
-
-        Waypoint replaced = pd.addWaypoint(wp);
+        wp.setCreator(p.getUniqueId());
+        addPlayerDefinedWaypoint(p, wp);
         DataManager.getManager().savePlayerData(p.getUniqueId());
 
-        if (replaced != null)
-            Msg.HOME_WP_REPLACED.sendTo(p, replaced.getName(), wp.getName());
-        else
-            Msg.HOME_WP_CREATED.sendTo(p, waypointName);
+        Msg.HOME_WP_CREATED.sendTo(p, waypointName);
 
-        updatePlayerOnHomeCount(p, pd);
+        // TODO: save global
 
         return true;
     }
-
-    private void updatePlayerOnHomeCount(Player p, PlayerData pd) {
-        int maxHomeWaypoints = DataManager.getManager().MAX_HOME_WAYPOINTS - pd.getAllWaypoints().size();
-
-        if (maxHomeWaypoints > 0)
-            Msg.HOME_WP_REMAINING.sendTo(p, maxHomeWaypoints);
-        else
-            Msg.HOME_WP_FULL.sendTo(p, maxHomeWaypoints);
-    }
-
 }

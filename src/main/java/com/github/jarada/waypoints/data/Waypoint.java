@@ -14,6 +14,7 @@ public class Waypoint extends GridLocation {
     private short             durability;
     private Boolean           discoverable;
     private boolean           enabled;
+    private UUID              creator;
 
     public Waypoint(String name, Location loc) {
         super(loc);
@@ -22,6 +23,7 @@ public class Waypoint extends GridLocation {
         setHint("");
         setIcon(Material.IRON_DOOR);
         setEnabled(true);
+        setDiscoverable(true);
     }
 
     public Waypoint(YamlConfiguration config, String prefix) {
@@ -65,6 +67,14 @@ public class Waypoint extends GridLocation {
             uuid = UUID.randomUUID();
 
         return uuid;
+    }
+
+    public UUID getCreator() {
+        return creator;
+    }
+
+    public void setCreator(UUID creator) {
+        this.creator = creator;
     }
 
     public String getName() {

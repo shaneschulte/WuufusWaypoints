@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -55,7 +56,7 @@ public class PlayerListener implements Listener {
             Block clicked = event.getClickedBlock();
             Location toCheckAbove = clicked.getLocation().add(0, 1D, 0);
             Set<Waypoint> waypoints = new HashSet<Waypoint>(wm.getWaypoints().values());
-            waypoints.addAll(wm.getPlayerData(p.getUniqueId()).getAllWaypoints());
+            waypoints.addAll(wm.getPlayersWaypoints(p.getUniqueId()));
 
             for (Waypoint wp : waypoints) {
                 if (Util.isSameLoc(clicked.getLocation(), wp.getLocation(), true) ||
@@ -75,6 +76,8 @@ public class PlayerListener implements Listener {
             if (is.getType() == Material.CLOCK && is.hasItemMeta() && is.getItemMeta().hasDisplayName()) {
                 if (!wm.setHome(p, Util.color(is.getItemMeta().getDisplayName())))
                     return;
+
+                DataManager.getManager().saveWaypoints();
 
                 is.setAmount(is.getAmount() - 1);
                 p.getInventory().setItemInMainHand(is);
@@ -104,7 +107,51 @@ public class PlayerListener implements Listener {
             }
         }
     }
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPlayerCrouch(PlayerToggleSneakEvent e) {
+        Player p = e.getPlayer();
 
+        // Only check when we begin sneaking
+        if (!e.isSneaking()) return;
+
+        if (p.hasMetadata("InMenu"))
+            return;
+
+        PlayerData pd = wm.getPlayerData(p.getUniqueId());
+
+        Location loc = e.getPlayer().getLocation();
+
+        // Spawn
+        if (Util.isSameLoc(p.getWorld().getSpawnLocation(), loc, true)) {
+            if (p.hasPermission("wp.access.spawn")) {
+                Waypoint spawn = new Waypoint(Msg.WORD_SPAWN.toString(), p.getWorld().getSpawnLocation());
+                spawn.setIcon(Material.NETHER_STAR);
+                wm.openWaypointMenu(p, spawn, true, true, false);
+            }
+            return;
+        }
+
+        // Global Waypoints
+        for (Waypoint wp : wm.getWaypoints().values()) {
+            if (Util.isSameLoc(wp.getLocation(), loc, true) && (wp.isEnabled() || p.hasPermission("wp.bypass"))) {
+                if (Util.hasAccess(p, wp, false)) {
+                    wm.openWaypointMenu(p, wp, true, true, false);
+                    return;
+                }
+            }
+        }
+
+        // Player waypoints
+        for (Waypoint wp : wm.getAllPlayerWaypoints()) {
+            if (Util.isSameLoc(wp.getLocation(), loc, true)) {
+                if (Util.hasAccess(p, wp, false)) {
+                    wm.openWaypointMenu(p, wp, true, true, false);
+                    return;
+                }
+                return;
+            }
+        }
+    }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerMove(PlayerMoveEvent moveEvent) {
         Player p = moveEvent.getPlayer();
@@ -123,47 +170,38 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        PlayerData pd = wm.getPlayerData(p.getUniqueId());
-        boolean silenceWaypoints = (pd.isSilentWaypoints() && p.getInventory().contains(dm.BEACON));
-
-        // Spawn
-        if (Util.isSameLoc(p.getWorld().getSpawnLocation(), to, true)) {
-            if (!silenceWaypoints && (!dm.MENU_AT_SPAWN_REQUIRES_ACCESS || p.hasPermission("wp.access.spawn"))) {
-                Waypoint spawn = new Waypoint(Msg.WORD_SPAWN.toString(), p.getWorld().getSpawnLocation());
-                spawn.setIcon(Material.NETHER_STAR);
-                wm.openWaypointMenu(p, spawn, true, true, false);
-            }
+        // fast exit if we don't know of any waypoints here
+        if (!wm.checkIndex(to)) {
             return;
         }
+
+        PlayerData pd = wm.getPlayerData(p.getUniqueId());
 
         // Global Waypoints
         for (Waypoint wp : wm.getWaypoints().values()) {
             if (Util.isSameLoc(wp.getLocation(), to, true) && (wp.isEnabled() || p.hasPermission("wp.bypass"))) {
-                boolean discovered = false;
                 if (wp.isDiscoverable() != null && !pd.hasDiscovered(wp.getUUID())) {
                     pd.addDiscovery(wp.getUUID());
                     dm.savePlayerData(p.getUniqueId());
+                    p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 10.0f, 1.0f);
+                    p.sendTitle("Waypoint Discovered", "You found '"+wp.getName()+"'", 10, 100, 10);
                     Msg.DISCOVERED_WAYPOINT.sendTo(p, wp.getName());
-                    discovered = true;
-                }
-
-                if (Util.hasAccess(p, wp, false)) {
-                    if (!silenceWaypoints || discovered)
-                        wm.openWaypointMenu(p, wp, true, true, false);
                     return;
                 }
             }
         }
 
-        // Check if Waypoints are ignored
-        if (silenceWaypoints)
-            return;
-
         // Player Waypoints
-        for (Waypoint wp : pd.getAllWaypoints()) {
+        for (Waypoint wp : wm.getAllPlayerWaypoints()) {
             if (Util.isSameLoc(wp.getLocation(), to, true)) {
-                wm.openWaypointMenu(p, wp, false, true, false);
-                return;
+                if (wp.isDiscoverable() != null && !pd.hasDiscovered(wp.getUUID())) {
+                    pd.addDiscovery(wp.getUUID());
+                    dm.savePlayerData(p.getUniqueId());
+                    p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 10.0f, 1.0f);
+                    p.sendTitle("Waypoint Discovered", "You found '"+wp.getName()+"' by " + Bukkit.getOfflinePlayer(wp.getCreator()).getName(), 10, 100, 10);
+                    Msg.DISCOVERED_WAYPOINT.sendTo(p, wp.getName());
+                    return;
+                }
             }
         }
     }
@@ -173,15 +211,13 @@ public class PlayerListener implements Listener {
         Player p = joinEvent.getPlayer();
         PlayerData pd = dm.loadPlayerData(p.getUniqueId());
 
-        // (v1.1.0) Note: For transition; remove later
-        for (Waypoint wp : pd.getAllWaypoints())
-            if (!wp.isEnabled())
-                wp.setEnabled(true);
-
         // Cleans discoveries of deleted waypoints
         List<UUID> waypoints = new ArrayList<UUID>();
 
         for (Waypoint wp : wm.getWaypoints().values())
+            waypoints.add(wp.getUUID());
+
+        for (Waypoint wp : wm.getAllPlayerWaypoints())
             waypoints.add(wp.getUUID());
 
         if (pd.retainDiscoveries(waypoints))

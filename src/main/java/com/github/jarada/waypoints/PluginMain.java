@@ -1,9 +1,6 @@
 package com.github.jarada.waypoints;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.github.jarada.waypoints.commands.*;
 import com.github.jarada.waypoints.data.*;
@@ -97,8 +94,7 @@ public class PluginMain extends JavaPlugin {
             if (pluginCmd == null) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
-                    List<Waypoint> playerPoints = WaypointManager.getManager().getPlayerData(p.getUniqueId())
-                            .getAllWaypoints();
+                    List<Waypoint> playerPoints = new ArrayList<>();
                     StringBuilder sb = new StringBuilder();
 
                     for (int i = 0; i < playerPoints.size(); i++) {

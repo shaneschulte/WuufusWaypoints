@@ -21,11 +21,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class WaypointMenu implements Listener {
 
@@ -48,6 +46,7 @@ public class WaypointMenu implements Listener {
     private ItemStack[]             optionIcons;
     private Waypoint[]              optionWaypoints;
     private Category[]              optionCategories;
+    private UUID[]                  optionPlayers;
 
     public WaypointMenu(Player p, PlayerData pd, Waypoint currentWaypoint, List<WaypointMenuItem> accessList, boolean select) {
         pm = PluginMain.getPluginInstance();
@@ -136,7 +135,13 @@ public class WaypointMenu implements Listener {
             Category category = optionCategories[slot];
             accessList = WaypointManager.getManager().getMenuWaypointsForCategory(category, p, select);
             reopen(true);
-        } else if (optionNames[slot].equals("Root")) {
+        }
+        else if (optionPlayers[slot] != null) {
+            UUID player = optionPlayers[slot];
+            accessList = WaypointManager.getManager().getMenuWaypointsForPlayer(player, p, select);
+            reopen(true);
+        }
+        else if (optionNames[slot].equals("Root")) {
             accessList = rootAccessList;
             reopen(true);
         } else {
@@ -175,6 +180,7 @@ public class WaypointMenu implements Listener {
         optionIcons = new ItemStack[size];
         optionWaypoints = new Waypoint[size];
         optionCategories = new Category[size];
+        optionPlayers = new UUID[size];
 
         for (int slot = 0; slot < dataSize; slot++) {
             int index = ((page - 1) * dataSize) + slot;
@@ -186,7 +192,11 @@ public class WaypointMenu implements Listener {
             if (holder.isCategory()) {
                 Category cat = holder.getCategory();
                 setOption(slot, cat);
-            } else {
+            }
+            else if (holder.isPlayerCategory()) {
+                setOption(slot, holder.getPlayerUUID());
+            }
+            else {
                 Waypoint wp = holder.getWaypoint();
                 setOption(slot, wp, holder.isDiscoverMode(), wp == currentWaypoint);
             }
@@ -234,6 +244,7 @@ public class WaypointMenu implements Listener {
         optionIcons[slot] = icon;
         optionWaypoints[slot] = null;
         optionCategories[slot] = null;
+        optionPlayers[slot] = null;
     }
 
     public void setOption(int slot, Category cat) {
@@ -253,6 +264,25 @@ public class WaypointMenu implements Listener {
 
         optionIcons[slot] = Util.setItemNameAndLore(icon, optionNames[slot], lore);
         optionCategories[slot] = cat;
+    }
+
+    public void setOption(int slot, UUID player) {
+        String playerName = Bukkit.getOfflinePlayer(player).getName();
+        String displayName = "&6" + Bukkit.getOfflinePlayer(player).getName();
+
+        List<String> lore = new ArrayList<String>();
+        lore.add(Util.color(String.format("&a%s&f", Msg.WORD_CATEGORY.toString())));
+
+        optionNames[slot] = Util.color(displayName);
+
+        ItemStack icon = new ItemStack(Material.PLAYER_HEAD, 1);
+        ItemMeta meta = icon.getItemMeta();
+        SkullMeta skull = (SkullMeta) meta;
+        skull.setOwningPlayer(Bukkit.getOfflinePlayer(player));
+        icon.setItemMeta(meta);
+
+        optionIcons[slot] = Util.setItemNameAndLore(icon, optionNames[slot], lore);
+        optionPlayers[slot] = player;
     }
 
     public void setOption(int slot, Waypoint wp, boolean discoverable, boolean selected) {

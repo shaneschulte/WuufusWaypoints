@@ -1,13 +1,10 @@
 package com.github.jarada.waypoints.data;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.*;
 
 import com.github.jarada.waypoints.listeners.BeaconListener;
-import com.github.jarada.waypoints.listeners.RespawnListener;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -34,7 +31,7 @@ public class DataManager {
     private WaypointManager    wm;
     private YamlConfiguration  wc;
 
-    private File               playerFolder, waypointDataFile, waypointConfigFile;
+    private File               playerFolder, waypointConfigFile;
     private Map<Msg, String>   messages;
 
     public int                 MAX_HOME_WAYPOINTS;
@@ -63,6 +60,8 @@ public class DataManager {
 
         playerFolder = new File(pm.getDataFolder(), "players");
         messages = new HashMap<Msg, String>();
+
+        waypointConfigFile = new File(pm.getDataFolder(), "waypoints.yml");
     }
 
     public static DataManager getManager() {
@@ -171,9 +170,6 @@ public class DataManager {
 
             Bukkit.getPluginManager().registerEvents(BeaconListener.getListener(), pm);
         }
-
-        if (HANDLE_RESPAWNING)
-            Bukkit.getPluginManager().registerEvents(RespawnListener.getListener(), pm);
     }
 
     public void reload() {
@@ -191,9 +187,6 @@ public class DataManager {
             HandlerList.unregisterAll(BeaconListener.getListener());
         }
 
-        if (HANDLE_RESPAWNING)
-            HandlerList.unregisterAll(RespawnListener.getListener());
-
         pm.reloadConfig();
         loadConfig();
     }
@@ -203,7 +196,7 @@ public class DataManager {
     }
 
     public void loadWaypoints() {
-        if (!waypointConfigFile.exists() && !waypointDataFile.exists())
+        if (!waypointConfigFile.exists())
             return;
 
         if (waypointConfigFile.exists()) {
@@ -218,6 +211,22 @@ public class DataManager {
                     }
                     wm.sortCategories();
                 }
+                ConfigurationSection playerWaypoints = wc.getConfigurationSection("player_waypoints");
+                if (playerWaypoints != null) {
+                    for (String key : playerWaypoints.getKeys(false)) {
+                        ConfigurationSection waypointList = wc.getConfigurationSection("player_waypoints" + "." + key);
+                        if (waypointList != null) {
+                            List<Waypoint> waypoints = new ArrayList<>();
+                            for (String key2 : waypointList.getKeys(false)) {
+                                Waypoint wp = new Waypoint(wc, "player_waypoints." + key + "." + key2);
+                                wp.setCreator(UUID.fromString(key));
+                                waypoints.add(wp);
+                                Bukkit.getLogger().info("hey it's me " + key2);
+                            }
+                            wm.getPlayerWaypointMap().put(UUID.fromString(key), waypoints);
+                        }
+                    }
+                }
                 ConfigurationSection waypoints = wc.getConfigurationSection("waypoints");
                 if (waypoints != null) {
                     for (String key : waypoints.getKeys(false)) {
@@ -230,6 +239,7 @@ public class DataManager {
                 e.printStackTrace();
             }
         }
+        wm.rebuildIndex();
     }
 
     public void saveWaypoints() {
@@ -246,6 +256,13 @@ public class DataManager {
                 wc.set("waypoints", null);
                 for (Waypoint wp : wm.getWaypoints().values()) {
                     wp.serialize(wc, "waypoints." + Util.getKey(wp.getName()));
+                }
+                wc.set("player_defined_waypoints", null);
+                Map<UUID, List<Waypoint>> playerMap = wm.getPlayerWaypointMap();
+                for (UUID player : playerMap.keySet()) {
+                    for(Waypoint wp : playerMap.get(player)) {
+                        wp.serialize(wc, "player_waypoints." + player.toString() + "." +  Util.getKey(wp.getName()));
+                    }
                 }
                 wc.set("categories", null);
                 for (Category cat : wm.getCategories().values()) {

@@ -29,7 +29,7 @@ public class WPRemoveCmd implements PluginCommand {
             DataManager.getManager().saveWaypoints();
         } else {
             UUID playerUUID = ((Player) sender).getUniqueId();
-            wm.getPlayerData(playerUUID).removeWaypoint(wp);
+            // wm.getPlayerData(playerUUID).removeWaypoint(wp);
             DataManager.getManager().savePlayerData(playerUUID);
         }
 
