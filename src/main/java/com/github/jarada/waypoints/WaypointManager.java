@@ -78,12 +78,23 @@ public class WaypointManager {
         rebuildIndex();
     }
 
-    public void addPlayerDefinedWaypoint(Player p, Waypoint wp) {
+    public Waypoint addPlayerDefinedWaypoint(Player p, Waypoint wp) {
         if (playerDefinedWaypoints.get(p.getUniqueId()) == null) {
             playerDefinedWaypoints.put(p.getUniqueId(), new ArrayList<>());
         }
-        playerDefinedWaypoints.get(p.getUniqueId()).add(wp);
+        List<Waypoint> homeWaypoints = playerDefinedWaypoints.get(p.getUniqueId());
+        int maxHomes = DataManager.getManager().MAX_HOME_WAYPOINTS;
+        homeWaypoints.add(wp);
+
+        // Leave one to show waypoints are being deleted
+        if (homeWaypoints.size() > maxHomes + 1)
+            homeWaypoints.retainAll(homeWaypoints.subList(homeWaypoints.size() - maxHomes - 1, homeWaypoints.size()));
+
+        Waypoint result = homeWaypoints.size() > maxHomes ? homeWaypoints.remove(0) : null;
+
         rebuildIndex();
+
+        return result;
     }
 
     public void removeWaypoint(Waypoint wp) {
@@ -385,13 +396,28 @@ public class WaypointManager {
         Waypoint wp = new Waypoint(waypointName, playerLoc);
         wp.setDescription(Msg.SETHOME_DEFAULT_DESC.toString());
         wp.setCreator(p.getUniqueId());
-        addPlayerDefinedWaypoint(p, wp);
+        Waypoint replaced = addPlayerDefinedWaypoint(p, wp);
+
         DataManager.getManager().savePlayerData(p.getUniqueId());
+        if (replaced != null)
+            Msg.HOME_WP_REPLACED.sendTo(p, replaced.getName(), wp.getName());
+        else
+            Msg.HOME_WP_CREATED.sendTo(p, waypointName);
 
-        Msg.HOME_WP_CREATED.sendTo(p, waypointName);
-
+        updatePlayerOnHomeCount(p);
         DataManager.getManager().saveWaypoints();
 
         return true;
     }
+
+    private void updatePlayerOnHomeCount(Player p) {
+        int maxHomeWaypoints = DataManager.getManager().MAX_HOME_WAYPOINTS -
+                WaypointManager.getManager().getPlayersWaypoints(p.getUniqueId()).size();
+
+        if (maxHomeWaypoints > 0)
+            Msg.HOME_WP_REMAINING.sendTo(p, maxHomeWaypoints);
+        else
+            Msg.HOME_WP_FULL.sendTo(p, maxHomeWaypoints);
+    }
+
 }
