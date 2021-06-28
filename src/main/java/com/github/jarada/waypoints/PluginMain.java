@@ -97,7 +97,7 @@ public class PluginMain extends JavaPlugin {
             if (pluginCmd == null) {
                 if (sender instanceof Player) {
                     Player p = (Player) sender;
-                    List<Waypoint> playerPoints = new ArrayList<>();
+                    List<Waypoint> playerPoints = WaypointManager.getManager().getPlayersWaypoints(p.getUniqueId());
                     StringBuilder sb = new StringBuilder();
 
                     for (int i = 0; i < playerPoints.size(); i++) {
