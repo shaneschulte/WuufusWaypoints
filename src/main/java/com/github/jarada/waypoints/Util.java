@@ -79,7 +79,7 @@ public class Util {
         if (p.getUniqueId().equals(wp.getCreator())) {
             return true;
         }
-        if (p.hasPermission("wp.access.*") || p.hasPermission("wp.access." + getKey(wp.getName())))
+        if (wp.getCreator() == null && (p.hasPermission("wp.access.*") || p.hasPermission("wp.access." + getKey(wp.getName()))))
             return true;
 
         if (wp.isDiscoverable() != null

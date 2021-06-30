@@ -24,7 +24,6 @@ public class PluginMain extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        saveResource("CHANGELOG.txt", true);
         DataManager.getManager().loadConfig();
         DataManager.getManager().loadWaypoints();
 

@@ -96,9 +96,11 @@ public class WaypointMenu implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     void onInventoryClick(InventoryClickEvent clickEvent) {
-        if (!Arrays.equals(clickEvent.getInventory().getContents(), optionIcons)
-                || p != (Player) clickEvent.getWhoClicked())
+        if (clickEvent.getInventory() != activeInventory
+                || p != (Player) clickEvent.getWhoClicked()) {
             return;
+        }
+
 
         clickEvent.setCancelled(true);
 
@@ -161,7 +163,7 @@ public class WaypointMenu implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     void onInventoryClose(InventoryCloseEvent closeEvent) {
-        if (Arrays.equals(closeEvent.getInventory().getContents(), optionIcons) && p == closeEvent.getPlayer()) {
+        if (closeEvent.getInventory() == activeInventory && p == closeEvent.getPlayer()) {
             Bukkit.getScheduler().runTask(pm, new Runnable() {
 
                 @Override
